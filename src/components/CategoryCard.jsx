@@ -1,4 +1,5 @@
 const ICONS = {
+  calories: '🔥',
   sugars: '🍬',
   fats: '🧈',
   sodium: '🧂',
@@ -8,6 +9,7 @@ const ICONS = {
 }
 
 const LABELS = {
+  calories: 'Calories',
   sugars: 'Sugars',
   fats: 'Fats',
   sodium: 'Sodium',

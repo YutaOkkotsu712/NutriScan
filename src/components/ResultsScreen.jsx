@@ -1,8 +1,8 @@
 import ScoreDial from './ScoreDial'
 import CategoryCard from './CategoryCard'
-import SwapCard from './SwapCard'
+import SmartSwapCard from './SmartSwapCard'
 
-const CATEGORY_ORDER = ['sugars', 'fats', 'sodium', 'fiber', 'processing', 'additives']
+const CATEGORY_ORDER = ['calories', 'sugars', 'fats', 'sodium', 'fiber', 'processing', 'additives']
 
 function concernStyle(concern) {
   if (concern === 'high') return 'bg-red-100 text-red-700'
@@ -16,7 +16,7 @@ function concernLabel(concern) {
   return 'low concern'
 }
 
-export default function ResultsScreen({ result, onReset }) {
+export default function ResultsScreen({ result, onReset, onCompare, onSelectProduct }) {
   const isBarcode = result.source === 'openfoodfacts'
 
   return (
@@ -68,13 +68,28 @@ export default function ResultsScreen({ result, onReset }) {
         <ScoreDial score={result.overallScore} label={result.scoreLabel} />
       </div>
 
+      {/* Compare button */}
+      {onCompare && (
+        <button
+          onClick={() => onCompare(result)}
+          className="w-full mb-4 py-3 px-4 bg-white hover:bg-gray-50 border-2 border-dashed border-gray-300 text-gray-600 font-medium rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          Compare with Another Product
+        </button>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
         {CATEGORY_ORDER.map(cat => (
-          <CategoryCard key={cat} category={cat} data={result.categories[cat]} />
+          result.categories[cat] && <CategoryCard key={cat} category={cat} data={result.categories[cat]} />
         ))}
       </div>
 
-      <SwapCard suggestion={result.swapSuggestion} />
+      {/* Smart swap suggestions */}
+      <SmartSwapCard result={result} onSelectProduct={onSelectProduct || (() => {})} />
 
       {result.flaggedItems?.length > 0 && (
         <div className="mt-4 bg-white border border-gray-200 rounded-xl p-4">

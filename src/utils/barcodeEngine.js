@@ -118,6 +118,7 @@ export async function lookupBarcode(barcode, onProgress) {
   result.source = 'openfoodfacts'
   result.barcode = barcode
   result.servingSize = product.serving_size || null
+  result.categoryTags = product.categories_tags || []
   result.imageCount = 0
 
   return result

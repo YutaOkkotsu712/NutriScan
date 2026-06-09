@@ -7,7 +7,7 @@ function getScoreColor(score) {
   return { ring: '#22c55e', bg: '#f0fdf4', text: '#166534' }
 }
 
-export default function ScoreDial({ score, label }) {
+export default function ScoreDial({ score, label, small = false }) {
   const [animatedScore, setAnimatedScore] = useState(0)
   const colors = getScoreColor(score)
 
@@ -28,23 +28,25 @@ export default function ScoreDial({ score, label }) {
     return () => cancelAnimationFrame(frame)
   }, [score])
 
-  const radius = 80
+  const radius = small ? 40 : 80
+  const viewSize = small ? 100 : 200
+  const strokeW = small ? 8 : 12
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = circumference - (animatedScore / 10) * circumference
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      <div className="relative w-52 h-52">
-        <svg className="w-full h-full -rotate-90" viewBox="0 0 200 200">
+    <div className="flex flex-col items-center gap-1">
+      <div className={`relative ${small ? 'w-24 h-24' : 'w-52 h-52'}`}>
+        <svg className="w-full h-full -rotate-90" viewBox={`0 0 ${viewSize} ${viewSize}`}>
           <circle
-            cx="100" cy="100" r={radius}
-            fill="none" stroke="#e5e7eb" strokeWidth="12"
+            cx={viewSize / 2} cy={viewSize / 2} r={radius}
+            fill="none" stroke="#e5e7eb" strokeWidth={strokeW}
           />
           <circle
-            cx="100" cy="100" r={radius}
+            cx={viewSize / 2} cy={viewSize / 2} r={radius}
             fill="none"
             stroke={colors.ring}
-            strokeWidth="12"
+            strokeWidth={strokeW}
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
@@ -52,14 +54,14 @@ export default function ScoreDial({ score, label }) {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-5xl font-bold" style={{ color: colors.text }}>
+          <span className={`${small ? 'text-xl' : 'text-5xl'} font-bold`} style={{ color: colors.text }}>
             {animatedScore.toFixed(1)}
           </span>
-          <span className="text-sm text-gray-500 mt-1">out of 10</span>
+          {!small && <span className="text-sm text-gray-500 mt-1">out of 10</span>}
         </div>
       </div>
       <span
-        className="text-lg font-semibold px-4 py-1 rounded-full"
+        className={`${small ? 'text-xs px-2 py-0.5' : 'text-lg px-4 py-1'} font-semibold rounded-full`}
         style={{ backgroundColor: colors.bg, color: colors.text }}
       >
         {label}

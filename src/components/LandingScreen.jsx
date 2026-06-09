@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 
-export default function LandingScreen({ onScanBarcode, onImageSelected }) {
+export default function LandingScreen({ onScanBarcode, onImageSelected, onSearch }) {
   const fileRef = useRef()
   const cameraRef = useRef()
 
@@ -18,7 +18,7 @@ export default function LandingScreen({ onScanBarcode, onImageSelected }) {
         </div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">NutriScan</h1>
         <p className="text-gray-500 max-w-xs mx-auto">
-          Scan a product barcode to get an instant WHO-aligned health score with detailed breakdown
+          Know exactly what's in your food. WHO-aligned health scores with detailed breakdown.
         </p>
       </div>
 
@@ -35,28 +35,40 @@ export default function LandingScreen({ onScanBarcode, onImageSelected }) {
           Scan Barcode
         </button>
 
-        {/* Secondary: Camera label scan */}
+        {/* Search */}
         <button
-          onClick={() => cameraRef.current?.click()}
+          onClick={onSearch}
           className="w-full py-4 px-6 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl border-2 border-gray-200 transition-colors flex items-center justify-center gap-2"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          Scan Label (OCR)
+          Search by Name
         </button>
 
-        {/* Tertiary: Upload */}
-        <button
-          onClick={() => fileRef.current?.click()}
-          className="w-full py-3 px-6 text-gray-500 hover:text-gray-700 font-medium transition-colors flex items-center justify-center gap-2 text-sm"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          Upload Label Photo
-        </button>
+        {/* Secondary row: Camera + Upload */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => cameraRef.current?.click()}
+            className="flex-1 py-3 px-4 text-gray-500 hover:text-gray-700 font-medium transition-colors flex items-center justify-center gap-1.5 text-sm border border-gray-200 rounded-xl hover:bg-gray-50"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            Scan Label
+          </button>
+          <button
+            onClick={() => fileRef.current?.click()}
+            className="flex-1 py-3 px-4 text-gray-500 hover:text-gray-700 font-medium transition-colors flex items-center justify-center gap-1.5 text-sm border border-gray-200 rounded-xl hover:bg-gray-50"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Upload
+          </button>
+        </div>
       </div>
 
       <input
@@ -76,7 +88,7 @@ export default function LandingScreen({ onScanBarcode, onImageSelected }) {
       />
 
       <p className="text-xs text-gray-400 mt-8 max-w-xs">
-        Barcode lookup uses Open Food Facts. Label scanning is fully on-device.
+        Barcode & search use Open Food Facts. Label scanning is fully on-device.
       </p>
     </div>
   )
