@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nutriscan-v1'
+const CACHE_NAME = 'nutriscan-v2'
 const PRECACHE = ['/', '/index.html']
 
 self.addEventListener('install', (e) => {
@@ -20,9 +20,19 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return
 
+  const url = new URL(e.request.url)
+
+  // Never cache API calls — only cache same-origin app assets
+  if (url.origin !== self.location.origin) return
+
+  // Don't cache Vite HMR or dev server requests
+  if (url.pathname.startsWith('/@') || url.pathname.startsWith('/node_modules')) return
+
   e.respondWith(
     fetch(e.request)
       .then((res) => {
+        // Only cache successful responses
+        if (!res || res.status !== 200 || res.type !== 'basic') return res
         const clone = res.clone()
         caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone))
         return res

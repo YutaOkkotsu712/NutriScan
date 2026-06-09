@@ -28,7 +28,7 @@ export default function LandingScreen({ onScanBarcode, onBarcodeDetected, onSear
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] px-6 text-center">
-      <div className="mb-8">
+      <div className="mb-8 animate-scaleIn">
         <div className="w-20 h-20 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
           <span className="text-4xl">🔬</span>
         </div>
@@ -42,7 +42,8 @@ export default function LandingScreen({ onScanBarcode, onBarcodeDetected, onSear
         {/* Primary: Barcode scan */}
         <button
           onClick={onScanBarcode}
-          className="w-full py-4 px-6 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
+          className="w-full py-4 px-6 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 animate-fadeSlideIn"
+          style={{ animationDelay: '100ms' }}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -54,7 +55,8 @@ export default function LandingScreen({ onScanBarcode, onBarcodeDetected, onSear
         {/* Search */}
         <button
           onClick={onSearch}
-          className="w-full py-4 px-6 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl border-2 border-gray-200 transition-colors flex items-center justify-center gap-2"
+          className="w-full py-4 px-6 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl border-2 border-gray-200 transition-all active:scale-95 flex items-center justify-center gap-2 animate-fadeSlideIn"
+          style={{ animationDelay: '200ms' }}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -67,7 +69,8 @@ export default function LandingScreen({ onScanBarcode, onBarcodeDetected, onSear
         <button
           onClick={() => fileRef.current?.click()}
           disabled={decoding}
-          className="w-full py-3 px-6 text-gray-500 hover:text-gray-700 font-medium transition-colors flex items-center justify-center gap-2 text-sm border border-gray-200 rounded-xl hover:bg-gray-50"
+          className="w-full py-3 px-6 text-gray-500 hover:text-gray-700 font-medium transition-all active:scale-95 flex items-center justify-center gap-2 text-sm border border-gray-200 rounded-xl hover:bg-gray-50 animate-fadeSlideIn"
+          style={{ animationDelay: '300ms' }}
         >
           {decoding ? (
             <>

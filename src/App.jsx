@@ -106,11 +106,11 @@ export default function App() {
       </header>
 
       {screen === 'landing' && (
-        <LandingScreen
+        <div className="animate-fadeIn"><LandingScreen
           onScanBarcode={handleScanBarcode}
           onBarcodeDetected={handleBarcodeScanned}
           onSearch={handleSearch}
-        />
+        /></div>
       )}
 
       {screen === 'barcode' && (

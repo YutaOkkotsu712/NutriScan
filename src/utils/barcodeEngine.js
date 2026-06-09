@@ -1,4 +1,5 @@
 import { analyzeFood } from './scoreEngine'
+import { checkClaims } from './claimsChecker'
 
 const OFF_API = 'https://world.openfoodfacts.org/api/v2/product'
 
@@ -109,7 +110,10 @@ export async function lookupBarcode(barcode, onProgress) {
   console.log('[NutriScan] OFF nutrition:', JSON.stringify(nutrition))
   console.log('[NutriScan] OFF ingredients:', ingredientText.slice(0, 100))
 
-  const result = analyzeFood(nutrition, ingredientText)
+  // NOVA processing group from OFF
+  const novaGroup = product.nova_group || null
+
+  const result = analyzeFood(nutrition, ingredientText, novaGroup)
   result.productName = displayName
   result.parsedNutrition = nutrition
   result.parsedIngredients = ingredientText
@@ -119,7 +123,44 @@ export async function lookupBarcode(barcode, onProgress) {
   result.barcode = barcode
   result.servingSize = product.serving_size || null
   result.categoryTags = product.categories_tags || []
+  result.novaGroup = novaGroup
   result.imageCount = 0
+
+  // Store per-100g nutrition for toggle view
+  const nutrition100g = {}
+  const val100 = (key) => {
+    const v = nutri[`${key}_100g`]
+    return typeof v === 'number' ? v : (typeof v === 'string' ? parseFloat(v) : undefined)
+  }
+  const c100 = val100('energy-kcal'); if (c100 !== undefined && !isNaN(c100)) nutrition100g.calories = Math.round(c100)
+  const f100 = val100('fat'); if (f100 !== undefined && !isNaN(f100)) nutrition100g.totalFat = round1(f100)
+  const sf100 = val100('saturated-fat'); if (sf100 !== undefined && !isNaN(sf100)) nutrition100g.saturatedFat = round1(sf100)
+  const tf100 = val100('trans-fat'); if (tf100 !== undefined && !isNaN(tf100)) nutrition100g.transFat = round1(tf100)
+  const cb100 = val100('carbohydrates'); if (cb100 !== undefined && !isNaN(cb100)) nutrition100g.totalCarbs = round1(cb100)
+  const su100 = val100('sugars'); if (su100 !== undefined && !isNaN(su100)) nutrition100g.sugars = round1(su100)
+  const fi100 = val100('fiber'); if (fi100 !== undefined && !isNaN(fi100)) nutrition100g.fiber = round1(fi100)
+  const pr100 = val100('proteins'); if (pr100 !== undefined && !isNaN(pr100)) nutrition100g.protein = round1(pr100)
+  const so100 = val100('sodium'); if (so100 !== undefined && !isNaN(so100)) nutrition100g.sodium = Math.round(so100 * 1000)
+  if (nutrition100g.sodium === undefined) { const sl100 = val100('salt'); if (sl100 !== undefined && !isNaN(sl100)) nutrition100g.sodium = Math.round(sl100 * 400) }
+  result.nutrition100g = nutrition100g
+
+  // Allergens & traces
+  result.allergens = (product.allergens_tags || []).map(a => a.replace('en:', ''))
+  result.traces = (product.traces_tags || []).map(t => t.replace('en:', ''))
+
+  // Misleading claims check
+  const labelTags = product.labels_tags || []
+  result.labelTags = labelTags
+  result.claims = checkClaims(
+    labelTags,
+    productName,
+    nutrition,
+    ingredientText,
+    result.overallScore
+  )
+
+  console.log('[NutriScan] Allergens:', result.allergens)
+  console.log('[NutriScan] Claims:', result.claims)
 
   return result
 }

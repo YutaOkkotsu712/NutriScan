@@ -1,13 +1,14 @@
 import { useState, useCallback } from 'react'
 import ScoreDial from './ScoreDial'
 
-const CATEGORY_ORDER = ['calories', 'sugars', 'fats', 'sodium', 'fiber', 'processing', 'additives']
+const CATEGORY_ORDER = ['calories', 'sugars', 'fats', 'sodium', 'protein', 'fiber', 'processing', 'additives']
 
 const CATEGORY_LABELS = {
   calories: 'Calories',
   sugars: 'Sugars',
   fats: 'Fats',
   sodium: 'Sodium',
+  protein: 'Protein',
   fiber: 'Fiber',
   processing: 'Processing',
   additives: 'Additives',
@@ -18,6 +19,7 @@ const CATEGORY_ICONS = {
   sugars: '🍬',
   fats: '🧈',
   sodium: '🧂',
+  protein: '💪',
   fiber: '🌾',
   processing: '⚙️',
   additives: '🧪',

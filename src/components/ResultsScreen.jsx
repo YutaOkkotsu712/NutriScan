@@ -1,8 +1,30 @@
+import { useState } from 'react'
 import ScoreDial from './ScoreDial'
 import CategoryCard from './CategoryCard'
 import SmartSwapCard from './SmartSwapCard'
+import NutritionDetail from './NutritionDetail'
+import ScoreExplainer from './ScoreExplainer'
+import IngredientDeepDive from './IngredientDeepDive'
 
-const CATEGORY_ORDER = ['calories', 'sugars', 'fats', 'sodium', 'fiber', 'processing', 'additives']
+const CATEGORY_ORDER = ['calories', 'sugars', 'fats', 'sodium', 'protein', 'fiber', 'processing', 'additives']
+
+const ALLERGEN_LABELS = {
+  gluten: { icon: '\u{1F33E}', label: 'Gluten' },
+  milk: { icon: '\u{1F95B}', label: 'Milk / Dairy' },
+  eggs: { icon: '\u{1F95A}', label: 'Eggs' },
+  nuts: { icon: '\u{1F95C}', label: 'Tree Nuts' },
+  peanuts: { icon: '\u{1F95C}', label: 'Peanuts' },
+  soybeans: { icon: '\u{1FAD8}', label: 'Soy' },
+  fish: { icon: '\u{1F41F}', label: 'Fish' },
+  crustaceans: { icon: '\u{1F990}', label: 'Crustaceans' },
+  molluscs: { icon: '\u{1F41A}', label: 'Molluscs' },
+  celery: { icon: '\u{1F96C}', label: 'Celery' },
+  mustard: { icon: '\u{1F7E1}', label: 'Mustard' },
+  sesame: { icon: '\u{1FAD8}', label: 'Sesame' },
+  sulphites: { icon: '\u{2697}\u{FE0F}', label: 'Sulphites' },
+  lupin: { icon: '\u{1F33F}', label: 'Lupin' },
+  wheat: { icon: '\u{1F33E}', label: 'Wheat' },
+}
 
 function concernStyle(concern) {
   if (concern === 'high') return 'bg-red-100 text-red-700'
@@ -16,14 +38,36 @@ function concernLabel(concern) {
   return 'low concern'
 }
 
+function getAllergenInfo(key) {
+  return ALLERGEN_LABELS[key] || { icon: '\u{26A0}\u{FE0F}', label: key.charAt(0).toUpperCase() + key.slice(1) }
+}
+
 export default function ResultsScreen({ result, onReset, onCompare, onSelectProduct }) {
   const isBarcode = result.source === 'openfoodfacts'
+  const [shareStatus, setShareStatus] = useState('')
+
+  const hasAllergens = result.allergens?.length > 0
+  const hasTraces = result.traces?.length > 0
+  const misleadingClaims = (result.claims || []).filter(c => c.isMisleading)
+  const verifiedClaims = (result.claims || []).filter(c => !c.isMisleading && c.explanation !== 'Claim noted.')
+
+  async function handleShare() {
+    setShareStatus('generating')
+    try {
+      const { shareResult } = await import('./ShareCard.js')
+      const status = await shareResult(result)
+      setShareStatus(status === 'downloaded' ? 'Image saved!' : '')
+    } catch {
+      setShareStatus('Failed to generate image')
+    }
+    setTimeout(() => setShareStatus(''), 3000)
+  }
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6 pb-24">
-      {/* Product info (barcode scan) */}
+      {/* Product info */}
       {isBarcode && (
-        <div className="flex items-center gap-4 mb-6 bg-white border border-gray-200 rounded-xl p-4">
+        <div className="flex items-center gap-4 mb-4 bg-white border border-gray-200 rounded-xl p-4 animate-fadeSlideIn">
           {result.imageUrl && (
             <img
               src={result.imageUrl}
@@ -31,78 +75,210 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
               className="w-16 h-16 rounded-lg object-cover shrink-0"
             />
           )}
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h2 className="font-bold text-gray-900 text-lg leading-tight truncate">
               {result.productName}
             </h2>
             {result.barcode && (
               <p className="text-xs text-gray-400 font-mono mt-0.5">{result.barcode}</p>
             )}
-            {result.servingSize && (
-              <p className="text-xs text-gray-500 mt-0.5">Serving: {result.servingSize}</p>
-            )}
+            <div className="flex items-center gap-2 mt-0.5">
+              {result.servingSize && (
+                <p className="text-xs text-gray-500">Serving: {result.servingSize}</p>
+              )}
+              {result.novaGroup && (
+                <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+                  result.novaGroup <= 2 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                }`}>
+                  NOVA {result.novaGroup}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ALLERGEN WARNING */}
+      {(hasAllergens || hasTraces) && (
+        <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4 mb-4 animate-fadeSlideIn" style={{ animationDelay: '50ms' }}>
+          {hasAllergens && (
+            <div className="mb-2">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg">{'\u{26A0}\u{FE0F}'}</span>
+                <span className="font-bold text-red-800">Contains Allergens</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {result.allergens.map(a => {
+                  const info = getAllergenInfo(a)
+                  return (
+                    <span key={a} className="inline-flex items-center gap-1 bg-red-100 text-red-800 text-sm font-medium px-2.5 py-1 rounded-full">
+                      <span>{info.icon}</span>
+                      {info.label}
+                    </span>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+          {hasTraces && (
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg">{'\u{26A1}'}</span>
+                <span className="font-semibold text-red-700 text-sm">May Contain Traces Of</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {result.traces.map(t => {
+                  const info = getAllergenInfo(t)
+                  return (
+                    <span key={t} className="inline-flex items-center gap-1 bg-orange-100 text-orange-800 text-xs font-medium px-2 py-0.5 rounded-full">
+                      <span>{info.icon}</span>
+                      {info.label}
+                    </span>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* MISLEADING CLAIMS */}
+      {misleadingClaims.length > 0 && (
+        <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4 mb-4 animate-fadeSlideIn" style={{ animationDelay: '100ms' }}>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-lg">{'\u{1F6A9}'}</span>
+            <span className="font-bold text-red-800">
+              {misleadingClaims.length} Misleading Claim{misleadingClaims.length > 1 ? 's' : ''} Detected
+            </span>
+          </div>
+          <div className="space-y-3">
+            {misleadingClaims.map((c, i) => (
+              <div key={i} className="bg-white/80 rounded-lg p-3 border border-red-200">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded">
+                    MISLEADING
+                  </span>
+                  <span className="font-semibold text-red-900 text-sm">"{c.claim}"</span>
+                </div>
+                <p className="text-sm text-red-800 leading-snug">{c.explanation}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Verified claims */}
+      {verifiedClaims.length > 0 && (
+        <div className="bg-green-50 border border-green-200 rounded-xl p-3 mb-4 animate-fadeSlideIn" style={{ animationDelay: '120ms' }}>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-base">{'\u{2705}'}</span>
+            <span className="font-semibold text-green-800 text-sm">Verified Claims</span>
+          </div>
+          <div className="space-y-1.5">
+            {verifiedClaims.map((c, i) => (
+              <div key={i} className="text-sm text-green-700">
+                <span className="font-medium">"{c.claim}"</span>
+                <span className="text-green-600"> — {c.explanation}</span>
+              </div>
+            ))}
           </div>
         </div>
       )}
 
       {/* Source banner */}
-      <div className={`border rounded-xl p-3 mb-6 text-center ${
-        isBarcode
-          ? 'bg-green-50 border-green-200'
-          : 'bg-amber-50 border-amber-200'
-      }`}>
+      <div className={`border rounded-xl p-3 mb-6 text-center animate-fadeIn ${
+        isBarcode ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'
+      }`} style={{ animationDelay: '150ms' }}>
         <p className={`text-sm ${isBarcode ? 'text-green-700' : 'text-amber-700'}`}>
           {isBarcode
             ? 'Data from Open Food Facts — verified nutrition database'
             : 'Results based on OCR text scanning — accuracy depends on image quality'
           }
         </p>
-        {!isBarcode && result.imageCount > 1 && (
-          <p className="text-xs text-amber-600 mt-1">
-            Merged from {result.imageCount} photos for a more complete analysis
-          </p>
-        )}
       </div>
 
-      <div className="flex justify-center mb-8">
+      {/* Score dial */}
+      <div className="flex justify-center mb-4 animate-scaleIn" style={{ animationDelay: '200ms' }}>
         <ScoreDial score={result.overallScore} label={result.scoreLabel} />
       </div>
 
-      {/* Compare button */}
-      {onCompare && (
-        <button
-          onClick={() => onCompare(result)}
-          className="w-full mb-4 py-3 px-4 bg-white hover:bg-gray-50 border-2 border-dashed border-gray-300 text-gray-600 font-medium rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
-          Compare with Another Product
-        </button>
-      )}
+      {/* Why This Score? explainer */}
+      <div className="mb-6">
+        <ScoreExplainer result={result} />
+      </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-        {CATEGORY_ORDER.map(cat => (
-          result.categories[cat] && <CategoryCard key={cat} category={cat} data={result.categories[cat]} />
+      {/* Share + Compare buttons */}
+      <div className="flex gap-2 mb-4 animate-fadeSlideIn" style={{ animationDelay: '300ms' }}>
+        <button
+          onClick={handleShare}
+          disabled={shareStatus === 'generating'}
+          className="flex-1 py-3 px-4 bg-white hover:bg-gray-50 border-2 border-gray-200 text-gray-700 font-medium rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+        >
+          {shareStatus === 'generating' ? (
+            <>
+              <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
+              Generating...
+            </>
+          ) : shareStatus ? (
+            <>{shareStatus}</>
+          ) : (
+            <>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              </svg>
+              Share
+            </>
+          )}
+        </button>
+        {onCompare && (
+          <button
+            onClick={() => onCompare(result)}
+            className="flex-1 py-3 px-4 bg-white hover:bg-gray-50 border-2 border-dashed border-gray-300 text-gray-600 font-medium rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            Compare
+          </button>
+        )}
+      </div>
+
+      {/* Category scores — staggered */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+        {CATEGORY_ORDER.map((cat, i) => (
+          result.categories[cat] && (
+            <CategoryCard key={cat} category={cat} data={result.categories[cat]} index={i} />
+          )
         ))}
       </div>
 
-      {/* Smart swap suggestions */}
-      <SmartSwapCard result={result} onSelectProduct={onSelectProduct || (() => {})} />
+      {/* Detailed nutrition breakdown — flags, macros, WHO bars */}
+      <NutritionDetail result={result} />
 
+      {/* Ingredient Deep Dive */}
+      {result.parsedIngredients && (
+        <div className="mt-4">
+          <IngredientDeepDive ingredientText={result.parsedIngredients} />
+        </div>
+      )}
+
+      {/* Smart swap suggestions */}
+      <div className="mt-4 animate-fadeSlideIn" style={{ animationDelay: '600ms' }}>
+        <SmartSwapCard result={result} onSelectProduct={onSelectProduct || (() => {})} />
+      </div>
+
+      {/* Flagged ingredients */}
       {result.flaggedItems?.length > 0 && (
-        <div className="mt-4 bg-white border border-gray-200 rounded-xl p-4">
+        <div className="mt-4 bg-white border border-gray-200 rounded-xl p-4 animate-fadeSlideIn" style={{ animationDelay: '700ms' }}>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-lg">🧾</span>
+            <span className="text-lg">{'\u{1F9FE}'}</span>
             <span className="font-semibold text-gray-800">Ingredient Review</span>
           </div>
           <div className="space-y-2">
             {result.flaggedItems.map((item, i) => (
-              <div
-                key={i}
-                className="rounded-lg border border-gray-100 bg-gray-50 p-2"
-              >
+              <div key={i} className="rounded-lg border border-gray-100 bg-gray-50 p-2">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-sm font-medium text-gray-800 capitalize">{item.name}</span>
                   <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${concernStyle(item.concern)}`}>
@@ -118,25 +294,9 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
         </div>
       )}
 
-      {result.parsedNutrition && Object.keys(result.parsedNutrition).length > 0 && (
-        <details className="mt-4" open={isBarcode}>
-          <summary className="text-sm text-gray-500 cursor-pointer hover:text-gray-700">
-            View parsed nutrition data
-          </summary>
-          <div className="mt-2 bg-gray-50 rounded-xl p-4 text-sm font-mono text-gray-600">
-            {Object.entries(result.parsedNutrition).map(([key, val]) => (
-              <div key={key} className="flex justify-between py-0.5">
-                <span>{key}</span>
-                <span className="font-semibold">{val}{key === 'calories' ? ' kcal' : key === 'sodium' ? ' mg' : ' g'}</span>
-              </div>
-            ))}
-          </div>
-        </details>
-      )}
-
-      {/* Nutri-Score comparison (if available from OFF) */}
+      {/* Nutri-Score */}
       {result.nutriScore && (
-        <div className="mt-4 bg-gray-50 border border-gray-200 rounded-xl p-3 text-center">
+        <div className="mt-4 bg-gray-50 border border-gray-200 rounded-xl p-3 text-center animate-fadeIn" style={{ animationDelay: '800ms' }}>
           <p className="text-xs text-gray-500">
             Open Food Facts Nutri-Score: <span className="font-bold text-gray-700 uppercase">{result.nutriScore}</span>
           </p>

@@ -1,11 +1,12 @@
 const ICONS = {
-  calories: '🔥',
-  sugars: '🍬',
-  fats: '🧈',
-  sodium: '🧂',
-  fiber: '🌾',
+  calories: '\u{1F525}',
+  sugars: '\u{1F36C}',
+  fats: '\u{1F9C8}',
+  sodium: '\u{1F9C2}',
+  protein: '\u{1F4AA}',
+  fiber: '\u{1F33E}',
   processing: '⚙️',
-  additives: '🧪',
+  additives: '\u{1F9EA}',
 }
 
 const LABELS = {
@@ -13,6 +14,7 @@ const LABELS = {
   sugars: 'Sugars',
   fats: 'Fats',
   sodium: 'Sodium',
+  protein: 'Protein',
   fiber: 'Fiber',
   processing: 'Processing',
   additives: 'Additives',
@@ -30,9 +32,18 @@ function getScoreBadge(score) {
   return 'bg-green-500 text-white'
 }
 
-export default function CategoryCard({ category, data }) {
+function getBarColor(score) {
+  if (score <= 3) return 'bg-red-400'
+  if (score <= 6) return 'bg-amber-400'
+  return 'bg-green-400'
+}
+
+export default function CategoryCard({ category, data, index = 0 }) {
   return (
-    <div className={`rounded-xl border p-4 ${getCardStyle(data.score)}`}>
+    <div
+      className={`rounded-xl border p-4 animate-fadeSlideIn ${getCardStyle(data.score)}`}
+      style={{ animationDelay: `${index * 80}ms` }}
+    >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <span className="text-xl">{ICONS[category]}</span>
@@ -42,6 +53,18 @@ export default function CategoryCard({ category, data }) {
           {data.score}/10
         </span>
       </div>
+
+      {/* Score bar */}
+      <div className="w-full bg-white/60 rounded-full h-1.5 mb-2 overflow-hidden">
+        <div
+          className={`h-1.5 rounded-full animate-barGrow ${getBarColor(data.score)}`}
+          style={{
+            width: `${data.score * 10}%`,
+            animationDelay: `${index * 80 + 200}ms`,
+          }}
+        />
+      </div>
+
       <p className="text-sm text-gray-600 leading-snug">{data.verdict}</p>
     </div>
   )
