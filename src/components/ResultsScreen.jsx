@@ -17,13 +17,47 @@ function concernLabel(concern) {
 }
 
 export default function ResultsScreen({ result, onReset }) {
+  const isBarcode = result.source === 'openfoodfacts'
+
   return (
     <div className="max-w-lg mx-auto px-4 py-6 pb-24">
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-6 text-center">
-        <p className="text-sm text-amber-700">
-          Results based on OCR text scanning — accuracy depends on image quality (v2)
+      {/* Product info (barcode scan) */}
+      {isBarcode && (
+        <div className="flex items-center gap-4 mb-6 bg-white border border-gray-200 rounded-xl p-4">
+          {result.imageUrl && (
+            <img
+              src={result.imageUrl}
+              alt={result.productName}
+              className="w-16 h-16 rounded-lg object-cover shrink-0"
+            />
+          )}
+          <div className="min-w-0">
+            <h2 className="font-bold text-gray-900 text-lg leading-tight truncate">
+              {result.productName}
+            </h2>
+            {result.barcode && (
+              <p className="text-xs text-gray-400 font-mono mt-0.5">{result.barcode}</p>
+            )}
+            {result.servingSize && (
+              <p className="text-xs text-gray-500 mt-0.5">Serving: {result.servingSize}</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Source banner */}
+      <div className={`border rounded-xl p-3 mb-6 text-center ${
+        isBarcode
+          ? 'bg-green-50 border-green-200'
+          : 'bg-amber-50 border-amber-200'
+      }`}>
+        <p className={`text-sm ${isBarcode ? 'text-green-700' : 'text-amber-700'}`}>
+          {isBarcode
+            ? 'Data from Open Food Facts — verified nutrition database'
+            : 'Results based on OCR text scanning — accuracy depends on image quality'
+          }
         </p>
-        {result.imageCount > 1 && (
+        {!isBarcode && result.imageCount > 1 && (
           <p className="text-xs text-amber-600 mt-1">
             Merged from {result.imageCount} photos for a more complete analysis
           </p>
@@ -70,7 +104,7 @@ export default function ResultsScreen({ result, onReset }) {
       )}
 
       {result.parsedNutrition && Object.keys(result.parsedNutrition).length > 0 && (
-        <details className="mt-4">
+        <details className="mt-4" open={isBarcode}>
           <summary className="text-sm text-gray-500 cursor-pointer hover:text-gray-700">
             View parsed nutrition data
           </summary>
@@ -78,11 +112,20 @@ export default function ResultsScreen({ result, onReset }) {
             {Object.entries(result.parsedNutrition).map(([key, val]) => (
               <div key={key} className="flex justify-between py-0.5">
                 <span>{key}</span>
-                <span className="font-semibold">{val}{key === 'calories' ? '' : key === 'sodium' ? 'mg' : 'g'}</span>
+                <span className="font-semibold">{val}{key === 'calories' ? ' kcal' : key === 'sodium' ? ' mg' : ' g'}</span>
               </div>
             ))}
           </div>
         </details>
+      )}
+
+      {/* Nutri-Score comparison (if available from OFF) */}
+      {result.nutriScore && (
+        <div className="mt-4 bg-gray-50 border border-gray-200 rounded-xl p-3 text-center">
+          <p className="text-xs text-gray-500">
+            Open Food Facts Nutri-Score: <span className="font-bold text-gray-700 uppercase">{result.nutriScore}</span>
+          </p>
+        </div>
       )}
 
       <button
