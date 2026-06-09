@@ -1,53 +1,75 @@
 import { useEffect, useRef, useState } from 'react'
 
 export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
-  const scannerRef = useRef(null)
   const html5QrRef = useRef(null)
   const [error, setError] = useState('')
   const [manualCode, setManualCode] = useState('')
   const [showManual, setShowManual] = useState(false)
   const hasScannedRef = useRef(false)
+  const mountedRef = useRef(true)
 
   useEffect(() => {
+    mountedRef.current = true
     let scanner = null
 
     async function startScanner() {
       try {
-        const { Html5Qrcode } = await import('html5-qrcode')
+        const { Html5Qrcode, Html5QrcodeSupportedFormats } = await import('html5-qrcode')
+
+        if (!mountedRef.current) return
+
+        // Make sure the DOM element exists
+        const el = document.getElementById('barcode-reader')
+        if (!el) {
+          setShowManual(true)
+          setError('Scanner element not found. Enter barcode manually.')
+          return
+        }
 
         scanner = new Html5Qrcode('barcode-reader')
         html5QrRef.current = scanner
+
+        const formats = [
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.CODE_39,
+          Html5QrcodeSupportedFormats.QR_CODE,
+        ].filter(Boolean) // filter out undefined in case lib version differs
 
         await scanner.start(
           { facingMode: 'environment' },
           {
             fps: 10,
             qrbox: { width: 280, height: 150 },
-            aspectRatio: 1.0,
-            formatsToSupport: [
-              0,  // QR_CODE
-              4,  // EAN_13
-              3,  // EAN_8
-              6,  // UPC_A
-              7,  // UPC_E
-              2,  // CODE_128
-              1,  // CODE_39
-            ],
+            formatsToSupport: formats.length > 0 ? formats : undefined,
           },
           (decodedText) => {
-            if (hasScannedRef.current) return
+            if (hasScannedRef.current || !mountedRef.current) return
             hasScannedRef.current = true
+
             // Vibrate on successful scan
             if (navigator.vibrate) navigator.vibrate(100)
+
+            // Stop scanner before navigating away
+            if (scanner) {
+              scanner.stop().catch(() => {})
+            }
+
             onScan(decodedText)
           },
           () => {} // ignore scan failures (normal during scanning)
         )
       } catch (err) {
         console.error('[NutriScan] Camera error:', err)
-        if (err.toString().includes('NotAllowedError') || err.toString().includes('Permission')) {
+        if (!mountedRef.current) return
+
+        const msg = String(err)
+        if (msg.includes('NotAllowedError') || msg.includes('Permission')) {
           setError('Camera permission denied. Please allow camera access or enter the barcode manually.')
-        } else if (err.toString().includes('NotFoundError')) {
+        } else if (msg.includes('NotFoundError')) {
           setError('No camera found. Please enter the barcode manually.')
         } else {
           setError('Could not start camera. Try entering the barcode manually.')
@@ -59,12 +81,21 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
     startScanner()
 
     return () => {
+      mountedRef.current = false
       if (scanner) {
-        scanner.stop().catch(() => {})
-        scanner.clear().catch(() => {})
+        try {
+          const state = scanner.getState()
+          // 2 = SCANNING, 3 = PAUSED
+          if (state === 2 || state === 3) {
+            scanner.stop().catch(() => {})
+          }
+        } catch {
+          // getState may throw if not initialized
+          scanner.stop().catch(() => {})
+        }
       }
     }
-  }, [onScan])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleManualSubmit(e) {
     e.preventDefault()
@@ -83,12 +114,10 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
         </p>
       </div>
 
-      {/* Camera viewport */}
-      {!showManual && (
-        <div className="relative rounded-2xl overflow-hidden bg-black mb-4">
-          <div id="barcode-reader" ref={scannerRef} className="w-full" />
-        </div>
-      )}
+      {/* Camera viewport — always render the div so html5-qrcode can find it */}
+      <div className={`relative rounded-2xl overflow-hidden bg-black mb-4 ${showManual ? 'hidden' : ''}`}>
+        <div id="barcode-reader" className="w-full" />
+      </div>
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4">

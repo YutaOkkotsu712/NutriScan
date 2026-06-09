@@ -2,7 +2,6 @@ import { useState, useCallback } from 'react'
 import LandingScreen from './components/LandingScreen'
 import BarcodeScanner from './components/BarcodeScanner'
 import SearchScreen from './components/SearchScreen'
-import ImageCollector from './components/ImageCollector'
 import LoadingScreen from './components/LoadingScreen'
 import ResultsScreen from './components/ResultsScreen'
 import CompareScreen from './components/CompareScreen'
@@ -12,7 +11,6 @@ export default function App() {
   const [loadingStatus, setLoadingStatus] = useState('')
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
-  const [initialImage, setInitialImage] = useState(null)
   // Compare state
   const [compareA, setCompareA] = useState(null)
   const [comparePending, setComparePending] = useState(false)
@@ -27,7 +25,7 @@ export default function App() {
       const analysisResult = await lookupBarcode(barcode, setLoadingStatus)
 
       if (!analysisResult) {
-        setError(`Product not found in database (barcode: ${barcode}). Try scanning the nutrition label instead.`)
+        setError(`Product not found in database (barcode: ${barcode}). Try searching by name instead.`)
         setScreen('not-found')
         return
       }
@@ -67,41 +65,10 @@ export default function App() {
     lookupProduct(barcode)
   }, [lookupProduct])
 
-  // --- OCR label flow ---
-  const handleImageSelected = useCallback((file) => {
-    setInitialImage(file)
-    setScreen('collect')
-  }, [])
-
-  const handleScanLabel = useCallback(() => {
-    setInitialImage(null)
-    setScreen('collect')
-  }, [])
-
-  const runOcrScan = useCallback(async (files) => {
-    setScreen('loading')
-    setLoadingStatus('Preparing images...')
-
-    try {
-      const { scanImage } = await import('./utils/ocrEngine')
-      const analysisResult = await scanImage(files, setLoadingStatus)
-      setResult(analysisResult)
-      setScreen('results')
-    } catch (err) {
-      if (err.message === 'UNREADABLE' || err.message === 'NO_NUTRITION_DATA') {
-        setError("Couldn't read a nutrition label — try clearer, well-lit photos")
-      } else {
-        setError('Analysis failed — please try again')
-      }
-      setScreen('error')
-    }
-  }, [])
-
   // --- Compare flow ---
   const handleCompare = useCallback((productResult) => {
     setCompareA(productResult)
     setComparePending(true)
-    // Go to a selection screen — let user choose barcode or search
     setScreen('compare-pick')
   }, [])
 
@@ -110,7 +77,6 @@ export default function App() {
     setScreen('landing')
     setResult(null)
     setError('')
-    setInitialImage(null)
     setCompareA(null)
     setComparePending(false)
   }, [])
@@ -142,7 +108,7 @@ export default function App() {
       {screen === 'landing' && (
         <LandingScreen
           onScanBarcode={handleScanBarcode}
-          onImageSelected={handleImageSelected}
+          onBarcodeDetected={handleBarcodeScanned}
           onSearch={handleSearch}
         />
       )}
@@ -151,7 +117,7 @@ export default function App() {
         <BarcodeScanner
           onScan={handleBarcodeScanned}
           onCancel={handleReset}
-          onManualEntry={handleScanLabel}
+          onManualEntry={() => setScreen('search')}
         />
       )}
 
@@ -159,13 +125,6 @@ export default function App() {
         <SearchScreen
           onSelectProduct={handleSearchSelect}
           onCancel={handleReset}
-        />
-      )}
-
-      {screen === 'collect' && (
-        <ImageCollector
-          initialImage={initialImage}
-          onScan={runOcrScan}
         />
       )}
 
@@ -240,10 +199,10 @@ export default function App() {
           <p className="text-lg font-medium text-gray-700 mb-2">{error}</p>
           <div className="flex flex-col gap-3 w-full max-w-xs mt-4">
             <button
-              onClick={handleScanLabel}
+              onClick={() => setScreen('search')}
               className="py-3 px-6 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-colors"
             >
-              Scan Label with Camera
+              Search by Name
             </button>
             <button
               onClick={handleReset}

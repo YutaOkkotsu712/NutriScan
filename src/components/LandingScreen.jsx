@@ -1,13 +1,29 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 
-export default function LandingScreen({ onScanBarcode, onImageSelected, onSearch }) {
+export default function LandingScreen({ onScanBarcode, onBarcodeDetected, onSearch }) {
   const fileRef = useRef()
-  const cameraRef = useRef()
+  const [decoding, setDecoding] = useState(false)
+  const [error, setError] = useState('')
 
-  function handleFile(e) {
+  async function handleFile(e) {
     const file = e.target.files?.[0]
-    if (file) onImageSelected(file)
+    if (!file) return
     e.target.value = ''
+
+    setDecoding(true)
+    setError('')
+
+    try {
+      const { Html5Qrcode } = await import('html5-qrcode')
+      const scanner = new Html5Qrcode('file-scanner-tmp')
+      const result = await scanner.scanFile(file, /* showImage */ false)
+      scanner.clear()
+      onBarcodeDetected(result)
+    } catch {
+      setError('No barcode found in image. Try a clearer photo of the barcode.')
+    } finally {
+      setDecoding(false)
+    }
   }
 
   return (
@@ -47,38 +63,32 @@ export default function LandingScreen({ onScanBarcode, onImageSelected, onSearch
           Search by Name
         </button>
 
-        {/* Secondary row: Camera + Upload */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => cameraRef.current?.click()}
-            className="flex-1 py-3 px-4 text-gray-500 hover:text-gray-700 font-medium transition-colors flex items-center justify-center gap-1.5 text-sm border border-gray-200 rounded-xl hover:bg-gray-50"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            Scan Label
-          </button>
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="flex-1 py-3 px-4 text-gray-500 hover:text-gray-700 font-medium transition-colors flex items-center justify-center gap-1.5 text-sm border border-gray-200 rounded-xl hover:bg-gray-50"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            Upload
-          </button>
-        </div>
+        {/* Upload barcode photo */}
+        <button
+          onClick={() => fileRef.current?.click()}
+          disabled={decoding}
+          className="w-full py-3 px-6 text-gray-500 hover:text-gray-700 font-medium transition-colors flex items-center justify-center gap-2 text-sm border border-gray-200 rounded-xl hover:bg-gray-50"
+        >
+          {decoding ? (
+            <>
+              <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
+              Reading barcode...
+            </>
+          ) : (
+            <>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Upload Barcode Photo
+            </>
+          )}
+        </button>
+
+        {error && (
+          <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
+        )}
       </div>
 
-      <input
-        ref={cameraRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={handleFile}
-      />
       <input
         ref={fileRef}
         type="file"
@@ -87,8 +97,11 @@ export default function LandingScreen({ onScanBarcode, onImageSelected, onSearch
         onChange={handleFile}
       />
 
+      {/* Hidden element for html5-qrcode file scanner */}
+      <div id="file-scanner-tmp" className="hidden" />
+
       <p className="text-xs text-gray-400 mt-8 max-w-xs">
-        Barcode & search use Open Food Facts. Label scanning is fully on-device.
+        Barcode & search use Open Food Facts. All analysis happens instantly.
       </p>
     </div>
   )
