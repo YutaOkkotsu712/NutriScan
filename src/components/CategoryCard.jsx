@@ -1,3 +1,5 @@
+import { useT } from '../i18n'
+
 const ICONS = {
   calories: '\u{1F525}',
   sugars: '\u{1F36C}',
@@ -7,17 +9,6 @@ const ICONS = {
   fiber: '\u{1F33E}',
   processing: '⚙️',
   additives: '\u{1F9EA}',
-}
-
-const LABELS = {
-  calories: 'Calories',
-  sugars: 'Sugars',
-  fats: 'Fats',
-  sodium: 'Sodium',
-  protein: 'Protein',
-  fiber: 'Fiber',
-  processing: 'Processing',
-  additives: 'Additives',
 }
 
 function getCardStyle(score) {
@@ -39,6 +30,7 @@ function getBarColor(score) {
 }
 
 export default function CategoryCard({ category, data, index = 0 }) {
+  const { t } = useT()
   return (
     <div
       className={`rounded-xl border p-4 animate-fadeSlideIn ${getCardStyle(data.score)}`}
@@ -47,7 +39,7 @@ export default function CategoryCard({ category, data, index = 0 }) {
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <span className="text-xl">{ICONS[category]}</span>
-          <span className="font-semibold text-gray-800">{LABELS[category]}</span>
+          <span className="font-semibold text-gray-800">{t(`category.${category}`)}</span>
         </div>
         <span className={`text-sm font-bold px-2.5 py-0.5 rounded-full ${getScoreBadge(data.score)}`}>
           {data.score}/10

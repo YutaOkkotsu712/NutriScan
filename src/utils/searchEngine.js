@@ -1,8 +1,19 @@
 import { analyzeFood } from './scoreEngine'
 
-const SEARCH_API = 'https://world.openfoodfacts.org/api/v2/search'
+// Same-origin caching proxy (Vercel Edge Function in prod, Vite proxy in dev).
+// See api/search.js — CORS-free, edge-cached, rate-limit-insulated search.
+const SEARCH_API = '/api/search'
 
-const SEARCH_FIELDS = 'code,product_name,brands,image_front_small_url,nutriscore_grade,nutriments,categories_tags,serving_size,ingredients_text,nova_group'
+const SEARCH_FIELDS = 'code,product_name,brands,image_front_small_url,nutriscore_grade,nutriments,categories_tags,serving_size,ingredients_text,nova_group,ingredients_analysis_tags'
+
+// Does a product's diet analysis conflict with the user's diet preference?
+function dietConflict(analysisTags, diet) {
+  if (!diet || diet === 'none') return false
+  const tags = analysisTags || []
+  if (diet === 'veg' || diet === 'jain') return tags.includes('en:non-vegetarian')
+  if (diet === 'vegan') return tags.includes('en:non-vegan')
+  return false
+}
 
 /**
  * Fetch with retry for OFF API rate limiting (503 errors).
@@ -39,9 +50,7 @@ export async function searchProducts(query, page = 1, pageSize = 20) {
     fields: SEARCH_FIELDS,
   })
 
-  const res = await fetchWithRetry(`${SEARCH_API}?${params}`, {
-    headers: { 'User-Agent': 'NutriScan/1.0 (PWA food scanner)' },
-  })
+  const res = await fetchWithRetry(`${SEARCH_API}?${params}`)
 
   if (!res.ok) throw new Error('Search failed')
 
@@ -70,7 +79,7 @@ export async function searchProducts(query, page = 1, pageSize = 20) {
  * Find alternatives with full nutrition comparison.
  * Tries multiple strategies to always return results.
  */
-export async function findAlternatives(product, originalNutrition, worstCategory, limit = 5) {
+export async function findAlternatives(product, originalNutrition, worstCategory, limit = 5, diet = 'none') {
   const categories = product.categories || []
   const productName = product.name || ''
   const productBrand = product.brand || ''
@@ -103,7 +112,7 @@ export async function findAlternatives(product, originalNutrition, worstCategory
   const origNameNorm = normalizeName(productName, productBrand)
 
   for (const attempt of attempts) {
-    const results = await tryFetchAlternatives(attempt, product.barcode, origNameNorm, originalNutrition, worstCategory, limit)
+    const results = await tryFetchAlternatives(attempt, product.barcode, origNameNorm, originalNutrition, worstCategory, limit, diet)
     if (results.length > 0) {
       console.log(`[NutriScan] Found ${results.length} alternatives via ${attempt.type}: ${attempt.value}`)
       return results
@@ -125,7 +134,7 @@ function normalizeName(name, brand) {
     .trim()
 }
 
-async function tryFetchAlternatives(attempt, excludeBarcode, origNameNorm, originalNutrition, worstCategory, limit) {
+async function tryFetchAlternatives(attempt, excludeBarcode, origNameNorm, originalNutrition, worstCategory, limit, diet = 'none') {
   const params = new URLSearchParams({
     page_size: String(limit + 15), // fetch extra to filter
     fields: SEARCH_FIELDS,
@@ -141,9 +150,7 @@ async function tryFetchAlternatives(attempt, excludeBarcode, origNameNorm, origi
   }
 
   try {
-    const res = await fetchWithRetry(`${SEARCH_API}?${params}`, {
-      headers: { 'User-Agent': 'NutriScan/1.0 (PWA food scanner)' },
-    })
+    const res = await fetchWithRetry(`${SEARCH_API}?${params}`)
 
     if (!res.ok) return []
 
@@ -156,6 +163,9 @@ async function tryFetchAlternatives(attempt, excludeBarcode, origNameNorm, origi
     const products = (data.products || [])
       .filter(p => {
         if (p.code === excludeBarcode || !p.product_name || !p.nutriments) return false
+        // Diet filter (P1): don't suggest alternatives that conflict with the
+        // user's diet preference (e.g. non-veg to a vegetarian).
+        if (dietConflict(p.ingredients_analysis_tags, diet)) return false
         const norm = normalizeName(p.product_name, p.brands)
         if (!norm || seenNames.has(norm)) return false
         seenNames.add(norm)

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useProfile, DIET_OPTIONS } from '../utils/profile'
 
 function DeltaBadge({ value, label, positive }) {
   if (value === undefined) return null
@@ -31,6 +32,8 @@ function ScoreBadge({ score, label }) {
 }
 
 export default function SmartSwapCard({ result, onSelectProduct }) {
+  const profile = useProfile()
+  const diet = profile.diet || 'none'
   const [alternatives, setAlternatives] = useState([])
   const [loading, setLoading] = useState(false)
   const [loaded, setLoaded] = useState(false)
@@ -55,6 +58,8 @@ export default function SmartSwapCard({ result, onSelectProduct }) {
           },
           result.nutrition100g || result.parsedNutrition,
           result.worstCategory,
+          5,
+          diet,
         )
         if (!cancelled) {
           setAlternatives(alts)
@@ -69,7 +74,9 @@ export default function SmartSwapCard({ result, onSelectProduct }) {
 
     fetchAlternatives()
     return () => { cancelled = true }
-  }, [result.barcode, result.source, result.categoryTags, result.worstCategory, result.parsedNutrition, result.nutrition100g, result.productName])
+  }, [result.barcode, result.source, result.categoryTags, result.worstCategory, result.parsedNutrition, result.nutrition100g, result.productName, diet])
+
+  const dietLabel = DIET_OPTIONS.find(d => d.key === diet)?.label
 
   const betterAlts = alternatives.filter(a => a.nutriscanScore > result.overallScore)
   const similarAlts = alternatives.filter(a => a.nutriscanScore <= result.overallScore)
@@ -81,6 +88,11 @@ export default function SmartSwapCard({ result, onSelectProduct }) {
         <span className="font-semibold text-gray-800">
           {betterAlts.length > 0 ? 'Healthier Alternatives' : 'Similar Products'}
         </span>
+        {diet !== 'none' && (
+          <span className="ml-auto text-[10px] font-medium bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">
+            {dietLabel} only
+          </span>
+        )}
       </div>
 
       {loading && (

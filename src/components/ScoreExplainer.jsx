@@ -1,7 +1,9 @@
 import { useMemo } from 'react'
 import { generateExplanation } from '../utils/scoreExplainer'
+import { useT } from '../i18n'
 
 export default function ScoreExplainer({ result }) {
+  const { t, isEnglish } = useT()
   const explanation = useMemo(() => generateExplanation(result), [result])
 
   if (!explanation) return null
@@ -22,11 +24,12 @@ export default function ScoreExplainer({ result }) {
     >
       <div className="flex items-center gap-2 mb-2">
         <span className="text-lg">💡</span>
-        <span className="font-semibold text-gray-800">Why This Score?</span>
+        <span className="font-semibold text-gray-800">{t('results.whyThisScore')}</span>
       </div>
       <p className={`text-sm leading-relaxed ${textColor}`}>
         {explanation}
       </p>
+      {!isEnglish && <p className="text-[10px] text-gray-400 mt-2 italic">{t('common.translationPending')}</p>}
     </div>
   )
 }

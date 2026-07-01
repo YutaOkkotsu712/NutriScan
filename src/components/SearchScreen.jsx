@@ -1,4 +1,6 @@
 import { useState, useRef, useCallback } from 'react'
+import { useT } from '../i18n'
+import { track } from '../utils/analytics'
 
 const NUTRI_COLORS = {
   a: 'bg-green-600',
@@ -9,10 +11,11 @@ const NUTRI_COLORS = {
 }
 
 export default function SearchScreen({ onSelectProduct, onCancel }) {
+  const { t } = useT()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [error, setError] = useState(false)
   const debounceRef = useRef(null)
 
   const doSearch = useCallback(async (q) => {
@@ -22,14 +25,16 @@ export default function SearchScreen({ onSelectProduct, onCancel }) {
     }
 
     setLoading(true)
-    setError('')
+    setError(false)
 
     try {
       const { searchProducts } = await import('../utils/searchEngine')
       const data = await searchProducts(q)
       setResults(data)
+      if (!data.products?.length) track('search_fail', { queryLen: q.length })
     } catch {
-      setError('Search failed — check your internet connection')
+      setError(true)
+      track('search_fail', { queryLen: q.length })
     } finally {
       setLoading(false)
     }
@@ -50,9 +55,9 @@ export default function SearchScreen({ onSelectProduct, onCancel }) {
   return (
     <div className="max-w-lg mx-auto px-4 py-6 min-h-[80vh]">
       <div className="text-center mb-5">
-        <h2 className="text-lg font-bold text-gray-900 mb-1">Search Products</h2>
+        <h2 className="text-lg font-bold text-gray-900 mb-1">{t('search.title')}</h2>
         <p className="text-sm text-gray-500">
-          Search by product name, brand, or type
+          {t('search.subtitle')}
         </p>
       </div>
 
@@ -70,7 +75,7 @@ export default function SearchScreen({ onSelectProduct, onCancel }) {
             type="text"
             value={query}
             onChange={(e) => handleInput(e.target.value)}
-            placeholder="e.g. Parle-G, Maggi, Pringles..."
+            placeholder={t('search.placeholder')}
             className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:border-green-500 focus:outline-none"
             autoFocus
           />
@@ -84,7 +89,7 @@ export default function SearchScreen({ onSelectProduct, onCancel }) {
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
-          <p className="text-sm text-red-700">{error}</p>
+          <p className="text-sm text-red-700">{t('search.noResults')}</p>
         </div>
       )}
 
@@ -93,8 +98,8 @@ export default function SearchScreen({ onSelectProduct, onCancel }) {
         <div className="mb-4">
           <p className="text-xs text-gray-400 mb-3">
             {results.totalResults > 0
-              ? `${results.totalResults} products found`
-              : 'No products found — try a different name or brand'
+              ? t('search.productsFound', { count: results.totalResults })
+              : t('search.noResults')
             }
           </p>
 
@@ -146,7 +151,7 @@ export default function SearchScreen({ onSelectProduct, onCancel }) {
         onClick={onCancel}
         className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors"
       >
-        Back
+        {t('common.back')}
       </button>
     </div>
   )

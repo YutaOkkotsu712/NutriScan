@@ -5,6 +5,11 @@ import SearchScreen from './components/SearchScreen'
 import LoadingScreen from './components/LoadingScreen'
 import ResultsScreen from './components/ResultsScreen'
 import CompareScreen from './components/CompareScreen'
+import ProfileSheet from './components/ProfileSheet'
+import OfflineBanner from './components/OfflineBanner'
+import { useProfile, setProfile } from './utils/profile'
+import { useT } from './i18n'
+import { track } from './utils/analytics'
 
 export default function App() {
   const [screen, setScreen] = useState('landing')
@@ -14,6 +19,10 @@ export default function App() {
   // Compare state
   const [compareA, setCompareA] = useState(null)
   const [comparePending, setComparePending] = useState(false)
+  // Profile sheet
+  const [profileOpen, setProfileOpen] = useState(false)
+  const profile = useProfile()
+  const { t, lang } = useT()
 
   // --- Barcode / product lookup ---
   const lookupProduct = useCallback(async (barcode) => {
@@ -94,16 +103,43 @@ export default function App() {
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-2">
           <span className="text-xl">🔬</span>
           <h1 className="text-lg font-bold text-gray-900">NutriScan</h1>
-          {screen !== 'landing' && (
+          <div className="ml-auto flex items-center gap-3">
+            {screen !== 'landing' && (
+              <button
+                onClick={handleReset}
+                className="text-sm text-green-600 hover:text-green-700 font-medium"
+              >
+                {t('common.home')}
+              </button>
+            )}
+            {/* Quick language toggle */}
             <button
-              onClick={handleReset}
-              className="ml-auto text-sm text-green-600 hover:text-green-700 font-medium"
+              onClick={() => { const next = lang === 'en' ? 'hi' : 'en'; setProfile({ language: next }); track('language_change', { lang: next }) }}
+              className="text-xs font-bold px-2 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors"
+              aria-label="Switch language"
             >
-              Home
+              {lang === 'en' ? 'हिं' : 'EN'}
             </button>
-          )}
+            {/* Profile button */}
+            <button
+              onClick={() => setProfileOpen(true)}
+              className="relative flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+              aria-label="My family profile"
+            >
+              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              {profile.configured && (
+                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white" />
+              )}
+            </button>
+          </div>
         </div>
       </header>
+
+      <OfflineBanner />
+
+      <ProfileSheet open={profileOpen} onClose={() => setProfileOpen(false)} />
 
       {screen === 'landing' && (
         <div className="animate-fadeIn"><LandingScreen
@@ -155,10 +191,10 @@ export default function App() {
             <span className="text-3xl">⚖️</span>
           </div>
           <p className="text-lg font-medium text-gray-700 mb-2">
-            Pick a product to compare with
+            {t('comparePick.prompt')}
           </p>
           <p className="text-sm text-gray-500 mb-6">
-            Comparing against: <span className="font-semibold">{compareA?.productName}</span>
+            {t('comparePick.comparingAgainst')} <span className="font-semibold">{compareA?.productName}</span>
           </p>
           <div className="flex flex-col gap-3 w-full max-w-xs">
             <button
@@ -169,7 +205,7 @@ export default function App() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M3 4h3v16H3V4zm5 0h1v16H8V4zm3 0h2v16h-2V4zm4 0h1v16h-1V4zm3 0h3v16h-3V4z" />
               </svg>
-              Scan Barcode
+              {t('comparePick.scanBarcode')}
             </button>
             <button
               onClick={() => setScreen('search')}
@@ -179,13 +215,13 @@ export default function App() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              Search by Name
+              {t('comparePick.searchByName')}
             </button>
             <button
               onClick={handleReset}
               className="py-3 px-4 text-gray-500 hover:text-gray-700 font-medium transition-colors text-sm"
             >
-              Cancel
+              {t('comparePick.cancel')}
             </button>
           </div>
         </div>
@@ -202,13 +238,13 @@ export default function App() {
               onClick={() => setScreen('search')}
               className="py-3 px-6 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-colors"
             >
-              Search by Name
+              {t('notFound.searchByName')}
             </button>
             <button
               onClick={handleReset}
               className="py-3 px-6 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors"
             >
-              Try Another Product
+              {t('notFound.tryAnother')}
             </button>
           </div>
         </div>
@@ -224,7 +260,7 @@ export default function App() {
             onClick={handleReset}
             className="mt-4 py-3 px-6 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-colors"
           >
-            Try Again
+            {t('notFound.tryAgain')}
           </button>
         </div>
       )}

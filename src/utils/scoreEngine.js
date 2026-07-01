@@ -1,5 +1,10 @@
 import { countHiddenSugars, countAdditives, getFlaggedItems } from './additiveFlags'
-import { countIngredients } from './nutritionParser'
+
+// Count distinct ingredients from a comma-separated ingredient string.
+function countIngredients(ingredientText) {
+  if (!ingredientText) return 0
+  return ingredientText.split(/,/).filter(s => s.trim().length > 1).length
+}
 
 // WHO-aligned weights — 8 categories
 const WEIGHTS = {
@@ -312,11 +317,19 @@ export function analyzeFood(nutrition, ingredientText, novaGroup) {
     additives: scoreAdditives(ingredientText),
   }
 
-  const overallScore = Math.round(
+  const weighted = Math.round(
     Object.entries(WEIGHTS).reduce((sum, [key, weight]) => {
       return sum + categories[key].score * weight
     }, 0) * 10
   ) / 10
+
+  // Severity cap: a food can't be "healthy overall" if it's extreme on a WHO
+  // negative nutrient, even when a small serving keeps other categories high.
+  // Without this, a cola (great on fat/sodium/calories per glass) averages ~5.3
+  // despite 44% of the daily sugar limit. This is an intentional scoring
+  // revision (spec §9 allows changes made deliberately in a new version).
+  const cap = applySeverityCap(weighted, categories)
+  const overallScore = clamp(cap.score, 1, 10)
 
   const flaggedItems = getFlaggedItems(ingredientText)
   const flags = getFlags(nutrition, categories)
@@ -325,7 +338,7 @@ export function analyzeFood(nutrition, ingredientText, novaGroup) {
 
   return {
     productName: 'Scanned Product',
-    overallScore: clamp(Math.round(overallScore * 10) / 10, 1, 10),
+    overallScore: Math.round(overallScore * 10) / 10,
     scoreLabel: getScoreLabel(overallScore),
     categories,
     swapSuggestion: swapInfo.advice,
@@ -333,6 +346,30 @@ export function analyzeFood(nutrition, ingredientText, novaGroup) {
     flaggedItems,
     flags,
     macroRatio,
+    capped: cap.capped,
+    capReason: cap.reason,
     source: 'offline',
   }
+}
+
+// The WHO "negative" nutrients that gate the overall score.
+const CRITICAL_NEGATIVES = ['sugars', 'fats', 'sodium']
+
+function applySeverityCap(weighted, categories) {
+  const severe = CRITICAL_NEGATIVES.filter(k => (categories[k]?.score ?? 10) <= 2)
+  const poor = CRITICAL_NEGATIVES.filter(k => (categories[k]?.score ?? 10) === 3)
+
+  const labels = { sugars: 'sugar', fats: 'fat', sodium: 'sodium' }
+
+  if (severe.length >= 2) {
+    const names = severe.map(k => labels[k]).join(' and ')
+    return { score: Math.min(weighted, 3.5), capped: true, reason: `Very high ${names} caps the overall score.` }
+  }
+  if (severe.length === 1) {
+    return { score: Math.min(weighted, 4.5), capped: true, reason: `Very high ${labels[severe[0]]} caps the overall score.` }
+  }
+  if (poor.length >= 1) {
+    return { score: Math.min(weighted, 6.0), capped: true, reason: `High ${poor.map(k => labels[k]).join(' and ')} limits the overall score.` }
+  }
+  return { score: weighted, capped: false, reason: null }
 }

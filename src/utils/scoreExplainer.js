@@ -53,6 +53,11 @@ export function generateExplanation(result) {
     parts.push(`${productName} scores ${overallScore}/10 — this product has significant health concerns based on WHO guidelines.`)
   }
 
+  // Severity cap explanation — why an otherwise-okay looking product is limited.
+  if (result.capped && result.capReason) {
+    parts.push(result.capReason)
+  }
+
   // Strengths
   if (strengths.length > 0) {
     const top = strengths.slice(0, 3)

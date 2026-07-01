@@ -1,12 +1,35 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import ScoreDial from './ScoreDial'
 import CategoryCard from './CategoryCard'
 import SmartSwapCard from './SmartSwapCard'
 import NutritionDetail from './NutritionDetail'
 import ScoreExplainer from './ScoreExplainer'
 import IngredientDeepDive from './IngredientDeepDive'
+import SuitabilityChips from './SuitabilityChips'
+import NutrientAllowanceCard from './NutrientAllowanceCard'
+import FastingCard from './FastingCard'
+import DataConfidenceCard from './DataConfidenceCard'
+import { useProfile } from '../utils/profile'
+import { useT } from '../i18n'
 
 const CATEGORY_ORDER = ['calories', 'sugars', 'fats', 'sodium', 'protein', 'fiber', 'processing', 'additives']
+
+// Buy / Limit / Avoid verdict — a presentation of the existing score (§2.1),
+// it does NOT change the general product score (§9).
+function getVerdict(score) {
+  if (score >= 7) return { label: 'Buy', cls: 'bg-green-600 text-white', desc: 'Good everyday choice' }
+  if (score >= 4) return { label: 'Limit', cls: 'bg-amber-500 text-white', desc: 'Okay occasionally' }
+  return { label: 'Avoid', cls: 'bg-red-600 text-white', desc: 'Best kept as a rare treat' }
+}
+
+// Quick veg/non-veg/vegan badge from OFF ingredient analysis.
+function getDietBadge(result) {
+  const tags = result.ingredientsAnalysisTags || []
+  if (tags.includes('en:non-vegetarian')) return { label: 'Non-veg', cls: 'bg-red-100 text-red-700' }
+  if (tags.includes('en:vegan')) return { label: 'Vegan', cls: 'bg-green-100 text-green-700' }
+  if (tags.includes('en:vegetarian')) return { label: 'Veg', cls: 'bg-green-100 text-green-700' }
+  return null
+}
 
 const ALLERGEN_LABELS = {
   gluten: { icon: '\u{1F33E}', label: 'Gluten' },
@@ -45,6 +68,35 @@ function getAllergenInfo(key) {
 export default function ResultsScreen({ result, onReset, onCompare, onSelectProduct }) {
   const isBarcode = result.source === 'openfoodfacts'
   const [shareStatus, setShareStatus] = useState('')
+  const [showStickyBar, setShowStickyBar] = useState(false)
+  const scoreAnchorRef = useRef(null)
+
+  const profile = useProfile()
+  const { t } = useT()
+  const verdict = getVerdict(result.overallScore)
+  const dietBadge = getDietBadge(result)
+
+  // Personal allergen match (P1): intersect product allergens/traces with the
+  // user's profile so their own allergens get a prominent, first-thing alert.
+  const personalAllergenHits = (() => {
+    if (!profile.allergens?.length) return { contains: [], traces: [] }
+    const inProduct = new Set([...(result.allergens || []), ...(result.traces || [])])
+    const contains = (result.allergens || []).filter(a => profile.allergens.includes(a))
+    const traces = (result.traces || []).filter(a => profile.allergens.includes(a) && !contains.includes(a))
+    return { contains, traces, any: contains.length > 0 || traces.length > 0, inProduct }
+  })()
+
+  // Sticky compact header (§12.1): appears once the main score scrolls away.
+  useEffect(() => {
+    const el = scoreAnchorRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      ([entry]) => setShowStickyBar(!entry.isIntersecting),
+      { rootMargin: '-60px 0px 0px 0px' }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
 
   const hasAllergens = result.allergens?.length > 0
   const hasTraces = result.traces?.length > 0
@@ -65,6 +117,43 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6 pb-24">
+      {/* Sticky compact header (§12.1) — appears after scrolling past the score */}
+      {showStickyBar && (
+        <div className="fixed top-[52px] left-0 right-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-200 animate-fadeIn">
+          <div className="max-w-lg mx-auto px-4 py-2 flex items-center gap-3">
+            {result.imageUrl && (
+              <img src={result.imageUrl} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
+            )}
+            <span className="text-sm font-semibold text-gray-800 truncate flex-1">{result.productName}</span>
+            <span className="text-sm font-bold text-gray-700 shrink-0">{result.overallScore}/10</span>
+            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${verdict.cls}`}>{t(`verdict.${verdict.label}`)}</span>
+          </div>
+        </div>
+      )}
+
+      {/* PERSONAL ALLERGEN ALERT (P1) — your own allergens, shown first */}
+      {personalAllergenHits.any && (
+        <div className="bg-red-600 text-white rounded-xl p-4 mb-4 animate-fadeSlideIn shadow-md">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xl">🚨</span>
+            <span className="font-bold">{t('results.containsYourAllergens')}</span>
+          </div>
+          {personalAllergenHits.contains.length > 0 && (
+            <p className="text-sm text-red-50">
+              This product contains{' '}
+              <span className="font-bold">
+                {personalAllergenHits.contains.map(a => getAllergenInfo(a).label).join(', ')}
+              </span>.
+            </p>
+          )}
+          {personalAllergenHits.traces.length > 0 && (
+            <p className="text-sm text-red-100 mt-0.5">
+              May contain traces of {personalAllergenHits.traces.map(a => getAllergenInfo(a).label).join(', ')}.
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Product info */}
       {isBarcode && (
         <div className="flex items-center gap-4 mb-4 bg-white border border-gray-200 rounded-xl p-4 animate-fadeSlideIn">
@@ -82,9 +171,15 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
             {result.barcode && (
               <p className="text-xs text-gray-400 font-mono mt-0.5">{result.barcode}</p>
             )}
-            <div className="flex items-center gap-2 mt-0.5">
-              {result.servingSize && (
-                <p className="text-xs text-gray-500">Serving: {result.servingSize}</p>
+            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+              {/* Buy / Limit / Avoid verdict */}
+              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${verdict.cls}`}>
+                {verdict.label}
+              </span>
+              {dietBadge && (
+                <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${dietBadge.cls}`}>
+                  {dietBadge.label}
+                </span>
               )}
               {result.novaGroup && (
                 <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
@@ -92,6 +187,9 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
                 }`}>
                   NOVA {result.novaGroup}
                 </span>
+              )}
+              {result.servingSize && (
+                <span className="text-xs text-gray-500">Serving: {result.servingSize}</span>
               )}
             </div>
           </div>
@@ -105,7 +203,7 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
             <div className="mb-2">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-lg">{'\u{26A0}\u{FE0F}'}</span>
-                <span className="font-bold text-red-800">Contains Allergens</span>
+                <span className="font-bold text-red-800">{t('results.containsAllergens')}</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 {result.allergens.map(a => {
@@ -124,7 +222,7 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-lg">{'\u{26A1}'}</span>
-                <span className="font-semibold text-red-700 text-sm">May Contain Traces Of</span>
+                <span className="font-semibold text-red-700 text-sm">{t('results.mayContainTracesOf')}</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 {result.traces.map(t => {
@@ -191,21 +289,39 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
       }`} style={{ animationDelay: '150ms' }}>
         <p className={`text-sm ${isBarcode ? 'text-green-700' : 'text-amber-700'}`}>
           {isBarcode
-            ? 'Data from Open Food Facts — verified nutrition database'
+            ? t('results.dataFromOFF')
             : 'Results based on OCR text scanning — accuracy depends on image quality'
           }
         </p>
       </div>
 
       {/* Score dial */}
-      <div className="flex justify-center mb-4 animate-scaleIn" style={{ animationDelay: '200ms' }}>
+      <div ref={scoreAnchorRef} className="flex flex-col items-center mb-4 animate-scaleIn" style={{ animationDelay: '200ms' }}>
         <ScoreDial score={result.overallScore} label={result.scoreLabel} />
+        <div className="mt-2 text-center">
+          <span className={`inline-block text-sm font-bold px-3 py-1 rounded-full ${verdict.cls}`}>
+            {verdict.label}
+          </span>
+          <p className="text-xs text-gray-500 mt-1">{t(`verdict.${verdict.label}Desc`)}</p>
+        </div>
       </div>
 
-      {/* Why This Score? explainer */}
-      <div className="mb-6">
+      {/* Why This Score? explainer (top reasons) */}
+      <div className="mb-4">
         <ScoreExplainer result={result} />
       </div>
+
+      {/* === India-first interactive layer === */}
+      {isBarcode && (
+        <div className="space-y-4 mb-6">
+          {/* Who is this for? — clickable suitability chips (§7) */}
+          <SuitabilityChips result={result} />
+          {/* How much of your daily limit? — demographic allowance (§6) */}
+          <NutrientAllowanceCard result={result} />
+          {/* Fasting / Upvas compatibility (§8) */}
+          <FastingCard result={result} />
+        </div>
+      )}
 
       {/* Share + Compare buttons */}
       <div className="flex gap-2 mb-4 animate-fadeSlideIn" style={{ animationDelay: '300ms' }}>
@@ -227,7 +343,7 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
               </svg>
-              Share
+              {t('results.share')}
             </>
           )}
         </button>
@@ -240,7 +356,7 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                 d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
-            Compare
+            {t('results.compare')}
           </button>
         )}
       </div>
@@ -257,10 +373,17 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
       {/* Detailed nutrition breakdown — flags, macros, WHO bars */}
       <NutritionDetail result={result} />
 
-      {/* Ingredient Deep Dive */}
+      {/* Ingredient Deep Dive — each ingredient opens a detail sheet (§5) */}
       {result.parsedIngredients && (
         <div className="mt-4">
-          <IngredientDeepDive ingredientText={result.parsedIngredients} />
+          <IngredientDeepDive ingredientText={result.parsedIngredients} barcode={result.barcode} />
+        </div>
+      )}
+
+      {/* Data & trust card (§4) */}
+      {isBarcode && (
+        <div className="mt-4">
+          <DataConfidenceCard result={result} />
         </div>
       )}
 
@@ -307,7 +430,7 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
         onClick={onReset}
         className="fixed bottom-6 left-1/2 -translate-x-1/2 py-3 px-8 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl shadow-lg transition-colors"
       >
-        Scan Another
+        {t('results.scanAnother')}
       </button>
     </div>
   )

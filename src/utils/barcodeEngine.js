@@ -1,7 +1,9 @@
 import { analyzeFood } from './scoreEngine'
 import { checkClaims } from './claimsChecker'
 
-const OFF_API = 'https://world.openfoodfacts.org/api/v2/product'
+// Same-origin caching proxy (Vercel Edge Function in prod, Vite proxy in dev).
+// See api/product/[barcode].js — gives us CORS-free, edge-cached lookups.
+const OFF_API = '/api/product'
 
 /**
  * Look up a barcode on Open Food Facts and return structured nutrition data.
@@ -10,9 +12,7 @@ const OFF_API = 'https://world.openfoodfacts.org/api/v2/product'
 export async function lookupBarcode(barcode, onProgress) {
   onProgress?.('Looking up product...')
 
-  const res = await fetch(`${OFF_API}/${barcode}.json`, {
-    headers: { 'User-Agent': 'NutriScan/1.0 (PWA food scanner)' },
-  })
+  const res = await fetch(`${OFF_API}/${barcode}`)
 
   if (!res.ok) return null
 
@@ -121,10 +121,37 @@ export async function lookupBarcode(barcode, onProgress) {
   result.nutriScore = nutriScore
   result.source = 'openfoodfacts'
   result.barcode = barcode
+  result.brand = brand
+  result.quantity = product.quantity || null
   result.servingSize = product.serving_size || null
   result.categoryTags = product.categories_tags || []
   result.novaGroup = novaGroup
   result.imageCount = 0
+
+  // Added sugar if OFF has it (rare on Indian products)
+  const addedSug = val('added-sugars')
+  if (addedSug !== undefined && !isNaN(addedSug)) result.parsedNutrition.addedSugars = round1(addedSug)
+
+  // --- Fields powering the India-first interactive layer ---
+  // Ingredient analysis (en:vegan, en:vegetarian, en:non-vegetarian, en:palm-oil…)
+  result.ingredientsAnalysisTags = product.ingredients_analysis_tags || []
+  result.ingredientsTags = product.ingredients_tags || []
+  result.additivesTags = product.additives_tags || [] // e.g. ['en:e471']
+  // Structured ingredient list (with %, order) when OFF provides it
+  result.ingredientsList = (product.ingredients || []).map(i => ({
+    id: i.id, text: i.text, percent: i.percent_estimate,
+    vegan: i.vegan, vegetarian: i.vegetarian,
+  }))
+
+  // Data confidence & source (spec §4)
+  result.dataConfidence = {
+    lastUpdated: product.last_modified_t ? new Date(product.last_modified_t * 1000).toISOString().slice(0, 10) : null,
+    completeness: typeof product.completeness === 'number' ? Math.round(product.completeness * 100) : null,
+    editors: Array.isArray(product.editors_tags) ? product.editors_tags.length : null,
+    // FSSAI/license number if present in packaging or labels (rarely structured)
+    fssai: extractFssai(product),
+    sourceName: 'Open Food Facts (community database)',
+  }
 
   // Store per-100g nutrition for toggle view
   const nutrition100g = {}
@@ -167,6 +194,19 @@ export async function lookupBarcode(barcode, onProgress) {
 
 function round1(v) {
   return Math.round(v * 10) / 10
+}
+
+// Try to find an FSSAI licence number (14 digits) in packaging/label fields.
+// FSSAI presence means licensing/registration status, NOT a health approval (§20).
+function extractFssai(product) {
+  const haystack = [
+    product.packaging_text,
+    product.labels,
+    product.emb_codes,
+    product.conservation_conditions,
+  ].filter(Boolean).join(' ')
+  const m = haystack.match(/\b(\d{14})\b/)
+  return m ? m[1] : null
 }
 
 function parseServingGrams(servingStr) {

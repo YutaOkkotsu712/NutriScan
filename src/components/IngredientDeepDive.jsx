@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react'
 import { HIDDEN_SUGARS, INGREDIENT_FLAGS } from '../utils/additiveFlags'
+import IngredientDetailSheet from './IngredientDetailSheet'
+import { useT } from '../i18n'
 
 // INS / E-number pattern
 const INS_E_REGEX = /\b(?:INS|E)\s*\d{3,4}[a-z]?\b/gi
@@ -97,48 +99,38 @@ const LEVEL_STYLES = {
   },
 }
 
-function IngredientRow({ item, index, expanded, onToggle }) {
+function IngredientRow({ item, index, position, onOpen }) {
   const style = LEVEL_STYLES[item.level]
 
   return (
-    <div
-      className="animate-fadeSlideIn"
-      style={{ animationDelay: `${index * 30}ms` }}
-    >
+    <div className="animate-fadeSlideIn" style={{ animationDelay: `${index * 30}ms` }}>
       <button
-        onClick={onToggle}
-        className={`w-full text-left rounded-lg p-2.5 border transition-all ${style.bg} ${style.border} ${
-          expanded ? 'shadow-sm' : ''
-        }`}
+        onClick={onOpen}
+        className={`w-full text-left rounded-lg p-2.5 border transition-all active:scale-[0.99] ${style.bg} ${style.border}`}
+        style={{ minHeight: '44px' }}
       >
         <div className="flex items-center gap-2">
+          <span className="text-[10px] font-mono text-gray-400 shrink-0 w-4 text-right">{position}</span>
           <span className={`w-2 h-2 rounded-full shrink-0 ${style.dot}`} />
-          <span className="text-sm text-gray-800 flex-1 capitalize leading-tight">
+          <span className="text-sm text-gray-800 flex-1 capitalize leading-tight underline decoration-dotted decoration-gray-300 underline-offset-2">
             {item.name.toLowerCase()}
           </span>
           <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${style.badge}`}>
             {item.tag}
           </span>
-          <svg
-            className={`w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`}
-            fill="none" stroke="currentColor" viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          <svg className="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </div>
       </button>
-      {expanded && (
-        <div className={`mx-2 px-3 py-2 border-x border-b rounded-b-lg ${style.border} bg-white`}>
-          <p className={`text-xs leading-relaxed ${style.text}`}>{item.reason}</p>
-        </div>
-      )}
     </div>
   )
 }
 
-export default function IngredientDeepDive({ ingredientText }) {
+export default function IngredientDeepDive({ ingredientText, barcode }) {
+  const { t } = useT()
   const [isOpen, setIsOpen] = useState(false)
-  const [expandedIdx, setExpandedIdx] = useState(null)
+  const [selected, setSelected] = useState(null)
 
   const classified = useMemo(() => {
     const raw = parseIngredients(ingredientText)
@@ -159,7 +151,7 @@ export default function IngredientDeepDive({ ingredientText }) {
       >
         <div className="flex items-center gap-2">
           <span className="text-lg">🧬</span>
-          <span className="font-semibold text-gray-800">Ingredient Deep Dive</span>
+          <span className="font-semibold text-gray-800">{t('ingredients.title')}</span>
         </div>
         <div className="flex items-center gap-2">
           {/* Summary dots */}
@@ -183,7 +175,7 @@ export default function IngredientDeepDive({ ingredientText }) {
               </span>
             )}
           </div>
-          <span className="text-xs text-gray-400">{classified.length} items</span>
+          <span className="text-xs text-gray-400">{t('ingredients.items', { n: classified.length })}</span>
           <svg
             className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
             fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -198,37 +190,42 @@ export default function IngredientDeepDive({ ingredientText }) {
           {/* Legend */}
           <div className="flex items-center gap-3 mb-2 px-1">
             <span className="flex items-center gap-1 text-[10px] text-gray-500">
-              <span className="w-2 h-2 rounded-full bg-red-500" /> Avoid
+              <span className="w-2 h-2 rounded-full bg-red-500" /> {t('ingredients.avoid')}
             </span>
             <span className="flex items-center gap-1 text-[10px] text-gray-500">
-              <span className="w-2 h-2 rounded-full bg-amber-500" /> Review
+              <span className="w-2 h-2 rounded-full bg-amber-500" /> {t('ingredients.review')}
             </span>
             <span className="flex items-center gap-1 text-[10px] text-gray-500">
-              <span className="w-2 h-2 rounded-full bg-green-500" /> OK
+              <span className="w-2 h-2 rounded-full bg-green-500" /> {t('ingredients.ok')}
             </span>
           </div>
 
-          {/* Red items first, then amber, then green */}
-          {classified
-            .sort((a, b) => {
-              const order = { red: 0, amber: 1, green: 2 }
-              return (order[a.level] ?? 1) - (order[b.level] ?? 1)
-            })
-            .map((item, i) => (
-              <IngredientRow
-                key={`${item.name}-${i}`}
-                item={item}
-                index={i}
-                expanded={expandedIdx === i}
-                onToggle={() => setExpandedIdx(expandedIdx === i ? null : i)}
-              />
-            ))}
+          {/* Original label order — ingredients are declared in descending
+              order of composition, so we preserve it (spec §5.1). Concern is
+              conveyed by the colour dot/badge, not by re-sorting. */}
+          {classified.map((item, i) => (
+            <IngredientRow
+              key={`${item.name}-${i}`}
+              item={item}
+              index={i}
+              position={i + 1}
+              onOpen={() => setSelected(item)}
+            />
+          ))}
 
           <p className="text-[10px] text-gray-400 mt-2 px-1">
-            Tap any ingredient for details. Classification is based on FSSAI/CODEX guidelines.
+            {t('ingredients.tapHint')}
           </p>
         </div>
       )}
+
+      <IngredientDetailSheet
+        open={!!selected}
+        onClose={() => setSelected(null)}
+        ingredient={selected?.name}
+        fallback={selected}
+        barcode={barcode}
+      />
     </div>
   )
 }

@@ -1,7 +1,9 @@
 import { useRef, useState } from 'react'
+import { useT } from '../i18n'
 
 export default function LandingScreen({ onScanBarcode, onBarcodeDetected, onSearch }) {
   const fileRef = useRef()
+  const { t } = useT()
   const [decoding, setDecoding] = useState(false)
   const [error, setError] = useState('')
 
@@ -32,9 +34,9 @@ export default function LandingScreen({ onScanBarcode, onBarcodeDetected, onSear
         <div className="w-20 h-20 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
           <span className="text-4xl">🔬</span>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">NutriScan</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('common.appName')}</h1>
         <p className="text-gray-500 max-w-xs mx-auto">
-          Know exactly what's in your food. WHO-aligned health scores with detailed breakdown.
+          {t('common.tagline')}
         </p>
       </div>
 
@@ -49,7 +51,7 @@ export default function LandingScreen({ onScanBarcode, onBarcodeDetected, onSear
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M3 4h3v16H3V4zm5 0h1v16H8V4zm3 0h2v16h-2V4zm4 0h1v16h-1V4zm3 0h3v16h-3V4z" />
           </svg>
-          Scan Barcode
+          {t('landing.scanBarcode')}
         </button>
 
         {/* Search */}
@@ -62,7 +64,7 @@ export default function LandingScreen({ onScanBarcode, onBarcodeDetected, onSear
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          Search by Name
+          {t('landing.searchByName')}
         </button>
 
         {/* Upload barcode photo */}
@@ -75,14 +77,14 @@ export default function LandingScreen({ onScanBarcode, onBarcodeDetected, onSear
           {decoding ? (
             <>
               <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
-              Reading barcode...
+              {t('landing.readingBarcode')}
             </>
           ) : (
             <>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              Upload Barcode Photo
+              {t('landing.uploadPhoto')}
             </>
           )}
         </button>
@@ -104,7 +106,7 @@ export default function LandingScreen({ onScanBarcode, onBarcodeDetected, onSear
       <div id="file-scanner-tmp" className="hidden" />
 
       <p className="text-xs text-gray-400 mt-8 max-w-xs">
-        Barcode & search use Open Food Facts. All analysis happens instantly.
+        {t('landing.footer')}
       </p>
     </div>
   )
