@@ -4,13 +4,12 @@ import tailwindcss from '@tailwindcss/vite'
 import { pathToFileURL } from 'node:url'
 import path from 'node:path'
 
-// In production, /api/* is served by the Vercel Edge Functions in /api.
+// In production, /api/* is served by the Vercel Functions in /api.
 // In local dev:
 //  - /api/search proxies straight to Open Food Facts (below)
 //  - every other /api/* route (including /api/product, so reviewed data
 //    overrides apply in dev too) is served by the SAME edge-function modules
-//    via the dev middleware plugin — they are plain (Request) => Response
-//    functions, so dev and prod share one code path.
+//    via the dev middleware plugin, so dev and prod share one code path.
 
 const EDGE_ROUTES = [
   // [URL prefix, module path relative to this file]
@@ -88,7 +87,12 @@ function edgeFunctionsDev() {
             headers,
             body: isBodyless ? undefined : Buffer.concat(chunks),
           })
-          const response = await mod.default(request)
+          const methodHandler = mod[req.method]
+          const handler = typeof mod.default === 'function'
+            ? mod.default
+            : mod.default?.fetch || methodHandler
+          if (!handler) throw new Error(`No handler exported for ${route[1]}`)
+          const response = await handler(request)
           res.statusCode = response.status
           response.headers.forEach((v, k) => res.setHeader(k, v))
           res.end(Buffer.from(await response.arrayBuffer()))

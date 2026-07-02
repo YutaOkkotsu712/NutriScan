@@ -1,4 +1,4 @@
-// Vercel Edge Function — caching proxy for Open Food Facts product lookup.
+// Vercel Function — caching proxy for Open Food Facts product lookup.
 //
 // Why this exists:
 //  - Removes the browser→OFF CORS dependency (requests are now same-origin)
@@ -11,13 +11,11 @@
 
 import { fetchOverrides, applyOverrides } from '../_lib/overrides.js'
 
-export const config = { runtime: 'edge' }
-
 const env = (typeof process !== 'undefined' && process.env) || {}
 
 const OFF_BASE = 'https://world.openfoodfacts.org/api/v2/product'
 
-export default async function handler(request) {
+export async function GET(request) {
   const url = new URL(request.url)
   // Path is /api/product/<barcode>
   const barcode = url.pathname.split('/').filter(Boolean).pop()
@@ -63,6 +61,8 @@ export default async function handler(request) {
     return json({ status: 0, error: 'Lookup failed' }, 502, 'no-store')
   }
 }
+
+export default { fetch: GET }
 
 function json(body, status, cacheControl) {
   return new Response(JSON.stringify(body), {
