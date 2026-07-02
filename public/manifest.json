@@ -1,7 +1,7 @@
 {
   "name": "NutriScan",
   "short_name": "NutriScan",
-  "description": "Scan nutrition labels for instant WHO-aligned health scores",
+  "description": "Scan barcodes or search products for instant WHO-aligned health scores",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f9fafb",

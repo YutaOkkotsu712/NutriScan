@@ -182,7 +182,7 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
           onClick={onManualEntry}
           className="flex-1 py-3 px-4 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-xl border-2 border-gray-200 transition-colors text-sm"
         >
-          Scan Label Instead
+          Search by Name Instead
         </button>
       </div>
 

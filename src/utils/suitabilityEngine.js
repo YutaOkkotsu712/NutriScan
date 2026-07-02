@@ -10,8 +10,8 @@
 // ingredient data.
 // ============================================================================
 
-import { getAllowance } from './demographicEngine'
-import { lookupEncyclopedia } from '../data/ingredientEncyclopedia'
+import { getAllowance } from './demographicEngine.js'
+import { lookupEncyclopedia } from '../data/ingredientEncyclopedia.js'
 
 export const VERDICT = {
   SUITABLE: 'Suitable',

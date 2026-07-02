@@ -290,7 +290,7 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
         <p className={`text-sm ${isBarcode ? 'text-green-700' : 'text-amber-700'}`}>
           {isBarcode
             ? t('results.dataFromOFF')
-            : 'Results based on OCR text scanning — accuracy depends on image quality'
+            : 'Results based on local nutrition analysis — accuracy depends on the available product data'
           }
         </p>
       </div>

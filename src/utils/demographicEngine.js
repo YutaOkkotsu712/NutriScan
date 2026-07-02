@@ -13,7 +13,7 @@ import {
   NUTRIENT_LABELS,
   ALLOWANCE_NUTRIENT_ORDER,
   getReference,
-} from '../data/nutrientReference'
+} from '../data/nutrientReference.js'
 
 // Map our internal nutrition keys -> reference nutrient keys.
 // nutrition object uses: calories, sugars, saturatedFat, transFat, sodium, protein, fiber, totalCarbs

@@ -206,7 +206,7 @@ export function getFlaggedItems(ingredientText) {
         type: 'additive',
         name: raw,
         concern: 'medium',
-        reason: 'Unknown additive code from OCR; review the package label manually.',
+        reason: 'Unknown additive code from label text; review the package label manually.',
       })
     }
   }

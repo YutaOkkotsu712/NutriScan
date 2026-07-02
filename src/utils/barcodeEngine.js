@@ -1,5 +1,5 @@
-import { analyzeFood } from './scoreEngine'
-import { checkClaims } from './claimsChecker'
+import { analyzeFood } from './scoreEngine.js'
+import { checkClaims } from './claimsChecker.js'
 
 // Same-origin caching proxy (Vercel Edge Function in prod, Vite proxy in dev).
 // See api/product/[barcode].js — gives us CORS-free, edge-cached lookups.
@@ -20,10 +20,27 @@ export async function lookupBarcode(barcode, onProgress) {
 
   if (data.status !== 1 || !data.product) return null
 
-  const product = data.product
-
   onProgress?.('Analyzing nutrition...')
+  onProgress?.('Calculating health score...')
 
+  const result = normalizeOffProduct(data.product, barcode)
+
+  console.log('[NutriScan] OFF product:', result.productName)
+  console.log('[NutriScan] OFF nutrition:', JSON.stringify(result.parsedNutrition))
+  console.log('[NutriScan] OFF ingredients:', (result.parsedIngredients || '').slice(0, 100))
+  console.log('[NutriScan] Allergens:', result.allergens)
+  console.log('[NutriScan] Claims:', result.claims)
+
+  return result
+}
+
+/**
+ * Pure normalization of a raw Open Food Facts product object into our
+ * analyzed result shape. Shared by the client (lookupBarcode) and the
+ * composed edge endpoint (api/product-info/[barcode].js) so both stay in
+ * lockstep — single source of truth for field mapping and scoring.
+ */
+export function normalizeOffProduct(product, barcode) {
   // Extract nutrition per 100g (preferred) or per serving
   const nutri = product.nutriments || {}
 
@@ -104,12 +121,6 @@ export async function lookupBarcode(barcode, onProgress) {
   // Nutri-Score from OFF (for comparison)
   const nutriScore = product.nutriscore_grade || null
 
-  onProgress?.('Calculating health score...')
-
-  console.log('[NutriScan] OFF product:', productName)
-  console.log('[NutriScan] OFF nutrition:', JSON.stringify(nutrition))
-  console.log('[NutriScan] OFF ingredients:', ingredientText.slice(0, 100))
-
   // NOVA processing group from OFF
   const novaGroup = product.nova_group || null
 
@@ -185,9 +196,6 @@ export async function lookupBarcode(barcode, onProgress) {
     ingredientText,
     result.overallScore
   )
-
-  console.log('[NutriScan] Allergens:', result.allergens)
-  console.log('[NutriScan] Claims:', result.claims)
 
   return result
 }

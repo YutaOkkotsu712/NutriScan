@@ -1,4 +1,4 @@
-import { countHiddenSugars, countAdditives, getFlaggedItems } from './additiveFlags'
+import { countHiddenSugars, countAdditives, getFlaggedItems } from './additiveFlags.js'
 
 // Count distinct ingredients from a comma-separated ingredient string.
 function countIngredients(ingredientText) {

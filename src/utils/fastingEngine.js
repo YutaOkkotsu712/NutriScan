@@ -6,7 +6,7 @@
 // sources become "depends"/"unknown", never a false "suitable".
 // ============================================================================
 
-import { FASTING_PROFILES, FASTING_STATUS, FASTING_META, FASTING_CONFIDENCE } from '../data/fastingProfiles'
+import { FASTING_PROFILES, FASTING_STATUS, FASTING_META, FASTING_CONFIDENCE } from '../data/fastingProfiles.js'
 
 function matchTokens(ingredientText, tokens) {
   const lower = ingredientText.toLowerCase()
