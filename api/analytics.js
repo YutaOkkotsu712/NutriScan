@@ -114,11 +114,13 @@ export default async function handler(request) {
         headers: { Authorization: `Bearer ${env.KV_REST_API_TOKEN}`, 'content-type': 'application/json' },
         body: JSON.stringify(['LPUSH', 'analytics:events', JSON.stringify(record)]),
       })
-      fetch(env.KV_REST_API_URL, {
+      // Awaited: edge runtimes may cancel unawaited work when the handler
+      // returns; the outer try swallows any error.
+      await fetch(env.KV_REST_API_URL, {
         method: 'POST',
         headers: { Authorization: `Bearer ${env.KV_REST_API_TOKEN}`, 'content-type': 'application/json' },
         body: JSON.stringify(['LTRIM', 'analytics:events', 0, EVENTS_CAP]),
-      }).catch(() => {})
+      })
     } else {
       console.log('[NutriScan analytics]', JSON.stringify(record))
     }

@@ -138,8 +138,9 @@ export default async function handler(request) {
         body: JSON.stringify(['LPUSH', 'corrections:queue', JSON.stringify(record)]),
       })
       if (!res.ok) throw new Error('KV write failed')
-      // Best-effort cap — never fail the submission over trimming.
-      fetch(kvUrl, {
+      // Cap the queue. Awaited: edge runtimes may cancel work still in
+      // flight when the handler returns. Errors never fail the submission.
+      await fetch(kvUrl, {
         method: 'POST',
         headers: { Authorization: `Bearer ${kvToken}`, 'content-type': 'application/json' },
         body: JSON.stringify(['LTRIM', 'corrections:queue', 0, QUEUE_CAP]),

@@ -38,11 +38,10 @@ export default function SmartSwapCard({ result, onSelectProduct }) {
   const [loading, setLoading] = useState(false)
   const [loaded, setLoaded] = useState(false)
 
+  const applicable = result.source === 'openfoodfacts' && Boolean(result.barcode)
+
   useEffect(() => {
-    if (result.source !== 'openfoodfacts' || !result.barcode) {
-      setLoaded(true)
-      return
-    }
+    if (!applicable) return
 
     let cancelled = false
 
@@ -74,7 +73,7 @@ export default function SmartSwapCard({ result, onSelectProduct }) {
 
     fetchAlternatives()
     return () => { cancelled = true }
-  }, [result.barcode, result.source, result.categoryTags, result.worstCategory, result.parsedNutrition, result.nutrition100g, result.productName, diet])
+  }, [applicable, result.barcode, result.categoryTags, result.worstCategory, result.parsedNutrition, result.nutrition100g, result.productName, diet])
 
   const dietLabel = DIET_OPTIONS.find(d => d.key === diet)?.label
 
@@ -102,7 +101,7 @@ export default function SmartSwapCard({ result, onSelectProduct }) {
         </div>
       )}
 
-      {loaded && alternatives.length === 0 && (
+      {(loaded || !applicable) && alternatives.length === 0 && (
         <div className="py-2">
           <p className="text-sm text-gray-600 leading-relaxed">{result.swapSuggestion}</p>
         </div>

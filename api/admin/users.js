@@ -93,6 +93,16 @@ export default async function handler(request) {
       if (!NAME_RE.test(name)) {
         return json({ error: 'Name must be 2–30 chars: letters, digits, - or _' }, 400)
       }
+      // Env bootstrap identities are reserved — a KV user with the same name
+      // would make audit entries ambiguous about who acted.
+      const envNames = new Set(['admin'])
+      for (const pair of (env.ADMIN_TOKENS || '').split(',')) {
+        const sep = pair.indexOf(':')
+        if (sep > 0) envNames.add(pair.slice(0, sep).trim().toLowerCase())
+      }
+      if (envNames.has(name.toLowerCase())) {
+        return json({ error: 'That name is reserved by an env-configured admin.', name }, 409)
+      }
       if (!ROLES.includes(role)) {
         return json({ error: `Role must be one of: ${ROLES.join(', ')}` }, 400)
       }

@@ -9,7 +9,7 @@ function DailyLimitBar({ nutrientKey, value }) {
   const pct = Math.min((value / info.limit) * 100, 100)
   const isPositive = info.positive // fiber, protein = higher is better
 
-  let barColor = 'bg-green-500'
+  let barColor
   if (isPositive) {
     barColor = pct >= 20 ? 'bg-green-500' : pct >= 10 ? 'bg-amber-400' : 'bg-red-400'
   } else {

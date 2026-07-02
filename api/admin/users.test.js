@@ -82,6 +82,13 @@ describe('/api/admin/users', () => {
     expect((await handler(req('POST', { body: { name: 'dup', role: 'admin' } }))).status).toBe(409)
   })
 
+  it('reserves env bootstrap identities (audit ambiguity guard)', async () => {
+    expect((await handler(req('POST', { body: { name: 'admin', role: 'reviewer' } }))).status).toBe(409)
+    process.env.ADMIN_TOKENS = 'Asha:some-env-token'
+    expect((await handler(req('POST', { body: { name: 'asha', role: 'reviewer' } }))).status).toBe(409)
+    delete process.env.ADMIN_TOKENS
+  })
+
   it('GET lists users without hashes', async () => {
     await handler(req('POST', { body: { name: 'asha', role: 'reviewer' } }))
     const j = await (await handler(req('GET'))).json()

@@ -79,7 +79,6 @@ function scoreFats(nutrition) {
 
   let satScore = 5
   if (satFat !== null) {
-    const pctDaily = Math.round((satFat / 22) * 100)
     if (satFat <= 1) satScore = 10
     else if (satFat <= 2.5) satScore = 8
     else if (satFat <= 5) satScore = 6

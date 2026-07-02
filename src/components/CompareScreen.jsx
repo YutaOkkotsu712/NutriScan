@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import ScoreDial from './ScoreDial'
 import { getSuitability, verdictTone } from '../utils/suitabilityEngine'
 import { useT } from '../i18n'
@@ -10,17 +10,6 @@ const TONE_TEXT = {
   warn: 'text-amber-700 bg-amber-50',
   bad: 'text-red-700 bg-red-50',
   neutral: 'text-gray-600 bg-gray-50',
-}
-
-const CATEGORY_LABELS = {
-  calories: 'Calories',
-  sugars: 'Sugars',
-  fats: 'Fats',
-  sodium: 'Sodium',
-  protein: 'Protein',
-  fiber: 'Fiber',
-  processing: 'Processing',
-  additives: 'Additives',
 }
 
 const CATEGORY_ICONS = {

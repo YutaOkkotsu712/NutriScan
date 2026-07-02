@@ -4,7 +4,7 @@ import {
   useProfile, setProfile, resetProfile,
   COMMON_ALLERGENS, DIET_OPTIONS,
 } from '../utils/profile'
-import { DEMOGRAPHIC_ORDER, DEMOGRAPHIC_REFERENCE } from '../data/nutrientReference'
+import { DEMOGRAPHIC_ORDER } from '../data/nutrientReference'
 import { FASTING_PROFILE_ORDER, FASTING_PROFILES } from '../data/fastingProfiles'
 import { useT, LANGUAGES } from '../i18n'
 

@@ -17,16 +17,6 @@ function getColors(score) {
   return SCORE_COLORS.good
 }
 
-const CATEGORY_ICONS = {
-  calories: '\u{1F525}',  // 🔥
-  sugars: '\u{1F36C}',    // 🍬
-  fats: '\u{1F9C8}',      // 🧈
-  sodium: '\u{1F9C2}',    // 🧂
-  fiber: '\u{1F33E}',     // 🌾
-  processing: '⚙️', // ⚙️
-  additives: '\u{1F9EA}', // 🧪
-}
-
 const CATEGORY_LABELS = {
   calories: 'Calories',
   sugars: 'Sugars',
@@ -108,7 +98,6 @@ export async function generateShareImage(result) {
   ctx.textAlign = 'left'
   const cats = ['calories', 'sugars', 'fats', 'sodium', 'protein', 'fiber', 'processing', 'additives']
   const barY = 340
-  const barH = 28
   const barGap = 36
 
   for (let i = 0; i < cats.length; i++) {

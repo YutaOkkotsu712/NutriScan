@@ -18,4 +18,16 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  // Edge functions, the vite config, and the service worker run outside the
+  // browser: give them Node/worker globals. The sanitizers in api/ strip
+  // control characters by design, so no-control-regex is off there.
+  {
+    files: ['api/**/*.js', 'vite.config.js'],
+    languageOptions: { globals: { ...globals.node } },
+    rules: { 'no-control-regex': 'off' },
+  },
+  {
+    files: ['public/sw.js'],
+    languageOptions: { globals: { ...globals.serviceworker } },
+  },
 ])

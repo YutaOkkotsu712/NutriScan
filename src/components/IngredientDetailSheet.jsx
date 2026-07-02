@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import BottomSheet from './BottomSheet'
 import { lookupEncyclopedia } from '../data/ingredientEncyclopedia'
+import { useT } from '../i18n'
 
 // Prefer the live entry from /api/ingredients/<id> when the CMS has published
 // a newer version (spec §10/§14 — reviewed edits reach users without an app
@@ -11,10 +12,9 @@ function usePublishedEntry(localEntry) {
   const [live, setLive] = useState(null)
   const id = localEntry?.id
   useEffect(() => {
-    setLive(null)
     if (!id) return
     let cancelled = false
-    fetch(`/api/ingredients/${id}`)
+    fetch(`/api/ingredients/${encodeURIComponent(id)}`)
       .then(res => (res.ok ? res.json() : null))
       .then(data => {
         if (!cancelled && data?.published) setLive(data)
@@ -22,7 +22,9 @@ function usePublishedEntry(localEntry) {
       .catch(() => {})
     return () => { cancelled = true }
   }, [id])
-  return live || localEntry
+  // Guard by id instead of resetting state in the effect: a stale `live`
+  // from the previously-opened ingredient simply never matches.
+  return live?.id === id ? live : localEntry
 }
 
 const TABS = ['Simple', 'Safety', 'Regulation', 'Cultural', 'Sources']
@@ -204,6 +206,7 @@ function SourcesTab({ entry, barcode }) {
 
 export default function IngredientDetailSheet({ open, onClose, ingredient, fallback, barcode }) {
   const [tab, setTab] = useState('Simple')
+  const { t, isEnglish } = useT()
   const localEntry = ingredient ? lookupEncyclopedia(ingredient) : null
   const entry = usePublishedEntry(localEntry)
   const title = entry?.canonicalName || (ingredient ? ingredient.replace(/^\w/, c => c.toUpperCase()) : '')
@@ -230,6 +233,12 @@ export default function IngredientDetailSheet({ open, onClose, ingredient, fallb
       {tab === 'Regulation' && <RegulationTab entry={entry} />}
       {tab === 'Cultural' && <CulturalTab entry={entry} />}
       {tab === 'Sources' && <SourcesTab entry={entry} barcode={barcode} />}
+
+      {/* Encyclopedia prose is English-only content (spec §5.4): flag it in
+          any non-English language. */}
+      {!isEnglish && entry && (
+        <p className="text-[10px] text-gray-400 mt-3 italic">{t('common.translationPending')}</p>
+      )}
     </BottomSheet>
   )
 }

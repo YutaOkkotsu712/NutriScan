@@ -90,7 +90,7 @@ const NAME_CLAIM_PATTERNS = [
 
 // Checker functions — each returns { isMisleading, explanation } or null if not applicable
 const CLAIM_CHECKERS = {
-  'Sugar Free': (nutrition, ingredients, ingredientCount) => {
+  'Sugar Free': (nutrition) => {
     const sugars = nutrition.sugars
     if (sugars === undefined) return null
     if (sugars > 0.5) {
