@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { translateProse, translate, PROSE_LANGS } from './i18n'
+import { translateProse, translate, PROSE_LANGS, getProseKeys } from './i18n'
 import { generateExplanation } from './utils/scoreExplainer'
 import { analyzeFood } from './utils/scoreEngine'
 
@@ -35,10 +35,28 @@ describe('translateProse', () => {
       .toBe('Sugar zyada hai — daily tiffin ke liye ideal nahi.')
   })
 
-  it('falls back to English for unknown sentences and uncovered languages', () => {
+  it('covers all regional languages', () => {
+    expect(translateProse('ta', 'High in sugar — not ideal for daily tiffin.')).toBe('சர்க்கரை அதிகம் — தினசரி டிபனுக்கு ஏற்றதல்ல.')
+    expect(translateProse('mr', 'Watch portion size')).toBe('पोर्शन आकाराकडे लक्ष द्या')
+    expect(translateProse('gu', 'Very high sodium: 864 mg (43% of daily reference).')).toBe('સોડિયમ ખૂબ વધારે: 864 mg (દૈનિક સંદર્ભના 43%).')
+    expect(translateProse('bn', 'Very high sugar and saturated fat caps the overall score.')).toBe('খুব বেশি চিনি এবং স্যাচুরেটেড ফ্যাট-এর কারণে মোট স্কোর সীমিত করা হয়েছে।')
+    expect(translateProse('te', "Sodium is 43% of an adult man's daily reference.")).toBe('సోడియం ఒక వయోజన పురుషుడి రోజువారీ ప్రమాణంలో 43%.')
+    expect(translateProse('kn', 'Contains sabudana, which most Navratri fasting profiles do not allow.')).toBe('ಇದರಲ್ಲಿ sabudana ಇದೆ; ಹೆಚ್ಚಿನ ನವರಾತ್ರಿ ಉಪವಾಸ ಪ್ರೊಫೈಲ್‌ಗಳು ಇದನ್ನು ಅನುಮತಿಸುವುದಿಲ್ಲ.')
+  })
+
+  it('falls back to English for unknown sentences', () => {
     expect(translateProse('hi', 'A sentence the engines never emit.')).toBe('A sentence the engines never emit.')
-    expect(translateProse('ta', 'High in sugar — not ideal for daily tiffin.')).toBe('High in sugar — not ideal for daily tiffin.')
     expect(translateProse('en', 'Watch portion size')).toBe('Watch portion size')
+  })
+
+  it('every covered language carries the same prose sentence set', () => {
+    // Guards against a language dict missing a sentence added later.
+    const reference = getProseKeys('hi').sort()
+    for (const lang of PROSE_LANGS.filter(l => l !== 'en')) {
+      const keys = getProseKeys(lang)
+      expect(keys, `${lang} has a prose dict`).not.toBeNull()
+      expect(keys.sort(), `${lang} prose keys match hi`).toEqual(reference)
+    }
   })
 })
 
