@@ -1,5 +1,5 @@
-const CACHE_NAME = 'nutriscan-v4'
-const DATA_CACHE = 'nutriscan-data-v4'
+const CACHE_NAME = 'nutriscan-v5'
+const DATA_CACHE = 'nutriscan-data-v5'
 const PRECACHE = ['/', '/index.html']
 
 // Same-origin API paths whose GET responses are safe to cache for offline use:
@@ -25,6 +25,22 @@ function isCacheableApi(pathname) {
   return CACHEABLE_API.some((p) => pathname.startsWith(p))
 }
 
+function isJsonResponse(res) {
+  return (res.headers.get('content-type') || '').toLowerCase().includes('application/json')
+}
+
+async function cachedJsonOrError(request, body, status = 503) {
+  const cached = await caches.match(request)
+  if (cached && isJsonResponse(cached)) return cached
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': 'no-store',
+    },
+  })
+}
+
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return
 
@@ -37,8 +53,11 @@ self.addEventListener('fetch', (e) => {
     if (!isCacheableApi(url.pathname)) return // search / corrections / analytics: pass through
     e.respondWith(
       fetch(e.request)
-        .then((res) => {
-          if (res && res.status === 200) {
+        .then(async (res) => {
+          if (!isJsonResponse(res)) {
+            return cachedJsonOrError(e.request, { status: 0, error: 'non-json-api-response' }, 502)
+          }
+          if (res.status === 200) {
             const clone = res.clone()
             caches.open(DATA_CACHE).then((cache) => cache.put(e.request, clone))
           }
@@ -48,11 +67,7 @@ self.addEventListener('fetch', (e) => {
         // still return a Response: resolving undefined makes the page's fetch
         // reject ("Failed to fetch"), which showed users a bogus network error.
         .catch(async () => {
-          const cached = await caches.match(e.request)
-          return cached || new Response(
-            JSON.stringify({ status: 0, error: 'offline' }),
-            { status: 503, headers: { 'content-type': 'application/json; charset=utf-8' } },
-          )
+          return cachedJsonOrError(e.request, { status: 0, error: 'offline' })
         })
     )
     return
