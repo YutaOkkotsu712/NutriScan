@@ -14,11 +14,15 @@ export async function lookupBarcode(barcode, onProgress) {
 
   const res = await fetch(`${OFF_API}/${barcode}`)
 
-  if (!res.ok) return null
+  if (!res.ok) {
+    throw new Error(`Product lookup failed with HTTP ${res.status}`)
+  }
 
-  // Treat a non-JSON body (e.g. an HTML error/SPA page) as "not found"
-  // rather than throwing — a throw here shows the user a scary error screen.
-  const data = await res.json().catch(() => null)
+  // A non-JSON body usually means the deployment rewrote /api/product to the
+  // SPA shell or the edge function failed. That is not a true product miss.
+  const data = await res.json().catch(() => {
+    throw new Error('Product lookup returned non-JSON')
+  })
 
   if (!data || data.status !== 1 || !data.product) return null
 

@@ -21,6 +21,18 @@ describe('extractBarcode', () => {
     expect(extractBarcode('HTTP://CADBURY.IN/WIN')).toBeNull()
   })
 
+  it('accepts product URLs and GS1 Digital Link URLs', () => {
+    expect(extractBarcode('https://world.openfoodfacts.org/product/8901058851298/maggi'))
+      .toBe('8901058851298')
+    expect(extractBarcode('https://id.gs1.org/01/08901058851298'))
+      .toBe('8901058851298')
+  })
+
+  it('accepts GS1 AI 01 scanner text', () => {
+    expect(extractBarcode('(01)08901058851298')).toBe('8901058851298')
+    expect(extractBarcode('0108901058851298')).toBe('8901058851298')
+  })
+
   it('rejects QR text where digits are incidental', () => {
     expect(extractBarcode('WIN PRIZES CODE 123456 VISIT STORE TODAY')).toBeNull()
     expect(extractBarcode('upi://pay?pa=shop@bank&am=10')).toBeNull()

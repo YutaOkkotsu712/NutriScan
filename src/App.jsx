@@ -8,6 +8,7 @@ import CompareScreen from './components/CompareScreen'
 import ProfileSheet from './components/ProfileSheet'
 import OfflineBanner from './components/OfflineBanner'
 import { useProfile, setProfile } from './utils/profile'
+import { extractBarcode } from './utils/barcodeExtract'
 import { useT } from './i18n'
 import { track } from './utils/analytics'
 
@@ -30,8 +31,8 @@ export default function App() {
     // QR code URL — must not reach the API: in prod an unroutable path falls
     // through to the SPA rewrite and returns HTML, which used to surface as a
     // bogus "check your internet" error.
-    const barcode = String(rawBarcode || '').replace(/\D/g, '')
-    if (!/^\d{6,14}$/.test(barcode)) {
+    const barcode = extractBarcode(rawBarcode)
+    if (!barcode) {
       setError(`"${String(rawBarcode).slice(0, 40)}" is not a product barcode. Aim at the striped barcode, or search by name.`)
       setScreen('not-found')
       return
