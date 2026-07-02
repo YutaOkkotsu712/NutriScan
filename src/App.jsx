@@ -25,7 +25,18 @@ export default function App() {
   const { t, lang } = useT()
 
   // --- Barcode / product lookup ---
-  const lookupProduct = useCallback(async (barcode) => {
+  const lookupProduct = useCallback(async (rawBarcode) => {
+    // Product codes are numeric (EAN/UPC/GTIN). Anything else — e.g. a promo
+    // QR code URL — must not reach the API: in prod an unroutable path falls
+    // through to the SPA rewrite and returns HTML, which used to surface as a
+    // bogus "check your internet" error.
+    const barcode = String(rawBarcode || '').replace(/\D/g, '')
+    if (!/^\d{6,14}$/.test(barcode)) {
+      setError(`"${String(rawBarcode).slice(0, 40)}" is not a product barcode. Aim at the striped barcode, or search by name.`)
+      setScreen('not-found')
+      return
+    }
+
     setScreen('loading')
     setLoadingStatus('Looking up product...')
 
@@ -51,7 +62,9 @@ export default function App() {
       setScreen('results')
     } catch (err) {
       console.error('[NutriScan] Barcode lookup failed:', err)
-      setError('Could not look up product — check your internet connection and try again.')
+      setError(navigator.onLine === false
+        ? 'You appear to be offline — reconnect and try again.'
+        : 'The product database did not respond — please try again in a moment.')
       setScreen('error')
     }
   }, [comparePending, compareA])

@@ -44,7 +44,16 @@ self.addEventListener('fetch', (e) => {
           }
           return res
         })
-        .catch(() => caches.match(e.request)) // offline → last-known product/reference data
+        // Offline → last-known product/reference data. On a cache miss we must
+        // still return a Response: resolving undefined makes the page's fetch
+        // reject ("Failed to fetch"), which showed users a bogus network error.
+        .catch(async () => {
+          const cached = await caches.match(e.request)
+          return cached || new Response(
+            JSON.stringify({ status: 0, error: 'offline' }),
+            { status: 503, headers: { 'content-type': 'application/json; charset=utf-8' } },
+          )
+        })
     )
     return
   }
@@ -58,6 +67,15 @@ self.addEventListener('fetch', (e) => {
         caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone))
         return res
       })
-      .catch(() => caches.match(e.request))
+      .catch(async () => {
+        const cached = await caches.match(e.request)
+        if (cached) return cached
+        // Offline navigation to an uncached route → serve the app shell.
+        if (e.request.mode === 'navigate') {
+          const shell = await caches.match('/index.html')
+          if (shell) return shell
+        }
+        return Response.error()
+      })
   )
 })

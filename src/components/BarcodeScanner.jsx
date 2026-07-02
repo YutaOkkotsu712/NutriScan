@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
+import { extractBarcode } from '../utils/barcodeExtract'
 
 export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
   const html5QrRef = useRef(null)
   const [error, setError] = useState('')
+  const [hint, setHint] = useState('')
   const [manualCode, setManualCode] = useState('')
   const [showManual, setShowManual] = useState(false)
   const hasScannedRef = useRef(false)
@@ -48,6 +50,13 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
           },
           (decodedText) => {
             if (hasScannedRef.current || !mountedRef.current) return
+
+            const barcode = extractBarcode(decodedText)
+            if (!barcode) {
+              // Decoded a promo QR/URL — keep scanning and tell the user.
+              setHint('That looks like a promo QR code — aim at the striped barcode instead.')
+              return
+            }
             hasScannedRef.current = true
 
             // Vibrate on successful scan
@@ -58,7 +67,7 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
               scanner.stop().catch(() => {})
             }
 
-            onScan(decodedText)
+            onScan(barcode)
           },
           () => {} // ignore scan failures (normal during scanning)
         )
@@ -122,6 +131,12 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
           <p className="text-sm text-red-700">{error}</p>
+        </div>
+      )}
+
+      {!error && hint && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
+          <p className="text-sm text-amber-700">{hint}</p>
         </div>
       )}
 

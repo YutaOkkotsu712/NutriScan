@@ -16,9 +16,11 @@ export async function lookupBarcode(barcode, onProgress) {
 
   if (!res.ok) return null
 
-  const data = await res.json()
+  // Treat a non-JSON body (e.g. an HTML error/SPA page) as "not found"
+  // rather than throwing — a throw here shows the user a scary error screen.
+  const data = await res.json().catch(() => null)
 
-  if (data.status !== 1 || !data.product) return null
+  if (!data || data.status !== 1 || !data.product) return null
 
   onProgress?.('Analyzing nutrition...')
   onProgress?.('Calculating health score...')
