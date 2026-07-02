@@ -37,7 +37,7 @@ const TONE_BADGE = {
 }
 
 function SuitabilityDetail({ group }) {
-  const { t, isEnglish } = useT()
+  const { t, tProse, proseReady } = useT()
   return (
     <div className="space-y-4">
       {/* Verdict badge */}
@@ -50,7 +50,7 @@ function SuitabilityDetail({ group }) {
         </div>
       </div>
 
-      {/* Reasons (generated prose — English with translation-pending note) */}
+      {/* Reasons (generated prose — translated per sentence where covered) */}
       {group.reasons?.length > 0 && (
         <div>
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{t('suitability.why')}</p>
@@ -58,31 +58,31 @@ function SuitabilityDetail({ group }) {
             {group.reasons.map((r, i) => (
               <li key={i} className="flex gap-2 text-sm text-gray-700">
                 <span className={`mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ${TONE_DOT[group.tone]}`} />
-                <span className="leading-snug">{r}</span>
+                <span className="leading-snug">{tProse(r)}</span>
               </li>
             ))}
           </ul>
-          {!isEnglish && <p className="text-[10px] text-gray-400 mt-1.5 italic">{t('common.translationPending')}</p>}
+          {!proseReady && <p className="text-[10px] text-gray-400 mt-1.5 italic">{t('common.translationPending')}</p>}
         </div>
       )}
 
       {/* Portion / frequency / pairing (§7.2) */}
       <div className="grid grid-cols-1 gap-2">
         {group.portion && (
-          <InfoRow icon="🍽️" label={t('suitability.howMuch')} value={group.portion} />
+          <InfoRow icon="🍽️" label={t('suitability.howMuch')} value={tProse(group.portion)} />
         )}
         {group.frequency && (
-          <InfoRow icon="📅" label={t('suitability.howOften')} value={group.frequency} />
+          <InfoRow icon="📅" label={t('suitability.howOften')} value={tProse(group.frequency)} />
         )}
         {group.pairWith && (
-          <InfoRow icon="🤝" label={t('suitability.pairWith')} value={group.pairWith} />
+          <InfoRow icon="🤝" label={t('suitability.pairWith')} value={tProse(group.pairWith)} />
         )}
       </div>
 
       {/* Caveat */}
       {group.caveat && (
         <p className="text-xs text-gray-500 bg-gray-50 rounded-lg p-2.5 leading-relaxed">
-          ℹ️ {group.caveat}
+          ℹ️ {tProse(group.caveat)}
         </p>
       )}
 

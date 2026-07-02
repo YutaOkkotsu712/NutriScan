@@ -104,6 +104,48 @@ const STRINGS = {
       reportCorrect: 'Report or correct this data',
       high: 'High confidence', medium: 'Medium confidence', low: 'Low confidence',
       fssaiHint: 'Licensing/registration status — not a health approval.',
+      correctedBanner: 'This product’s data includes a correction verified by NutriScan review.',
+      correctedOn: 'Reviewed',
+    },
+    // Score-explainer templates (spec §5.4) — the "Why this score?" paragraph
+    // is assembled from these, so it translates like any other string.
+    explain: {
+      openStrong: '{name} scores {score}/10 — a strong result. This is a genuinely healthy choice by WHO standards.',
+      openDecent: '{name} scores {score}/10 — a decent product with some room for improvement.',
+      openAverage: '{name} scores {score}/10 — an average product with notable nutritional concerns.',
+      openPoor: '{name} scores {score}/10 — this product has significant health concerns based on WHO guidelines.',
+      strongestArea: 'Its strongest area is {desc}.',
+      strengthsInclude: 'Its strengths include {list} and {last}.',
+      mainConcern: 'The main concern is that {desc}.',
+      keyConcerns: 'Key concerns: {list}; and {last}.',
+      claimsWarnOne: 'Watch out — the {claims} claim is misleading based on the actual nutrition data.',
+      claimsWarnMany: 'Watch out — the {claims} claims are misleading based on the actual nutrition data.',
+      'cat.calories': 'calorie content', 'cat.sugars': 'sugar levels', 'cat.fats': 'fat profile',
+      'cat.sodium': 'sodium/salt content', 'cat.protein': 'protein content', 'cat.fiber': 'fiber content',
+      'cat.processing': 'processing level', 'cat.additives': 'additive profile',
+      'level.excellent': 'excellent', 'level.good': 'good', 'level.moderate': 'moderate',
+      'level.poor': 'poor', 'level.concerning': 'concerning',
+      phraseVeryHigh: 'very high {name}', phraseVeryLow: 'very low {name}',
+      phraseSolid: 'solid {name}', phraseReasonable: 'reasonable {name}', phraseLevel: '{level} {name}',
+      weakSugar: "sugar is high at {g}g per serving ({pct}% of WHO's daily limit)",
+      weakSodium: 'sodium is {mg}mg ({pct}% of the daily limit)',
+      weakSatFat: 'saturated fat is {g}g per serving — WHO recommends limiting saturated fat intake',
+      weakFat: 'the fat profile is a concern',
+      weakCalories: 'it packs {kcal} kcal per serving ({pct}% of daily energy)',
+      weakFiber: 'fiber content is low — WHO recommends at least 25g/day',
+      weakProtein: 'protein content is minimal',
+      weakProcessingNova: "it's classified as NOVA {nova} (ultra-processed)",
+      weakProcessing: "it's classified as highly processed",
+      weakAdditives: 'it contains multiple flagged additives',
+      'advice.sugars': 'Look for unsweetened or reduced-sugar alternatives.',
+      'advice.fats': 'Consider options with less saturated fat, like baked variants.',
+      'advice.sodium': 'Try lower-sodium versions or season with herbs instead.',
+      'advice.calories': 'A smaller portion or lighter alternative might be better.',
+      'advice.processing': 'Whole-food alternatives with fewer ingredients would be healthier.',
+      'advice.additives': 'Products with shorter, recognizable ingredient lists are preferable.',
+      'advice.fiber': 'Adding whole grains, fruits, or vegetables can help meet fiber goals.',
+      'advice.protein': 'Pair this with a protein-rich food for a more balanced meal.',
+      and: 'and',
     },
     profile: {
       title: 'My family profile',
@@ -240,6 +282,8 @@ const STRINGS = {
       reportCorrect: 'यह डेटा रिपोर्ट करें या सुधारें',
       high: 'उच्च भरोसा', medium: 'मध्यम भरोसा', low: 'कम भरोसा',
       fssaiHint: 'लाइसेंस/पंजीकरण स्थिति — स्वास्थ्य स्वीकृति नहीं।',
+      correctedBanner: 'इस उत्पाद के डेटा में NutriScan समीक्षा द्वारा सत्यापित सुधार शामिल है।',
+      correctedOn: 'समीक्षा',
     },
     profile: {
       title: 'मेरा परिवार प्रोफ़ाइल',
@@ -296,6 +340,122 @@ const STRINGS = {
       prompt: 'तुलना के लिए एक उत्पाद चुनें', comparingAgainst: 'इससे तुलना:',
       scanBarcode: 'बारकोड स्कैन करें', searchByName: 'नाम से खोजें', cancel: 'रद्द करें',
     },
+    explain: {
+      openStrong: '{name} को 10 में से {score} अंक — एक मज़बूत नतीजा। WHO मानकों के अनुसार यह वाक़ई एक सेहतमंद विकल्प है।',
+      openDecent: '{name} को 10 में से {score} अंक — ठीक-ठाक उत्पाद, कुछ सुधार की गुंजाइश है।',
+      openAverage: '{name} को 10 में से {score} अंक — औसत उत्पाद, कुछ पोषण संबंधी चिंताएँ हैं।',
+      openPoor: '{name} को 10 में से {score} अंक — WHO दिशानिर्देशों के अनुसार इस उत्पाद में गंभीर स्वास्थ्य चिंताएँ हैं।',
+      strongestArea: 'इसका सबसे मज़बूत पक्ष है {desc}।',
+      strengthsInclude: 'इसकी खूबियों में {list} और {last} शामिल हैं।',
+      mainConcern: 'मुख्य चिंता यह है कि {desc}।',
+      keyConcerns: 'मुख्य चिंताएँ: {list}; और {last}।',
+      claimsWarnOne: 'सावधान — {claims} का दावा वास्तविक पोषण डेटा के आधार पर भ्रामक है।',
+      claimsWarnMany: 'सावधान — {claims} के दावे वास्तविक पोषण डेटा के आधार पर भ्रामक हैं।',
+      'cat.calories': 'कैलोरी मात्रा', 'cat.sugars': 'चीनी स्तर', 'cat.fats': 'फैट प्रोफ़ाइल',
+      'cat.sodium': 'सोडियम/नमक मात्रा', 'cat.protein': 'प्रोटीन मात्रा', 'cat.fiber': 'फाइबर मात्रा',
+      'cat.processing': 'प्रोसेसिंग स्तर', 'cat.additives': 'एडिटिव प्रोफ़ाइल',
+      'level.excellent': 'बेहतरीन', 'level.good': 'अच्छा', 'level.moderate': 'मध्यम',
+      'level.poor': 'कमज़ोर', 'level.concerning': 'चिंताजनक',
+      phraseVeryHigh: 'बहुत अधिक {name}', phraseVeryLow: 'बहुत कम {name}',
+      phraseSolid: 'अच्छा-खासा {name}', phraseReasonable: 'ठीक-ठाक {name}', phraseLevel: '{level} {name}',
+      weakSugar: 'चीनी अधिक है — {g}g प्रति सर्विंग (WHO की दैनिक सीमा का {pct}%)',
+      weakSodium: 'सोडियम {mg}mg है (दैनिक सीमा का {pct}%)',
+      weakSatFat: 'सैचुरेटेड फैट {g}g प्रति सर्विंग है — WHO इसे सीमित रखने की सलाह देता है',
+      weakFat: 'फैट प्रोफ़ाइल चिंता का विषय है',
+      weakCalories: 'इसमें {kcal} kcal प्रति सर्विंग है (दैनिक ऊर्जा का {pct}%)',
+      weakFiber: 'फाइबर कम है — WHO कम से कम 25g/दिन की सलाह देता है',
+      weakProtein: 'प्रोटीन बहुत कम है',
+      weakProcessingNova: 'यह NOVA {nova} (अल्ट्रा-प्रोसेस्ड) श्रेणी में है',
+      weakProcessing: 'यह अत्यधिक प्रोसेस्ड श्रेणी में है',
+      weakAdditives: 'इसमें कई चिह्नित एडिटिव हैं',
+      'advice.sugars': 'बिना चीनी या कम चीनी वाले विकल्प देखें।',
+      'advice.fats': 'कम सैचुरेटेड फैट वाले विकल्प चुनें, जैसे बेक्ड वेरिएंट।',
+      'advice.sodium': 'कम सोडियम वाले विकल्प आज़माएँ या हर्ब्स/मसालों से स्वाद बढ़ाएँ।',
+      'advice.calories': 'छोटा पोर्शन या हल्का विकल्प बेहतर रहेगा।',
+      'advice.processing': 'कम सामग्री वाले होल-फूड विकल्प ज़्यादा सेहतमंद होंगे।',
+      'advice.additives': 'छोटी, पहचानी जा सकने वाली सामग्री सूची वाले उत्पाद बेहतर हैं।',
+      'advice.fiber': 'साबुत अनाज, फल या सब्ज़ियाँ जोड़ने से फाइबर लक्ष्य पूरा हो सकता है।',
+      'advice.protein': 'संतुलित भोजन के लिए इसे किसी प्रोटीन-युक्त चीज़ के साथ लें।',
+      and: 'और',
+    },
+    // Generated-prose dictionary: exact English sentence (numbers → {0},{1}…) → translation.
+    prose: {
+      'High in sugar — not ideal for daily tiffin.': 'चीनी अधिक है — रोज़ के टिफ़िन के लिए ठीक नहीं।',
+      'High sodium for a child portion.': 'बच्चे के पोर्शन के हिसाब से सोडियम अधिक है।',
+      'Provides useful protein.': 'अच्छी मात्रा में प्रोटीन देता है।',
+      'Low fibre — pair with fruit or nuts.': 'फाइबर कम है — फल या मेवों के साथ दें।',
+      'Okay occasionally in a balanced tiffin.': 'संतुलित टिफ़िन में कभी-कभार ठीक है।',
+      'A few times a week': 'हफ़्ते में कुछ बार',
+      'Occasional treat, not daily': 'कभी-कभार का ट्रीट, रोज़ नहीं',
+      'Pair with fruit or a protein source': 'फल या किसी प्रोटीन स्रोत के साथ लें',
+      'For child nutrition concerns, consult a qualified professional.': 'बच्चों के पोषण संबंधी चिंता के लिए योग्य विशेषज्ञ से सलाह लें।',
+      'Contains non-vegetarian ingredients.': 'इसमें मांसाहारी सामग्री है।',
+      'Contains gelatin/rennet (animal-derived).': 'इसमें जिलेटिन/रेनेट (पशु-स्रोत) है।',
+      'Ingredient list not available to verify Jain suitability.': 'जैन उपयुक्तता जाँचने के लिए सामग्री सूची उपलब्ध नहीं है।',
+      'Source of some additives is not verified — check flavours/emulsifiers/enzymes.': 'कुछ एडिटिव का स्रोत सत्यापित नहीं है — फ्लेवर/इमल्सीफायर/एंज़ाइम जाँचें।',
+      'No animal-derived or root ingredients detected.': 'कोई पशु-स्रोत या कंदमूल सामग्री नहीं मिली।',
+      'No obvious conflicts, but vegetarian/Jain source is not fully verified.': 'कोई स्पष्ट विरोध नहीं, पर शाकाहारी/जैन स्रोत पूरी तरह सत्यापित नहीं है।',
+      'Jain rules vary by family. Ambiguous additive/flavour sources are shown as Depends/Unknown.': 'जैन नियम परिवार के अनुसार अलग होते हैं। अस्पष्ट एडिटिव/फ्लेवर स्रोत "निर्भर"/"अज्ञात" दिखाए जाते हैं।',
+      'Decent protein for the portion.': 'पोर्शन के हिसाब से ठीक-ठाक प्रोटीन।',
+      'Fits an adult diet in normal portions.': 'सामान्य पोर्शन में वयस्क आहार के अनुकूल।',
+      'Fine in regular portions': 'सामान्य पोर्शन में ठीक',
+      'Watch portion size': 'पोर्शन साइज़ का ध्यान रखें',
+      'Pregnancy/lactation needs differ — a separate profile is planned.': 'गर्भावस्था/स्तनपान की ज़रूरतें अलग होती हैं — अलग प्रोफ़ाइल की योजना है।',
+      'Sodium is high — a concern for blood pressure in older adults.': 'सोडियम अधिक है — बुज़ुर्गों में ब्लड प्रेशर के लिए चिंता की बात।',
+      'High saturated fat.': 'सैचुरेटेड फैट अधिक है।',
+      'Protein supports muscle maintenance.': 'प्रोटीन मांसपेशियों को बनाए रखने में मदद करता है।',
+      'Low fibre — may not aid digestion.': 'फाइबर कम है — पाचन में मदद नहीं करेगा।',
+      'Reasonable for older adults in moderate portions.': 'सीमित पोर्शन में बुज़ुर्गों के लिए ठीक है।',
+      'Limit frequency': 'कम बार लें',
+      'Moderate portions': 'सीमित पोर्शन',
+      'For heart, kidney or BP conditions, consult a healthcare professional.': 'हृदय, किडनी या BP की स्थिति में डॉक्टर से सलाह लें।',
+      'Sodium value not available.': 'सोडियम की मात्रा उपलब्ध नहीं है।',
+      'Balance with fresh, low-salt foods the rest of the day': 'दिन भर ताज़े, कम नमक वाले खाने से संतुलन बनाएँ',
+      'For diagnosed hypertension, follow your doctor’s sodium advice.': 'डायग्नोस्ड हाई BP में डॉक्टर की सोडियम सलाह मानें।',
+      'Low fibre — refined carbs raise blood sugar faster.': 'फाइबर कम है — रिफाइंड कार्ब्स ब्लड शुगर तेज़ी से बढ़ाते हैं।',
+      'Made with refined flour (maida).': 'रिफाइंड आटे (मैदा) से बना है।',
+      'Sugar value not available.': 'चीनी की मात्रा उपलब्ध नहीं है।',
+      'Sugar is not the only factor — refined carbs, fibre and portion all matter.': 'सिर्फ़ चीनी ही नहीं — रिफाइंड कार्ब्स, फाइबर और पोर्शन सब मायने रखते हैं।',
+      'Pair with protein/fibre to slow the sugar spike': 'शुगर स्पाइक धीमा करने के लिए प्रोटीन/फाइबर के साथ लें',
+      'Not medical advice — follow your diabetes care plan.': 'यह चिकित्सा सलाह नहीं है — अपना डायबिटीज़ केयर प्लान मानें।',
+      'Protein helps satiety.': 'प्रोटीन पेट भरा रखने में मदद करता है।',
+      'Low fibre — less filling, easy to overeat.': 'फाइबर कम — पेट कम भरता है, ज़्यादा खाना आसान।',
+      'High sugar adds empty calories.': 'अधिक चीनी खाली कैलोरी जोड़ती है।',
+      'Fits a weight-loss plan in controlled portions.': 'नियंत्रित पोर्शन में वेट-लॉस प्लान के अनुकूल।',
+      'Mind the portion and overall daily calories': 'पोर्शन और कुल दैनिक कैलोरी का ध्यान रखें',
+      '3–4 biscuits': '3–4 बिस्कुट',
+      'a small bowl (about 30 g)': 'एक छोटी कटोरी (लगभग 30 g)',
+      'half a pack': 'आधा पैक',
+      '2–3 small squares': '2–3 छोटे टुकड़े',
+      'one small glass (200 ml)': 'एक छोटा गिलास (200 ml)',
+      'one bowl (about 30 g)': 'एक कटोरी (लगभग 30 g)',
+      'a small serving': 'एक छोटी सर्विंग',
+      'Ingredient list not available to verify against this fast.': 'इस व्रत के लिए जाँचने हेतु सामग्री सूची उपलब्ध नहीं है।',
+      'No conflicting ingredients detected for this fasting profile.': 'इस व्रत प्रोफ़ाइल के लिए कोई विरोधी सामग्री नहीं मिली।',
+      'Very high sodium: {0} mg ({1}% of daily reference).': 'सोडियम बहुत अधिक: {0} mg (दैनिक संदर्भ का {1}%)।',
+      'High sodium: {0} mg ({1}% of daily reference).': 'सोडियम अधिक: {0} mg (दैनिक संदर्भ का {1}%)।',
+      'Sodium is {0} mg ({1}% of daily reference).': 'सोडियम {0} mg है (दैनिक संदर्भ का {1}%)।',
+      'Sugar: {0} g per serving.': 'चीनी: {0} g प्रति सर्विंग।',
+      '{0} kcal per serving.': '{0} kcal प्रति सर्विंग।',
+      'Contains root vegetables ({0}) avoided in Jain diets.': 'इसमें कंदमूल ({0}) हैं, जो जैन आहार में वर्जित हैं।',
+      '"{0}" has an unverified source.': '"{0}" का स्रोत सत्यापित नहीं है।',
+      "{0} is {1}% of an adult man's daily reference.": '{0} एक वयस्क पुरुष के दैनिक संदर्भ का {1}% है।',
+      "{0} is {1}% of an adult woman's daily reference.": '{0} एक वयस्क महिला के दैनिक संदर्भ का {1}% है।',
+      'Very high {0} caps the overall score.': 'बहुत अधिक {0} के कारण कुल स्कोर सीमित किया गया।',
+      'High {0} limits the overall score.': 'अधिक {0} कुल स्कोर को सीमित करता है।',
+      'Contains {0}, which most {1} profiles do not allow.': 'इसमें {0} है, जिसकी अनुमति अधिकांश {1} प्रोफ़ाइल नहीं देतीं।',
+      'Contains {0} — accepted by some families and not others.': 'इसमें {0} है — कुछ परिवार मानते हैं, कुछ नहीं।',
+    },
+    // Word-level replacements applied inside captured template variables
+    // (nutrient labels, cap labels, fasting profile names, joiners).
+    proseWords: {
+      'Saturated fat': 'सैचुरेटेड फैट', 'Trans fat': 'ट्रांस फैट', 'Added sugar': 'एडेड शुगर',
+      'Total sugar': 'कुल चीनी', 'Calories': 'कैलोरी', 'Sodium': 'सोडियम', 'Protein': 'प्रोटीन', 'Fibre': 'फाइबर',
+      'saturated fat': 'सैचुरेटेड फैट', 'sodium': 'सोडियम', 'sugar': 'चीनी',
+      'Generic Hindu Upvas': 'सामान्य हिन्दू उपवास', 'Navratri fasting': 'नवरात्रि व्रत',
+      'Ekadashi fasting': 'एकादशी व्रत', 'Shravan fasting': 'श्रावण व्रत', 'Jain / Satvik preference': 'जैन/सात्विक',
+      ' and ': ' और ',
+    },
   },
 
   // Hinglish — romanised Hindi/English (full).
@@ -319,6 +479,114 @@ const STRINGS = {
     notFound: { searchByName: 'Naam se Search Karein', tryAnother: 'Doosra Product Try Karein', tryAgain: 'Phir se Try Karein' },
     comparePick: { prompt: 'Compare karne ke liye ek product chunein', comparingAgainst: 'Isse compare:', scanBarcode: 'Barcode Scan Karein', searchByName: 'Naam se Search Karein', cancel: 'Cancel' },
     loading: { analyzing: 'Analyze ho raha hai...' },
+    explain: {
+      openStrong: '{name} ka score {score}/10 — strong result. WHO standards ke hisaab se yeh genuinely healthy choice hai.',
+      openDecent: '{name} ka score {score}/10 — decent product, thodi improvement ki gunjaish hai.',
+      openAverage: '{name} ka score {score}/10 — average product, kuch nutritional concerns hain.',
+      openPoor: '{name} ka score {score}/10 — WHO guidelines ke hisaab se is product mein serious health concerns hain.',
+      strongestArea: 'Iska sabse strong area hai {desc}.',
+      strengthsInclude: 'Iski strengths mein {list} aur {last} shamil hain.',
+      mainConcern: 'Main concern yeh hai ki {desc}.',
+      keyConcerns: 'Key concerns: {list}; aur {last}.',
+      claimsWarnOne: 'Dhyaan dein — {claims} ka claim actual nutrition data ke hisaab se misleading hai.',
+      claimsWarnMany: 'Dhyaan dein — {claims} ke claims actual nutrition data ke hisaab se misleading hain.',
+      'cat.calories': 'calorie content', 'cat.sugars': 'sugar level', 'cat.fats': 'fat profile',
+      'cat.sodium': 'sodium/namak content', 'cat.protein': 'protein content', 'cat.fiber': 'fibre content',
+      'cat.processing': 'processing level', 'cat.additives': 'additive profile',
+      'level.excellent': 'excellent', 'level.good': 'achha', 'level.moderate': 'moderate',
+      'level.poor': 'kamzor', 'level.concerning': 'chinta-janak',
+      phraseVeryHigh: 'bahut zyada {name}', phraseVeryLow: 'bahut kam {name}',
+      phraseSolid: 'solid {name}', phraseReasonable: 'theek-thaak {name}', phraseLevel: '{level} {name}',
+      weakSugar: 'sugar zyada hai — {g}g per serving (WHO ki daily limit ka {pct}%)',
+      weakSodium: 'sodium {mg}mg hai (daily limit ka {pct}%)',
+      weakSatFat: 'saturated fat {g}g per serving hai — WHO ise limit karne ki salah deta hai',
+      weakFat: 'fat profile ek concern hai',
+      weakCalories: 'ismein {kcal} kcal per serving hai (daily energy ka {pct}%)',
+      weakFiber: 'fibre kam hai — WHO kam se kam 25g/din recommend karta hai',
+      weakProtein: 'protein bahut kam hai',
+      weakProcessingNova: 'yeh NOVA {nova} (ultra-processed) category mein hai',
+      weakProcessing: 'yeh highly processed category mein hai',
+      weakAdditives: 'ismein kai flagged additives hain',
+      'advice.sugars': 'Unsweetened ya kam sugar wale options dekhein.',
+      'advice.fats': 'Kam saturated fat wale options chunein, jaise baked variants.',
+      'advice.sodium': 'Kam sodium wale versions try karein ya herbs/masalon se taste badhayein.',
+      'advice.calories': 'Chhota portion ya lighter option behtar rahega.',
+      'advice.processing': 'Kam ingredients wale whole-food options zyada healthy honge.',
+      'advice.additives': 'Chhoti, pehchani ja sakne wali ingredient list wale products behtar hain.',
+      'advice.fiber': 'Whole grains, phal ya sabziyan jodne se fibre goal poora ho sakta hai.',
+      'advice.protein': 'Balanced meal ke liye ise kisi protein-rich cheez ke saath lein.',
+      and: 'aur',
+    },
+    prose: {
+      'High in sugar — not ideal for daily tiffin.': 'Sugar zyada hai — daily tiffin ke liye ideal nahi.',
+      'High sodium for a child portion.': 'Bachche ke portion ke hisaab se sodium zyada hai.',
+      'Provides useful protein.': 'Achhi maatra mein protein deta hai.',
+      'Low fibre — pair with fruit or nuts.': 'Fibre kam hai — phal ya nuts ke saath dein.',
+      'Okay occasionally in a balanced tiffin.': 'Balanced tiffin mein kabhi-kabhi theek hai.',
+      'A few times a week': 'Hafte mein kuch baar',
+      'Occasional treat, not daily': 'Kabhi-kabhaar ka treat, daily nahi',
+      'Pair with fruit or a protein source': 'Phal ya kisi protein source ke saath lein',
+      'For child nutrition concerns, consult a qualified professional.': 'Bachchon ke nutrition concerns ke liye qualified professional se salah lein.',
+      'Contains non-vegetarian ingredients.': 'Ismein non-vegetarian ingredients hain.',
+      'Contains gelatin/rennet (animal-derived).': 'Ismein gelatin/rennet (animal-derived) hai.',
+      'Ingredient list not available to verify Jain suitability.': 'Jain suitability verify karne ke liye ingredient list available nahi hai.',
+      'Source of some additives is not verified — check flavours/emulsifiers/enzymes.': 'Kuch additives ka source verified nahi hai — flavours/emulsifiers/enzymes check karein.',
+      'No animal-derived or root ingredients detected.': 'Koi animal-derived ya root ingredients nahi mile.',
+      'No obvious conflicts, but vegetarian/Jain source is not fully verified.': 'Koi clear conflict nahi, par vegetarian/Jain source poori tarah verified nahi hai.',
+      'Jain rules vary by family. Ambiguous additive/flavour sources are shown as Depends/Unknown.': 'Jain rules family ke hisaab se alag hote hain. Ambiguous additive/flavour sources Depends/Unknown dikhaye jaate hain.',
+      'Decent protein for the portion.': 'Portion ke hisaab se decent protein.',
+      'Fits an adult diet in normal portions.': 'Normal portions mein adult diet ke liye theek.',
+      'Fine in regular portions': 'Regular portions mein theek',
+      'Watch portion size': 'Portion size ka dhyaan rakhein',
+      'Pregnancy/lactation needs differ — a separate profile is planned.': 'Pregnancy/lactation ki zarooratein alag hoti hain — alag profile planned hai.',
+      'Sodium is high — a concern for blood pressure in older adults.': 'Sodium zyada hai — buzurgon mein BP ke liye concern.',
+      'High saturated fat.': 'Saturated fat zyada hai.',
+      'Protein supports muscle maintenance.': 'Protein muscles maintain karne mein madad karta hai.',
+      'Low fibre — may not aid digestion.': 'Fibre kam hai — digestion mein madad nahi karega.',
+      'Reasonable for older adults in moderate portions.': 'Moderate portions mein buzurgon ke liye theek hai.',
+      'Limit frequency': 'Kam baar lein',
+      'Moderate portions': 'Moderate portions',
+      'For heart, kidney or BP conditions, consult a healthcare professional.': 'Heart, kidney ya BP conditions mein doctor se salah lein.',
+      'Sodium value not available.': 'Sodium value available nahi hai.',
+      'Balance with fresh, low-salt foods the rest of the day': 'Din bhar fresh, kam namak wale khaane se balance karein',
+      'For diagnosed hypertension, follow your doctor’s sodium advice.': 'Diagnosed hypertension mein apne doctor ki sodium advice follow karein.',
+      'Low fibre — refined carbs raise blood sugar faster.': 'Fibre kam hai — refined carbs blood sugar tezi se badhate hain.',
+      'Made with refined flour (maida).': 'Refined flour (maida) se bana hai.',
+      'Sugar value not available.': 'Sugar value available nahi hai.',
+      'Sugar is not the only factor — refined carbs, fibre and portion all matter.': 'Sirf sugar hi nahi — refined carbs, fibre aur portion sab matter karte hain.',
+      'Pair with protein/fibre to slow the sugar spike': 'Sugar spike slow karne ke liye protein/fibre ke saath lein',
+      'Not medical advice — follow your diabetes care plan.': 'Yeh medical advice nahi hai — apna diabetes care plan follow karein.',
+      'Protein helps satiety.': 'Protein pet bhara rakhne mein madad karta hai.',
+      'Low fibre — less filling, easy to overeat.': 'Fibre kam — pet kam bharta hai, overeat karna aasaan.',
+      'High sugar adds empty calories.': 'Zyada sugar empty calories jodti hai.',
+      'Fits a weight-loss plan in controlled portions.': 'Controlled portions mein weight-loss plan ke liye theek.',
+      'Mind the portion and overall daily calories': 'Portion aur total daily calories ka dhyaan rakhein',
+      '3–4 biscuits': '3–4 biscuit',
+      'a small bowl (about 30 g)': 'ek chhoti katori (lagbhag 30 g)',
+      'half a pack': 'aadha pack',
+      '2–3 small squares': '2–3 chhote tukde',
+      'one small glass (200 ml)': 'ek chhota glass (200 ml)',
+      'one bowl (about 30 g)': 'ek katori (lagbhag 30 g)',
+      'a small serving': 'ek chhoti serving',
+      'Ingredient list not available to verify against this fast.': 'Is vrat ke liye check karne hetu ingredient list available nahi hai.',
+      'No conflicting ingredients detected for this fasting profile.': 'Is vrat profile ke liye koi conflicting ingredient nahi mila.',
+      'Very high sodium: {0} mg ({1}% of daily reference).': 'Sodium bahut zyada: {0} mg (daily reference ka {1}%).',
+      'High sodium: {0} mg ({1}% of daily reference).': 'Sodium zyada: {0} mg (daily reference ka {1}%).',
+      'Sodium is {0} mg ({1}% of daily reference).': 'Sodium {0} mg hai (daily reference ka {1}%).',
+      'Sugar: {0} g per serving.': 'Sugar: {0} g per serving.',
+      '{0} kcal per serving.': '{0} kcal per serving.',
+      'Contains root vegetables ({0}) avoided in Jain diets.': 'Ismein root vegetables ({0}) hain, jo Jain diet mein avoid kiye jaate hain.',
+      '"{0}" has an unverified source.': '"{0}" ka source verified nahi hai.',
+      "{0} is {1}% of an adult man's daily reference.": '{0} ek adult purush ke daily reference ka {1}% hai.',
+      "{0} is {1}% of an adult woman's daily reference.": '{0} ek adult mahila ke daily reference ka {1}% hai.',
+      'Very high {0} caps the overall score.': 'Bahut zyada {0} ki wajah se overall score cap kiya gaya.',
+      'High {0} limits the overall score.': 'Zyada {0} overall score ko limit karta hai.',
+      'Contains {0}, which most {1} profiles do not allow.': 'Ismein {0} hai, jise zyaadatar {1} profiles allow nahi karte.',
+      'Contains {0} — accepted by some families and not others.': 'Ismein {0} hai — kuch families maanti hain, kuch nahi.',
+    },
+    proseWords: {
+      ' and ': ' aur ',
+    },
   },
 
   // Marathi (core; falls back to English for uncovered keys).
@@ -479,12 +747,84 @@ export function translate(lang, path, vars) {
   return typeof val === 'string' ? interpolate(val, vars) : val
 }
 
+// ---------------------------------------------------------------------------
+// Generated-prose translation (spec §5.4). Engines emit English sentences from
+// finite template sets; we translate at render by normalising each sentence
+// back to its template key:
+//   1. exact match against the language's `prose` dict
+//   2. numbers → {0},{1}… placeholders, then match
+//   3. word-carrying patterns (nutrient labels, ingredient lists) via regexes
+// Unmatched sentences fall back to English (the pending note covers them).
+// ---------------------------------------------------------------------------
+
+// Patterns for sentences that interpolate words, not just numbers. Each key
+// must exist verbatim in every covered language's `prose` dict; captured
+// groups become {0},{1}… and pass through the language's proseWords map.
+const PROSE_PATTERNS = [
+  { re: /^Contains root vegetables \((.+)\) avoided in Jain diets\.$/, key: 'Contains root vegetables ({0}) avoided in Jain diets.' },
+  { re: /^"([^"]+)" has an unverified source\.$/, key: '"{0}" has an unverified source.' },
+  { re: /^(.+) is (\d+)% of an adult man's daily reference\.$/, key: "{0} is {1}% of an adult man's daily reference." },
+  { re: /^(.+) is (\d+)% of an adult woman's daily reference\.$/, key: "{0} is {1}% of an adult woman's daily reference." },
+  { re: /^Very high (.+) caps the overall score\.$/, key: 'Very high {0} caps the overall score.' },
+  { re: /^High (.+) limits the overall score\.$/, key: 'High {0} limits the overall score.' },
+  { re: /^Contains (.+), which most (.+) profiles do not allow\.$/, key: 'Contains {0}, which most {1} profiles do not allow.' },
+  { re: /^Contains (.+) — accepted by some families and not others\.$/, key: 'Contains {0} — accepted by some families and not others.' },
+]
+
+function applyProseWords(text, words) {
+  if (!words) return text
+  let out = String(text)
+  // Longest keys first so "Saturated fat" wins over "fat"/"sugar" substrings.
+  for (const key of Object.keys(words).sort((a, b) => b.length - a.length)) {
+    out = out.split(key).join(words[key])
+  }
+  return out
+}
+
+export function translateProse(lang, text) {
+  if (!text || lang === 'en') return text
+  const dict = STRINGS[lang]?.prose
+  if (!dict) return text
+  if (Object.hasOwn(dict, text)) return dict[text]
+
+  const fill = (key, vars) => {
+    if (!Object.hasOwn(dict, key)) return null
+    const words = STRINGS[lang]?.proseWords
+    return dict[key].replace(/\{(\d+)\}/g, (_, i) =>
+      vars[Number(i)] !== undefined ? applyProseWords(vars[Number(i)], words) : '')
+  }
+
+  // Numbers → indexed placeholders ("Sugar: 12.5 g per serving." → "Sugar: {0} g per serving.")
+  {
+    const vars = []
+    const key = text.replace(/\d+(?:[.,]\d+)?/g, (m) => { vars.push(m); return `{${vars.length - 1}}` })
+    const out = fill(key, vars)
+    if (out) return out
+  }
+
+  // Word-carrying templates (nutrient labels, ingredient lists, profile names).
+  for (const { re, key } of PROSE_PATTERNS) {
+    const m = text.match(re)
+    if (!m) continue
+    const out = fill(key, m.slice(1))
+    if (out) return out
+  }
+
+  return text
+}
+
+// Languages with full generated-prose coverage; others show English prose
+// with the "translation pending" note.
+export const PROSE_LANGS = ['en', 'hi', 'hi-en']
+
 export function useT() {
   const profile = useProfile()
   const lang = profile.language || 'en'
   return {
     lang,
     t: (path, vars) => translate(lang, path, vars),
+    tProse: (text) => translateProse(lang, text),
     isEnglish: lang === 'en',
+    proseReady: PROSE_LANGS.includes(lang),
   }
 }

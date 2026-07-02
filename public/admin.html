@@ -108,10 +108,11 @@
       return
     }
     if (view === 'audit') {
-      $('list').innerHTML = '<div class="card"><table style="width:100%"><tr><th>When</th><th>Action</th><th>Correction</th><th>Barcode</th><th>Note</th></tr>' +
+      $('list').innerHTML = '<div class="card"><table style="width:100%"><tr><th>When</th><th>Reviewer</th><th>Action</th><th>Correction</th><th>Barcode</th><th>Override</th><th>Note</th></tr>' +
         items.map(function (a) {
-          return '<tr><td>' + esc((a.ts || '').replace('T', ' ').slice(0, 16)) + '</td><td>' + esc(a.action) +
-            '</td><td>' + esc(a.correctionId) + '</td><td>' + esc(a.barcode) + '</td><td>' + esc(a.note) + '</td></tr>'
+          return '<tr><td>' + esc((a.ts || '').replace('T', ' ').slice(0, 16)) + '</td><td>' + esc(a.reviewer || '') + '</td><td>' + esc(a.action) +
+            '</td><td>' + esc(a.correctionId) + '</td><td>' + esc(a.barcode) +
+            '</td><td>' + (a.override ? esc(a.override.field + ' = ' + a.override.value) : '—') + '</td><td>' + esc(a.note) + '</td></tr>'
         }).join('') + '</table></div>'
       return
     }
@@ -123,10 +124,34 @@
           '</div>' +
           '<div class="note-box" id="note-' + esc(r.id) + '">' +
             '<textarea rows="2" placeholder="Review note (what did you verify?)"></textarea>' +
+            '<div class="override-box" style="margin-top:8px">' +
+              '<div class="meta" style="margin:0 0 4px">Optional: apply a data override (approve only). Nutrients are per 100 g in OFF units — sodium/salt in grams.</div>' +
+              '<div class="row">' +
+                '<select class="ov-field" style="padding:8px;border:1px solid #d1d5db;border-radius:8px;font-size:13px">' +
+                  '<option value="">No data override</option>' +
+                  '<option value="energy-kcal_100g">Energy (kcal/100g)</option>' +
+                  '<option value="fat_100g">Total fat (g/100g)</option>' +
+                  '<option value="saturated-fat_100g">Saturated fat (g/100g)</option>' +
+                  '<option value="trans-fat_100g">Trans fat (g/100g)</option>' +
+                  '<option value="carbohydrates_100g">Carbohydrates (g/100g)</option>' +
+                  '<option value="sugars_100g">Sugars (g/100g)</option>' +
+                  '<option value="fiber_100g">Fibre (g/100g)</option>' +
+                  '<option value="proteins_100g">Protein (g/100g)</option>' +
+                  '<option value="sodium_100g">Sodium (g/100g)</option>' +
+                  '<option value="salt_100g">Salt (g/100g)</option>' +
+                  '<option value="product_name">Product name</option>' +
+                  '<option value="serving_size">Serving size</option>' +
+                  '<option value="quantity">Pack quantity</option>' +
+                '</select>' +
+                '<input class="ov-value" placeholder="Corrected value" style="flex:1;padding:8px;border:1px solid #d1d5db;border-radius:8px;font-size:13px" />' +
+              '</div>' +
+            '</div>' +
             '<div class="row" style="margin-top:6px"><button class="primary" data-confirm="1" data-id="' + esc(r.id) + '">Confirm</button>' +
             '<button data-cancel="1" data-id="' + esc(r.id) + '">Cancel</button></div>' +
           '</div>'
-        : (r.reviewNote ? '<div class="meta">Note: ' + esc(r.reviewNote) + '</div>' : '')
+        : ((r.reviewNote ? '<div class="meta">Note: ' + esc(r.reviewNote) + '</div>' : '') +
+           (r.reviewedBy ? '<div class="meta">Reviewer: ' + esc(r.reviewedBy) + '</div>' : '') +
+           (r.override ? '<div class="meta">Override applied: ' + esc(r.override.field) + ' = ' + esc(r.override.value) + '</div>' : ''))
       return '<div class="card">' +
         '<div class="row"><span class="badge ' + esc(r.status) + '">' + esc(r.status) + '</span>' +
         '<strong style="font-size:14px">' + esc(r.type) + '</strong>' +
@@ -148,15 +173,24 @@
     if (b.hasAttribute('data-act')) {
       pendingAction = b.getAttribute('data-act')
       document.querySelectorAll('.note-box.open').forEach(function (n) { n.classList.remove('open') })
-      $('note-' + id).classList.add('open')
+      var box = $('note-' + id)
+      box.classList.add('open')
+      // Overrides only make sense on approve.
+      box.querySelector('.override-box').style.display = pendingAction === 'approve' ? '' : 'none'
     } else if (b.hasAttribute('data-cancel')) {
       $('note-' + id).classList.remove('open')
     } else if (b.hasAttribute('data-confirm')) {
       b.disabled = true
-      var note = $('note-' + id).querySelector('textarea').value
+      var noteBox = $('note-' + id)
+      var payload = { id: id, action: pendingAction, note: noteBox.querySelector('textarea').value }
+      if (pendingAction === 'approve') {
+        var field = noteBox.querySelector('.ov-field').value
+        var value = noteBox.querySelector('.ov-value').value.trim()
+        if (field && value) payload.override = { field: field, value: value }
+      }
       var res = await fetch(API, {
         method: 'POST', headers: headers(),
-        body: JSON.stringify({ id: id, action: pendingAction, note: note }),
+        body: JSON.stringify(payload),
       }).catch(function () { return null })
       if (!res || !res.ok) {
         b.disabled = false

@@ -3,8 +3,8 @@ import { generateExplanation } from '../utils/scoreExplainer'
 import { useT } from '../i18n'
 
 export default function ScoreExplainer({ result }) {
-  const { t, isEnglish } = useT()
-  const explanation = useMemo(() => generateExplanation(result), [result])
+  const { t, lang, proseReady } = useT()
+  const explanation = useMemo(() => generateExplanation(result, lang), [result, lang])
 
   if (!explanation) return null
 
@@ -29,7 +29,7 @@ export default function ScoreExplainer({ result }) {
       <p className={`text-sm leading-relaxed ${textColor}`}>
         {explanation}
       </p>
-      {!isEnglish && <p className="text-[10px] text-gray-400 mt-2 italic">{t('common.translationPending')}</p>}
+      {!proseReady && <p className="text-[10px] text-gray-400 mt-2 italic">{t('common.translationPending')}</p>}
     </div>
   )
 }

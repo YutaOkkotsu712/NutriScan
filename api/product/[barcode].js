@@ -9,7 +9,11 @@
 // Products almost never change, so we cache aggressively (1 day fresh,
 // 1 week stale-while-revalidate).
 
+import { fetchOverrides, applyOverrides } from '../_lib/overrides.js'
+
 export const config = { runtime: 'edge' }
+
+const env = (typeof process !== 'undefined' && process.env) || {}
 
 const OFF_BASE = 'https://world.openfoodfacts.org/api/v2/product'
 
@@ -38,8 +42,23 @@ export default async function handler(request) {
 
     const data = await upstream.json()
 
-    // Cache for 1 day at the edge, serve stale for up to a week while revalidating
-    return json(data, 200, 'public, s-maxage=86400, stale-while-revalidate=604800')
+    // Merge reviewed corrections (spec §11) so users always see the reviewed
+    // value. Corrected products get a short edge cache so a fresh approval
+    // becomes visible quickly; untouched products keep the aggressive cache.
+    // (A response cached before its first override can stay stale for up to
+    // its original TTL — acceptable for day-scale correction latency.)
+    let corrected = false
+    if (data.status === 1 && data.product) {
+      const overrides = await fetchOverrides(barcode, env)
+      if (overrides) {
+        applyOverrides(data.product, overrides)
+        corrected = Boolean(data.product.nutriscan_corrected)
+      }
+    }
+
+    return json(data, 200, corrected
+      ? 'public, s-maxage=300, stale-while-revalidate=3600'
+      : 'public, s-maxage=86400, stale-while-revalidate=604800')
   } catch {
     return json({ status: 0, error: 'Lookup failed' }, 502, 'no-store')
   }

@@ -3,6 +3,7 @@ import handler from './corrections.js'
 
 // --- In-memory fake of the Upstash/Vercel KV REST API -----------------------
 const lists = new Map()
+const strings = new Map()
 const list = (key) => {
   if (!lists.has(key)) lists.set(key, [])
   return lists.get(key)
@@ -11,6 +12,8 @@ const list = (key) => {
 function fakeKvFetch(url, opts) {
   const [cmd, key, ...args] = JSON.parse(opts.body)
   let result = null
+  if (cmd === 'SET') { strings.set(key, String(args[0])); result = 'OK' }
+  if (cmd === 'GET') result = strings.has(key) ? strings.get(key) : null
   if (cmd === 'LPUSH') { list(key).unshift(args[0]); result = list(key).length }
   if (cmd === 'LRANGE') { const [s, e] = args.map(Number); result = list(key).slice(s, e + 1) }
   if (cmd === 'LREM') { const i = list(key).indexOf(args[1]); if (i >= 0) list(key).splice(i, 1); result = i >= 0 ? 1 : 0 }
@@ -36,8 +39,10 @@ function req(method, { token = TOKEN, body, query = '' } = {}) {
 
 beforeEach(() => {
   lists.clear()
+  strings.clear()
   globalThis.fetch = fakeKvFetch
   process.env.ADMIN_TOKEN = TOKEN
+  delete process.env.ADMIN_TOKENS
   process.env.KV_REST_API_URL = 'https://fake-kv.test'
   process.env.KV_REST_API_TOKEN = 'fake-kv-token'
 })
@@ -125,5 +130,71 @@ describe('POST /api/admin/corrections', () => {
 
   it('405 for other methods', async () => {
     expect((await handler(req('DELETE'))).status).toBe(405)
+  })
+})
+
+describe('named reviewer tokens (ADMIN_TOKENS)', () => {
+  it('authenticates a named reviewer and records identity in archive + audit', async () => {
+    process.env.ADMIN_TOKENS = 'asha:asha-secret-token,ravi:ravi-secret-token'
+    list('corrections:queue').unshift(queued('rec-3'))
+    const r = await handler(req('POST', { token: 'ravi-secret-token', body: { id: 'rec-3', action: 'approve' } }))
+    expect(r.status).toBe(200)
+    const j = await r.json()
+    expect(j.record.reviewedBy).toBe('ravi')
+    expect(JSON.parse(list('corrections:audit')[0]).reviewer).toBe('ravi')
+  })
+
+  it('shared ADMIN_TOKEN still works and audits as "admin"', async () => {
+    list('corrections:queue').unshift(queued('rec-4'))
+    const j = await (await handler(req('POST', { body: { id: 'rec-4', action: 'reject' } }))).json()
+    expect(j.record.reviewedBy).toBe('admin')
+  })
+
+  it('works with ADMIN_TOKENS alone (no ADMIN_TOKEN)', async () => {
+    delete process.env.ADMIN_TOKEN
+    process.env.ADMIN_TOKENS = 'asha:asha-secret-token'
+    expect((await handler(req('GET', { token: 'asha-secret-token' }))).status).toBe(200)
+    expect((await handler(req('GET', { token: 'wrong' }))).status).toBe(401)
+  })
+})
+
+describe('data overrides on approve', () => {
+  it('approve with a valid override writes a versioned overrides record', async () => {
+    list('corrections:queue').unshift(queued('rec-5'))
+    const r = await handler(req('POST', {
+      body: { id: 'rec-5', action: 'approve', override: { field: 'sodium_100g', value: '1.15' } },
+    }))
+    expect(r.status).toBe(200)
+    const stored = JSON.parse(strings.get('overrides:8901719101090'))
+    expect(stored.version).toBe(1)
+    expect(stored.fields['sodium_100g']).toMatchObject({ value: 1.15, correctionId: 'rec-5', reviewer: 'admin' })
+  })
+
+  it('a second override on the same product bumps the version and keeps both fields', async () => {
+    list('corrections:queue').unshift(queued('rec-6'))
+    await handler(req('POST', { body: { id: 'rec-6', action: 'approve', override: { field: 'sugars_100g', value: 12 } } }))
+    list('corrections:queue').unshift(queued('rec-7'))
+    await handler(req('POST', { body: { id: 'rec-7', action: 'approve', override: { field: 'product_name', value: 'Corrected Name' } } }))
+    const stored = JSON.parse(strings.get('overrides:8901719101090'))
+    expect(stored.version).toBe(2)
+    expect(stored.fields['sugars_100g'].value).toBe(12)
+    expect(stored.fields['product_name'].value).toBe('Corrected Name')
+  })
+
+  it('rejects overrides on non-whitelisted fields or bad values', async () => {
+    list('corrections:queue').unshift(queued('rec-8'))
+    expect((await handler(req('POST', {
+      body: { id: 'rec-8', action: 'approve', override: { field: '__proto__', value: 1 } },
+    }))).status).toBe(400)
+    expect((await handler(req('POST', {
+      body: { id: 'rec-8', action: 'approve', override: { field: 'sodium_100g', value: 'lots' } },
+    }))).status).toBe(400)
+  })
+
+  it('rejects overrides attached to a reject action', async () => {
+    list('corrections:queue').unshift(queued('rec-9'))
+    expect((await handler(req('POST', {
+      body: { id: 'rec-9', action: 'reject', override: { field: 'sodium_100g', value: 1 } },
+    }))).status).toBe(400)
   })
 })

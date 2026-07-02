@@ -19,6 +19,8 @@
 //   corrections:audit   append-only audit trail (who-free: token is shared,
 //                       so entries record action + timestamp + record id)
 
+import { sanitizeOverride, fetchOverrides, overridesKey } from '../_lib/overrides.js'
+
 export const config = { runtime: 'edge' }
 
 const env = (typeof process !== 'undefined' && process.env) || {}
@@ -42,14 +44,33 @@ function json(body, status = 200) {
 }
 
 // Constant-time token comparison — a plain === leaks match length via timing.
-function authorized(request) {
-  const token = env.ADMIN_TOKEN
-  if (!token) return false
-  const provided = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '')
+function tokenMatches(token, provided) {
   if (provided.length !== token.length) return false
   let diff = 0
   for (let i = 0; i < token.length; i++) diff |= token.charCodeAt(i) ^ provided.charCodeAt(i)
   return diff === 0
+}
+
+// Reviewer credentials: ADMIN_TOKENS="asha:tok1,ravi:tok2" gives each reviewer
+// their own token so the audit trail records who acted; ADMIN_TOKEN (single,
+// shared) still works and audits as "admin". Both may be set.
+function reviewersConfigured() {
+  return Boolean(env.ADMIN_TOKEN || env.ADMIN_TOKENS)
+}
+
+// Returns the reviewer name for a valid token, or null when unauthorized.
+function authenticate(request) {
+  const provided = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '')
+  if (!provided) return null
+  for (const pair of (env.ADMIN_TOKENS || '').split(',')) {
+    const sep = pair.indexOf(':')
+    if (sep <= 0) continue
+    const name = pair.slice(0, sep).trim()
+    const token = pair.slice(sep + 1).trim()
+    if (name && token && tokenMatches(token, provided)) return name
+  }
+  if (env.ADMIN_TOKEN && tokenMatches(env.ADMIN_TOKEN, provided)) return 'admin'
+  return null
 }
 
 async function kv(cmd) {
@@ -73,10 +94,11 @@ function parseRecords(rawList) {
 }
 
 export default async function handler(request) {
-  if (!env.ADMIN_TOKEN) {
-    return json({ error: 'Admin API disabled — set the ADMIN_TOKEN env var.' }, 503)
+  if (!reviewersConfigured()) {
+    return json({ error: 'Admin API disabled — set the ADMIN_TOKEN or ADMIN_TOKENS env var.' }, 503)
   }
-  if (!authorized(request)) {
+  const reviewer = authenticate(request)
+  if (!reviewer) {
     return json({ error: 'Unauthorized' }, 401)
   }
   if (!env.KV_REST_API_URL || !env.KV_REST_API_TOKEN) {
@@ -108,6 +130,19 @@ export default async function handler(request) {
         ? body.note.replace(/<[^>]*>/g, '').replace(/[\x00-\x1F\x7F]/g, ' ').trim().slice(0, 500)
         : ''
 
+      // Optional structured data override, only on approve (spec §11: the
+      // fix users see is the reviewed value, never the raw submission).
+      let override = null
+      if (body.override !== undefined && body.override !== null) {
+        if (action !== 'approve') {
+          return json({ error: 'Overrides can only accompany an approval.' }, 400)
+        }
+        override = sanitizeOverride(body.override)
+        if (!override) {
+          return json({ error: 'Invalid override — unknown field or bad value.' }, 400)
+        }
+      }
+
       // Locate the raw entry so LREM can remove that exact string.
       const rawQueue = await kv(['LRANGE', KEYS.queue, 0, 999])
       const rawEntry = (rawQueue || []).find(raw => {
@@ -119,15 +154,37 @@ export default async function handler(request) {
         ...JSON.parse(rawEntry),
         status: action === 'approve' ? 'approved' : 'rejected',
         reviewedAt: new Date().toISOString(),
+        reviewedBy: reviewer,
         reviewNote: note,
+        ...(override ? { override } : {}),
       }
       const audit = {
         ts: record.reviewedAt,
         correctionId: id,
         action,
+        reviewer,
         note,
         barcode: record.barcode || '',
         type: record.type || '',
+        ...(override ? { override } : {}),
+      }
+
+      // An override needs a barcode to attach to. Versioned upsert: read the
+      // current record, add/replace the field entry, bump the version.
+      if (override && !/^\d{6,14}$/.test(record.barcode || '')) {
+        return json({ error: 'Override requires a correction with a valid barcode.' }, 400)
+      }
+      if (override) {
+        const existing = (await fetchOverrides(record.barcode, env)) || { barcode: record.barcode, fields: {}, version: 0 }
+        existing.fields[override.field] = {
+          value: override.value,
+          correctionId: id,
+          reviewer,
+          ts: record.reviewedAt,
+        }
+        existing.version = (existing.version || 0) + 1
+        existing.updatedAt = record.reviewedAt
+        await kv(['SET', overridesKey(record.barcode), JSON.stringify(existing)])
       }
 
       await kv(['LREM', KEYS.queue, 1, rawEntry])

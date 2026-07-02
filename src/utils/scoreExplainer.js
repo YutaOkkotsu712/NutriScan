@@ -1,18 +1,11 @@
 /**
- * Generate a plain-English "Why This Score?" explanation
- * from the category scores and nutrition data.
+ * Generate the "Why This Score?" explanation from the category scores and
+ * nutrition data. Every sentence is assembled from i18n templates
+ * (STRINGS[lang].explain), so the paragraph renders in any covered language
+ * (spec §5.4); uncovered languages fall back to English per template.
  */
 
-const CATEGORY_NAMES = {
-  calories: 'calorie content',
-  sugars: 'sugar levels',
-  fats: 'fat profile',
-  sodium: 'sodium/salt content',
-  protein: 'protein content',
-  fiber: 'fiber content',
-  processing: 'processing level',
-  additives: 'additive profile',
-}
+import { translate, translateProse } from '../i18n'
 
 function describeScore(score) {
   if (score >= 9) return 'excellent'
@@ -22,117 +15,95 @@ function describeScore(score) {
   return 'concerning'
 }
 
-function strengthPhrase(cat, score) {
-  const name = CATEGORY_NAMES[cat]
-  if (score >= 9) return `very ${cat === 'protein' || cat === 'fiber' ? 'high' : 'low'} ${name}`
-  if (score >= 7) return `${cat === 'protein' || cat === 'fiber' ? 'solid' : 'reasonable'} ${name}`
-  return `${describeScore(score)} ${name}`
-}
-
-export function generateExplanation(result) {
+export function generateExplanation(result, lang = 'en') {
+  const t = (key, vars) => translate(lang, `explain.${key}`, vars)
   const { overallScore, categories, parsedNutrition, claims, novaGroup } = result
   const cats = categories || {}
+
+  const catName = (cat) => t(`cat.${cat}`)
+  const strengthPhrase = (cat, score) => {
+    const name = catName(cat)
+    const positive = cat === 'protein' || cat === 'fiber'
+    if (score >= 9) return t(positive ? 'phraseVeryHigh' : 'phraseVeryLow', { name })
+    if (score >= 7) return t(positive ? 'phraseSolid' : 'phraseReasonable', { name })
+    return t('phraseLevel', { level: t(`level.${describeScore(score)}`), name })
+  }
 
   // Sort categories into strengths and weaknesses
   const sorted = Object.entries(cats).sort((a, b) => b[1].score - a[1].score)
   const strengths = sorted.filter(([, d]) => d.score >= 7)
   const weaknesses = sorted.filter(([, d]) => d.score <= 4)
-  const midRange = sorted.filter(([, d]) => d.score > 4 && d.score < 7)
 
   const parts = []
 
   // Opening line based on overall score
   const productName = result.productName?.split('(')[0]?.trim() || 'This product'
-  if (overallScore >= 8) {
-    parts.push(`${productName} scores ${overallScore}/10 — a strong result. This is a genuinely healthy choice by WHO standards.`)
-  } else if (overallScore >= 6) {
-    parts.push(`${productName} scores ${overallScore}/10 — a decent product with some room for improvement.`)
-  } else if (overallScore >= 4) {
-    parts.push(`${productName} scores ${overallScore}/10 — an average product with notable nutritional concerns.`)
-  } else {
-    parts.push(`${productName} scores ${overallScore}/10 — this product has significant health concerns based on WHO guidelines.`)
-  }
+  const openKey = overallScore >= 8 ? 'openStrong'
+    : overallScore >= 6 ? 'openDecent'
+      : overallScore >= 4 ? 'openAverage' : 'openPoor'
+  parts.push(t(openKey, { name: productName, score: overallScore }))
 
-  // Severity cap explanation — why an otherwise-okay looking product is limited.
+  // Severity cap explanation — why an otherwise-okay looking product is
+  // limited. The cap reason is engine prose; translate it as prose.
   if (result.capped && result.capReason) {
-    parts.push(result.capReason)
+    parts.push(translateProse(lang, result.capReason))
   }
 
   // Strengths
   if (strengths.length > 0) {
-    const top = strengths.slice(0, 3)
-    const strengthDescs = top.map(([cat, d]) => strengthPhrase(cat, d.score))
-
-    if (top.length === 1) {
-      parts.push(`Its strongest area is ${strengthDescs[0]}.`)
+    const strengthDescs = strengths.slice(0, 3).map(([cat, d]) => strengthPhrase(cat, d.score))
+    if (strengthDescs.length === 1) {
+      parts.push(t('strongestArea', { desc: strengthDescs[0] }))
     } else {
       const last = strengthDescs.pop()
-      parts.push(`Its strengths include ${strengthDescs.join(', ')} and ${last}.`)
+      parts.push(t('strengthsInclude', { list: strengthDescs.join(', '), last }))
     }
   }
 
   // Weaknesses — the main value-add
   if (weaknesses.length > 0) {
-    const bottom = weaknesses.slice(0, 3)
     const weakDescs = []
-
-    for (const [cat, data] of bottom) {
+    for (const [cat] of weaknesses.slice(0, 3)) {
       const n = parsedNutrition || {}
       if (cat === 'sugars' && n.sugars !== undefined) {
-        const pct = Math.round((n.sugars / 50) * 100)
-        weakDescs.push(`sugar is high at ${n.sugars}g per serving (${pct}% of WHO's daily limit)`)
+        weakDescs.push(t('weakSugar', { g: n.sugars, pct: Math.round((n.sugars / 50) * 100) }))
       } else if (cat === 'sodium' && n.sodium !== undefined) {
-        const pct = Math.round((n.sodium / 2000) * 100)
-        weakDescs.push(`sodium is ${n.sodium}mg (${pct}% of the daily limit)`)
+        weakDescs.push(t('weakSodium', { mg: n.sodium, pct: Math.round((n.sodium / 2000) * 100) }))
       } else if (cat === 'fats') {
-        if (n.saturatedFat !== undefined) {
-          weakDescs.push(`saturated fat is ${n.saturatedFat}g per serving — WHO recommends limiting saturated fat intake`)
-        } else {
-          weakDescs.push(`the fat profile is a concern`)
-        }
+        weakDescs.push(n.saturatedFat !== undefined ? t('weakSatFat', { g: n.saturatedFat }) : t('weakFat'))
       } else if (cat === 'calories' && n.calories !== undefined) {
-        weakDescs.push(`it packs ${n.calories} kcal per serving (${Math.round((n.calories / 2000) * 100)}% of daily energy)`)
+        weakDescs.push(t('weakCalories', { kcal: n.calories, pct: Math.round((n.calories / 2000) * 100) }))
       } else if (cat === 'fiber') {
-        weakDescs.push(`fiber content is low — WHO recommends at least 25g/day`)
+        weakDescs.push(t('weakFiber'))
       } else if (cat === 'protein') {
-        weakDescs.push(`protein content is minimal`)
+        weakDescs.push(t('weakProtein'))
       } else if (cat === 'processing') {
-        const novaText = novaGroup ? `NOVA ${novaGroup} (ultra-processed)` : 'highly processed'
-        weakDescs.push(`it's classified as ${novaText}`)
+        weakDescs.push(novaGroup ? t('weakProcessingNova', { nova: novaGroup }) : t('weakProcessing'))
       } else if (cat === 'additives') {
-        weakDescs.push(`it contains multiple flagged additives`)
+        weakDescs.push(t('weakAdditives'))
       }
     }
 
     if (weakDescs.length === 1) {
-      parts.push(`The main concern is that ${weakDescs[0]}.`)
+      parts.push(t('mainConcern', { desc: weakDescs[0] }))
     } else if (weakDescs.length > 1) {
       const last = weakDescs.pop()
-      parts.push(`Key concerns: ${weakDescs.join('; ')}; and ${last}.`)
+      parts.push(t('keyConcerns', { list: weakDescs.join('; '), last }))
     }
   }
 
-  // Misleading claims callout
+  // Misleading claims callout (claim text is label data — stays as printed)
   const misleading = (claims || []).filter(c => c.isMisleading)
   if (misleading.length > 0) {
-    const claimNames = misleading.map(c => `"${c.claim}"`).join(' and ')
-    parts.push(`Watch out — the ${claimNames} claim${misleading.length > 1 ? 's are' : ' is'} misleading based on the actual nutrition data.`)
+    const claimNames = misleading.map(c => `"${c.claim}"`).join(` ${t('and')} `)
+    parts.push(t(misleading.length > 1 ? 'claimsWarnMany' : 'claimsWarnOne', { claims: claimNames }))
   }
 
   // Closing with actionable takeaway
   if (overallScore < 5 && weaknesses.length > 0) {
     const worst = weaknesses[0][0]
-    const advice = {
-      sugars: 'Look for unsweetened or reduced-sugar alternatives.',
-      fats: 'Consider options with less saturated fat, like baked variants.',
-      sodium: 'Try lower-sodium versions or season with herbs instead.',
-      calories: 'A smaller portion or lighter alternative might be better.',
-      processing: 'Whole-food alternatives with fewer ingredients would be healthier.',
-      additives: 'Products with shorter, recognizable ingredient lists are preferable.',
-      fiber: 'Adding whole grains, fruits, or vegetables can help meet fiber goals.',
-      protein: 'Pair this with a protein-rich food for a more balanced meal.',
-    }
-    if (advice[worst]) parts.push(advice[worst])
+    const adviceKeys = ['sugars', 'fats', 'sodium', 'calories', 'processing', 'additives', 'fiber', 'protein']
+    if (adviceKeys.includes(worst)) parts.push(t(`advice.${worst}`))
   }
 
   return parts.join(' ')

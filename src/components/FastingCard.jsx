@@ -13,7 +13,7 @@ const STATUS_STYLE = {
 
 export default function FastingCard({ result }) {
   const profile = useProfile()
-  const { t, isEnglish } = useT()
+  const { t, tProse, proseReady } = useT()
   const [profileKey, setProfileKey] = useState(
     profile.fastingProfile && profile.fastingProfile !== 'none' ? profile.fastingProfile : 'hindu_upvas_generic'
   )
@@ -54,8 +54,8 @@ export default function FastingCard({ result }) {
         </span>
       </div>
 
-      <p className="text-sm text-gray-700 mt-2 leading-snug">{evalResult.reason}</p>
-      {!isEnglish && <p className="text-[10px] text-gray-400 italic mt-1">{t('common.translationPending')}</p>}
+      <p className="text-sm text-gray-700 mt-2 leading-snug">{tProse(evalResult.reason)}</p>
+      {!proseReady && <p className="text-[10px] text-gray-400 italic mt-1">{t('common.translationPending')}</p>}
 
       {/* Expandable explanation */}
       <button

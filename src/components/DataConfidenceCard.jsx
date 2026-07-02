@@ -37,6 +37,20 @@ export default function DataConfidenceCard({ result }) {
         </span>
       </div>
 
+      {dc.corrected && (
+        <div className="mb-3 flex items-start gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+          <span className="text-sm">✅</span>
+          <p className="text-xs text-green-800 leading-relaxed">
+            {t('data.correctedBanner')}
+            {dc.corrected.updatedAt && (
+              <span className="block text-[10px] text-green-600">
+                {t('data.correctedOn')} {dc.corrected.updatedAt.slice(0, 10)} · v{dc.corrected.version}
+              </span>
+            )}
+          </p>
+        </div>
+      )}
+
       <dl className="space-y-2 text-sm">
         <Row label={t('data.source')} value={dc.sourceName} />
         {dc.lastUpdated && <Row label={t('data.lastUpdated')} value={dc.lastUpdated} />}

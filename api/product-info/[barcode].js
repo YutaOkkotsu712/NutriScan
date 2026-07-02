@@ -16,8 +16,11 @@ import { getSuitability } from '../../src/utils/suitabilityEngine.js'
 import { evaluateFasting } from '../../src/utils/fastingEngine.js'
 import { getAllowance, DEMOGRAPHIC_KEYS } from '../../src/utils/demographicEngine.js'
 import { FASTING_PROFILE_ORDER } from '../../src/data/fastingProfiles.js'
+import { fetchOverrides, applyOverrides } from '../_lib/overrides.js'
 
 export const config = { runtime: 'edge' }
+
+const env = (typeof process !== 'undefined' && process.env) || {}
 
 const OFF_BASE = 'https://world.openfoodfacts.org/api/v2/product'
 
@@ -46,6 +49,10 @@ export default async function handler(request) {
   } catch {
     return json({ error: 'Lookup failed' }, 502, 'no-store')
   }
+
+  // Reviewed corrections take precedence over raw OFF data (spec §11).
+  const overrides = await fetchOverrides(barcode, env)
+  if (overrides) applyOverrides(product, overrides)
 
   const result = normalizeOffProduct(product, barcode)
 

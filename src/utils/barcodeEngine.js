@@ -162,6 +162,8 @@ export function normalizeOffProduct(product, barcode) {
     // FSSAI/license number if present in packaging or labels (rarely structured)
     fssai: extractFssai(product),
     sourceName: 'Open Food Facts (community database)',
+    // Set by /api/product when a reviewed correction override was merged (§11)
+    corrected: product.nutriscan_corrected || null,
   }
 
   // Store per-100g nutrition for toggle view

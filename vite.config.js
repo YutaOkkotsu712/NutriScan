@@ -6,14 +6,16 @@ import path from 'node:path'
 
 // In production, /api/* is served by the Vercel Edge Functions in /api.
 // In local dev:
-//  - /api/product and /api/search proxy straight to Open Food Facts (below)
-//  - every other /api/* route is served by the SAME edge-function modules via
-//    the dev middleware plugin — they are plain (Request) => Response
+//  - /api/search proxies straight to Open Food Facts (below)
+//  - every other /api/* route (including /api/product, so reviewed data
+//    overrides apply in dev too) is served by the SAME edge-function modules
+//    via the dev middleware plugin — they are plain (Request) => Response
 //    functions, so dev and prod share one code path.
 
 const EDGE_ROUTES = [
   // [URL prefix, module path relative to this file]
   ['/api/product-info/', 'api/product-info/[barcode].js'],
+  ['/api/product/', 'api/product/[barcode].js'],
   ['/api/ingredients', 'api/ingredients/[id].js'],
   ['/api/reference/nutrients', 'api/reference/nutrients.js'],
   ['/api/reference/fasting', 'api/reference/fasting.js'],
@@ -30,12 +32,15 @@ const EDGE_ROUTES = [
 function devKvMiddleware() {
   const lists = new Map()
   const counters = new Map()
+  const strings = new Map()
   const list = (k) => { if (!lists.has(k)) lists.set(k, []); return lists.get(k) }
   return async (req, res) => {
     const chunks = []
     for await (const c of req) chunks.push(c)
     const [cmd, key, ...args] = JSON.parse(Buffer.concat(chunks).toString() || '[]')
     let result = null
+    if (cmd === 'SET') { strings.set(key, String(args[0])); result = 'OK' }
+    if (cmd === 'GET') result = strings.has(key) ? strings.get(key) : null
     if (cmd === 'LPUSH') { list(key).unshift(String(args[0])); result = list(key).length }
     if (cmd === 'LRANGE') result = list(key).slice(Number(args[0]), Number(args[1]) + 1)
     if (cmd === 'LREM') { const i = list(key).indexOf(args[1]); if (i >= 0) list(key).splice(i, 1); result = i >= 0 ? 1 : 0 }
@@ -100,13 +105,6 @@ export default defineConfig({
   plugins: [react(), tailwindcss(), edgeFunctionsDev()],
   server: {
     proxy: {
-      // /api/product/<barcode>  ->  OFF product endpoint
-      '/api/product': {
-        target: 'https://world.openfoodfacts.org',
-        changeOrigin: true,
-        rewrite: (path) =>
-          path.replace(/^\/api\/product\/([^/?]+)/, '/api/v2/product/$1.json'),
-      },
       // /api/search?...  ->  OFF v2 search
       '/api/search': {
         target: 'https://world.openfoodfacts.org',
