@@ -1,6 +1,29 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import BottomSheet from './BottomSheet'
 import { lookupEncyclopedia } from '../data/ingredientEncyclopedia'
+
+// Prefer the live entry from /api/ingredients/<id> when the CMS has published
+// a newer version (spec §10/§14 — reviewed edits reach users without an app
+// release). Renders the bundled entry instantly; swaps in the published one
+// when the fetch lands. Offline or fetch failure keeps the bundled data (the
+// SW network-first caches /api/ingredients/*).
+function usePublishedEntry(localEntry) {
+  const [live, setLive] = useState(null)
+  const id = localEntry?.id
+  useEffect(() => {
+    setLive(null)
+    if (!id) return
+    let cancelled = false
+    fetch(`/api/ingredients/${id}`)
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => {
+        if (!cancelled && data?.published) setLive(data)
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [id])
+  return live || localEntry
+}
 
 const TABS = ['Simple', 'Safety', 'Regulation', 'Cultural', 'Sources']
 
@@ -181,7 +204,8 @@ function SourcesTab({ entry, barcode }) {
 
 export default function IngredientDetailSheet({ open, onClose, ingredient, fallback, barcode }) {
   const [tab, setTab] = useState('Simple')
-  const entry = ingredient ? lookupEncyclopedia(ingredient) : null
+  const localEntry = ingredient ? lookupEncyclopedia(ingredient) : null
+  const entry = usePublishedEntry(localEntry)
   const title = entry?.canonicalName || (ingredient ? ingredient.replace(/^\w/, c => c.toUpperCase()) : '')
 
   return (

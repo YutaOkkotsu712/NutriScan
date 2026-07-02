@@ -18,6 +18,8 @@ function fakeKvFetch(url, opts) {
   if (cmd === 'LRANGE') { const [s, e] = args.map(Number); result = list(key).slice(s, e + 1) }
   if (cmd === 'LREM') { const i = list(key).indexOf(args[1]); if (i >= 0) list(key).splice(i, 1); result = i >= 0 ? 1 : 0 }
   if (cmd === 'LTRIM') { lists.set(key, list(key).slice(Number(args[0]), Number(args[1]) + 1)); result = 'OK' }
+  if (cmd === 'INCR') { const n = Number(strings.get(key) || 0) + 1; strings.set(key, String(n)); result = n }
+  if (cmd === 'EXPIRE') result = 1
   return Promise.resolve(new Response(JSON.stringify({ result }), { status: 200 }))
 }
 
@@ -61,9 +63,16 @@ const queued = (id = 'rec-1') => JSON.stringify({
 })
 
 describe('/api/admin/corrections auth', () => {
-  it('503 when ADMIN_TOKEN is not configured', async () => {
+  it('503 when no credential source exists at all', async () => {
     delete process.env.ADMIN_TOKEN
+    delete process.env.KV_REST_API_URL
+    delete process.env.KV_REST_API_TOKEN
     expect((await handler(req('GET'))).status).toBe(503)
+  })
+
+  it('401 when ADMIN_TOKEN is unset but KV users could exist', async () => {
+    delete process.env.ADMIN_TOKEN
+    expect((await handler(req('GET'))).status).toBe(401)
   })
 
   it('401 without a token', async () => {
@@ -130,6 +139,24 @@ describe('POST /api/admin/corrections', () => {
 
   it('405 for other methods', async () => {
     expect((await handler(req('DELETE'))).status).toBe(405)
+  })
+})
+
+describe('auth brute-force guard', () => {
+  const attempt = (token, ip) => handler(new Request('http://localhost/api/admin/corrections', {
+    method: 'GET',
+    headers: { authorization: `Bearer ${token}`, 'x-real-ip': ip },
+  }))
+
+  it('blocks an IP after 30 failed attempts, even with a valid token', async () => {
+    for (let i = 0; i < 31; i++) {
+      expect((await attempt('wrong-token-guess!!', '203.0.113.9')).status).toBe(401)
+    }
+    // Window tripped: further attempts from this IP are throttled...
+    expect((await attempt('wrong-token-guess!!', '203.0.113.9')).status).toBe(429)
+    expect((await attempt(TOKEN, '203.0.113.9')).status).toBe(429)
+    // ...but another IP is unaffected.
+    expect((await attempt(TOKEN, '198.51.100.7')).status).toBe(200)
   })
 })
 

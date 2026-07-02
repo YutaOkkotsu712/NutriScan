@@ -7,7 +7,12 @@
 // or store any personal health data (allergens, diet, profile) or free text.
 // Unknown event types and any non-whitelisted props are dropped.
 
+import { clientIp } from './_lib/auth.js'
+
 export const config = { runtime: 'edge' }
+
+// Cap the event list so a flood can't grow KV without bound.
+const EVENTS_CAP = 19999
 
 const ALLOWED_EVENTS = new Set([
   'chip_click', 'search_fail', 'language_change', 'correction_submit', 'scan',
@@ -61,7 +66,7 @@ function res(status = 204, request = null) {
 // Best-effort per-IP rate limit (KV-backed; no-op without KV).
 async function rateLimited(request, limit, windowSec) {
   if (!env.KV_REST_API_URL || !env.KV_REST_API_TOKEN) return false
-  const ip = (request.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'unknown'
+  const ip = clientIp(request)
   const key = `rl:analytics:${ip}`
   try {
     const r = await fetch(env.KV_REST_API_URL, {
@@ -109,6 +114,11 @@ export default async function handler(request) {
         headers: { Authorization: `Bearer ${env.KV_REST_API_TOKEN}`, 'content-type': 'application/json' },
         body: JSON.stringify(['LPUSH', 'analytics:events', JSON.stringify(record)]),
       })
+      fetch(env.KV_REST_API_URL, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${env.KV_REST_API_TOKEN}`, 'content-type': 'application/json' },
+        body: JSON.stringify(['LTRIM', 'analytics:events', 0, EVENTS_CAP]),
+      }).catch(() => {})
     } else {
       console.log('[NutriScan analytics]', JSON.stringify(record))
     }

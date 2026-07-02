@@ -463,21 +463,24 @@ const ALIAS_INDEX = (() => {
 export function lookupEncyclopedia(rawIngredient) {
   if (!rawIngredient) return null
   const lower = rawIngredient.toLowerCase().trim()
+  // The returned entry carries its id so callers can fetch the live
+  // (CMS-published) version from /api/ingredients/<id>.
+  const withId = (key) => ({ id: key, ...INGREDIENT_ENCYCLOPEDIA[key] })
 
   // 1. Direct alias hit
-  if (ALIAS_INDEX.has(lower)) return INGREDIENT_ENCYCLOPEDIA[ALIAS_INDEX.get(lower)]
+  if (ALIAS_INDEX.has(lower)) return withId(ALIAS_INDEX.get(lower))
 
   // 2. INS/E code inside the text, e.g. "raising agent (ins 500(ii))"
   const codeMatch = lower.match(/\b(?:ins|e)\s*(\d{3,4}[a-z]?)/i)
   if (codeMatch) {
     const code = codeMatch[1].toLowerCase()
-    if (ALIAS_INDEX.has(code)) return INGREDIENT_ENCYCLOPEDIA[ALIAS_INDEX.get(code)]
-    if (ALIAS_INDEX.has(`ins${code}`)) return INGREDIENT_ENCYCLOPEDIA[ALIAS_INDEX.get(`ins${code}`)]
+    if (ALIAS_INDEX.has(code)) return withId(ALIAS_INDEX.get(code))
+    if (ALIAS_INDEX.has(`ins${code}`)) return withId(ALIAS_INDEX.get(`ins${code}`))
   }
 
   // 3. Substring match against known aliases (longest alias first)
   for (const [alias, key] of [...ALIAS_INDEX.entries()].sort((a, b) => b[0].length - a[0].length)) {
-    if (alias.length >= 4 && lower.includes(alias)) return INGREDIENT_ENCYCLOPEDIA[key]
+    if (alias.length >= 4 && lower.includes(alias)) return withId(key)
   }
 
   return null

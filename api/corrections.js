@@ -11,9 +11,14 @@
 // Corrections are queued for admin review (workflow status "needs expert
 // review" per §11) — they are NOT auto-applied to what users see.
 
+import { clientIp } from './_lib/auth.js'
+
 export const config = { runtime: 'edge' }
 
 const MAX = { field: 60, detail: 1000, name: 200, url: 300, barcode: 14 }
+// Flood guard: the queue is capped — a distributed spam run pushes out its own
+// oldest entries instead of growing KV without bound. Reviewers work newest-first.
+const QUEUE_CAP = 4999
 const ALLOWED_TYPES = new Set(['nutrition', 'ingredient', 'allergen', 'regulation', 'other'])
 
 // Strip anything HTML/script-ish and clamp length. Corrections are free text.
@@ -60,7 +65,7 @@ function json(body, status = 200, request = null) {
 // KV isn't configured or on any error, so it can never take the endpoint down.
 async function rateLimited(request, bucket, limit, windowSec) {
   if (!env.KV_REST_API_URL || !env.KV_REST_API_TOKEN) return false
-  const ip = (request.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'unknown'
+  const ip = clientIp(request)
   const key = `rl:${bucket}:${ip}`
   try {
     const res = await fetch(env.KV_REST_API_URL, {
@@ -133,6 +138,12 @@ export default async function handler(request) {
         body: JSON.stringify(['LPUSH', 'corrections:queue', JSON.stringify(record)]),
       })
       if (!res.ok) throw new Error('KV write failed')
+      // Best-effort cap — never fail the submission over trimming.
+      fetch(kvUrl, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${kvToken}`, 'content-type': 'application/json' },
+        body: JSON.stringify(['LTRIM', 'corrections:queue', 0, QUEUE_CAP]),
+      }).catch(() => {})
       return json({ ok: true, id: record.id, stored: 'kv' }, 200, request)
     }
     // No store configured — log so it is captured in function output.

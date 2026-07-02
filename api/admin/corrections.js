@@ -20,6 +20,7 @@
 //                       so entries record action + timestamp + record id)
 
 import { sanitizeOverride, fetchOverrides, overridesKey } from '../_lib/overrides.js'
+import { authenticate, adminConfigured, kvConfigured, authThrottled, recordAuthFailure } from '../_lib/auth.js'
 
 export const config = { runtime: 'edge' }
 
@@ -43,36 +44,6 @@ function json(body, status = 200) {
   })
 }
 
-// Constant-time token comparison — a plain === leaks match length via timing.
-function tokenMatches(token, provided) {
-  if (provided.length !== token.length) return false
-  let diff = 0
-  for (let i = 0; i < token.length; i++) diff |= token.charCodeAt(i) ^ provided.charCodeAt(i)
-  return diff === 0
-}
-
-// Reviewer credentials: ADMIN_TOKENS="asha:tok1,ravi:tok2" gives each reviewer
-// their own token so the audit trail records who acted; ADMIN_TOKEN (single,
-// shared) still works and audits as "admin". Both may be set.
-function reviewersConfigured() {
-  return Boolean(env.ADMIN_TOKEN || env.ADMIN_TOKENS)
-}
-
-// Returns the reviewer name for a valid token, or null when unauthorized.
-function authenticate(request) {
-  const provided = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '')
-  if (!provided) return null
-  for (const pair of (env.ADMIN_TOKENS || '').split(',')) {
-    const sep = pair.indexOf(':')
-    if (sep <= 0) continue
-    const name = pair.slice(0, sep).trim()
-    const token = pair.slice(sep + 1).trim()
-    if (name && token && tokenMatches(token, provided)) return name
-  }
-  if (env.ADMIN_TOKEN && tokenMatches(env.ADMIN_TOKEN, provided)) return 'admin'
-  return null
-}
-
 async function kv(cmd) {
   const res = await fetch(env.KV_REST_API_URL, {
     method: 'POST',
@@ -94,14 +65,21 @@ function parseRecords(rawList) {
 }
 
 export default async function handler(request) {
-  if (!reviewersConfigured()) {
+  if (!adminConfigured(env)) {
     return json({ error: 'Admin API disabled — set the ADMIN_TOKEN or ADMIN_TOKENS env var.' }, 503)
   }
-  const reviewer = authenticate(request)
-  if (!reviewer) {
+  if (await authThrottled(request, env)) {
+    return json({ error: 'Too many failed attempts — try again later.' }, 429)
+  }
+  // Both roles may review corrections (spec §11); auth resolves env bootstrap
+  // tokens and console-created KV users.
+  const user = await authenticate(request, env)
+  if (!user) {
+    await recordAuthFailure(request, env)
     return json({ error: 'Unauthorized' }, 401)
   }
-  if (!env.KV_REST_API_URL || !env.KV_REST_API_TOKEN) {
+  const reviewer = user.name
+  if (!kvConfigured(env)) {
     return json({ error: 'Storage not configured — create a Vercel KV store.' }, 503)
   }
 
@@ -110,7 +88,7 @@ export default async function handler(request) {
       const viewParam = new URL(request.url).searchParams.get('view')
       const view = VIEWS.has(viewParam) ? viewParam : 'queue'
       const items = parseRecords(await kv(['LRANGE', KEYS[view], 0, 199]))
-      return json({ view, count: items.length, items })
+      return json({ view, count: items.length, items, me: { name: user.name, role: user.role } })
     }
 
     if (request.method === 'POST') {

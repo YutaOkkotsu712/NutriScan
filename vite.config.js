@@ -22,6 +22,8 @@ const EDGE_ROUTES = [
   ['/api/reference/regulation', 'api/reference/regulation.js'],
   ['/api/reference/suitability', 'api/reference/suitability.js'],
   ['/api/admin/corrections', 'api/admin/corrections.js'],
+  ['/api/admin/users', 'api/admin/users.js'],
+  ['/api/admin/reference', 'api/admin/reference.js'],
   ['/api/corrections', 'api/corrections.js'],
   ['/api/analytics', 'api/analytics.js'],
 ]
@@ -31,7 +33,6 @@ const EDGE_ROUTES = [
 // Supports exactly the commands our functions use.
 function devKvMiddleware() {
   const lists = new Map()
-  const counters = new Map()
   const strings = new Map()
   const list = (k) => { if (!lists.has(k)) lists.set(k, []); return lists.get(k) }
   return async (req, res) => {
@@ -45,7 +46,7 @@ function devKvMiddleware() {
     if (cmd === 'LRANGE') result = list(key).slice(Number(args[0]), Number(args[1]) + 1)
     if (cmd === 'LREM') { const i = list(key).indexOf(args[1]); if (i >= 0) list(key).splice(i, 1); result = i >= 0 ? 1 : 0 }
     if (cmd === 'LTRIM') { lists.set(key, list(key).slice(Number(args[0]), Number(args[1]) + 1)); result = 'OK' }
-    if (cmd === 'INCR') { const n = (counters.get(key) || 0) + 1; counters.set(key, n); result = n }
+    if (cmd === 'INCR') { const n = Number(strings.get(key) || 0) + 1; strings.set(key, String(n)); result = n }
     if (cmd === 'EXPIRE') result = 1
     res.setHeader('content-type', 'application/json')
     res.end(JSON.stringify({ result }))
