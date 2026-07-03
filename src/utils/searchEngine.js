@@ -6,12 +6,48 @@ const SEARCH_API = '/api/search'
 
 const SEARCH_FIELDS = 'code,product_name,brands,image_front_small_url,nutriscore_grade,nutriments,categories_tags,serving_size,ingredients_text,nova_group,ingredients_analysis_tags'
 
-// Does a product's diet analysis conflict with the user's diet preference?
-function dietConflict(analysisTags, diet) {
+// ---------------------------------------------------------------------------
+// Diet filtering for suggested alternatives (P1). OFF's analysis tags
+// (en:non-vegetarian / en:non-vegan) are missing on many Indian products, so
+// tags alone let a bacon product through to a Jain user. We therefore check
+// FOUR signals: analysis tags, product name, ingredients text, and category
+// tags — and deliberately over-exclude on ambiguity (never suggest a product
+// we can't defend; the user can always find it via explicit search).
+// Indian convention: "Vegetarian" = green dot = no meat/fish AND no egg.
+// ---------------------------------------------------------------------------
+
+const NON_VEG_RE = /\b(chicken|mutton|lamb|pork|bacon|ham|beef|buffalo|fish|prawns?|shrimps?|crab|squid|octopus|anchovy|anchovies|sardines?|tuna|salmon|cod|mackerel|meat|salami|sausages?|pepperoni|turkey|duck|quail|eggs?|omelette|gelatine?|rennet|lard|caviar|oysters?)\b/i
+
+// Dairy/animal terms for vegan. Plant-based "milk/butter/cream" phrases are
+// stripped first (no regex lookbehind — it breaks module parsing on older
+// iOS Safari, a real audience on hand-me-down phones).
+const PLANT_DAIRY_RE = /\b(coconut|almond|soya?|oat|rice|cashew|peanut|shea|cocoa)\s+(milk|butter|cream)\b/gi
+const NON_VEGAN_RE = /\b(milk|butter|ghee|paneer|cheese|cream|curd|dahi|yogh?urt|whey|casein|lactose|khoya|malai|honey)\b/i
+
+// Root/underground vegetables (and honey) avoided in Jain diets.
+const JAIN_AVOID_RE = /\b(onions?|garlic|potato(?:es)?|ginger|carrots?|radish(?:es)?|beetroots?|turnips?|leeks?|shallots?|yam|honey)\b/i
+
+const NON_VEG_CATEGORY_RE = /\ben:(meats?|poultry|fishes|fish|seafood|eggs|hams|bacons?|sausages|charcuteries)\b/
+
+// Does a product conflict with the user's diet preference? Checked against
+// everything OFF gives us, not just the (often missing) analysis tags.
+export function dietConflict(product, diet) {
   if (!diet || diet === 'none') return false
-  const tags = analysisTags || []
-  if (diet === 'veg' || diet === 'jain') return tags.includes('en:non-vegetarian')
-  if (diet === 'vegan') return tags.includes('en:non-vegan')
+  const p = product || {}
+  const tags = p.ingredients_analysis_tags || []
+  const haystack = `${p.product_name || ''} ${p.ingredients_text || ''}`
+  const cats = (p.categories_tags || []).join(' ')
+
+  const nonVeg = tags.includes('en:non-vegetarian')
+    || NON_VEG_RE.test(haystack)
+    || NON_VEG_CATEGORY_RE.test(cats)
+
+  if (diet === 'veg') return nonVeg
+  if (diet === 'jain') return nonVeg || JAIN_AVOID_RE.test(haystack)
+  if (diet === 'vegan') {
+    const withoutPlantDairy = haystack.replace(PLANT_DAIRY_RE, '')
+    return nonVeg || tags.includes('en:non-vegan') || NON_VEGAN_RE.test(withoutPlantDairy)
+  }
   return false
 }
 
@@ -165,7 +201,7 @@ async function tryFetchAlternatives(attempt, excludeBarcode, origNameNorm, origi
         if (p.code === excludeBarcode || !p.product_name || !p.nutriments) return false
         // Diet filter (P1): don't suggest alternatives that conflict with the
         // user's diet preference (e.g. non-veg to a vegetarian).
-        if (dietConflict(p.ingredients_analysis_tags, diet)) return false
+        if (dietConflict(p, diet)) return false
         const norm = normalizeName(p.product_name, p.brands)
         if (!norm || seenNames.has(norm)) return false
         seenNames.add(norm)
