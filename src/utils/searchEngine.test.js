@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { dietConflict } from './searchEngine.js'
+import { dietConflict, allergenConflict, fastingConflict } from './searchEngine.js'
 
 // Alternatives must never conflict with the family diet profile — OFF's
 // analysis tags are missing on many Indian products, so name/ingredients/
@@ -65,5 +65,41 @@ describe('dietConflict', () => {
     it('still flags real dairy next to plant dairy', () => {
       expect(dietConflict(p({ ingredients_text: 'coconut milk, milk solids' }), 'vegan')).toBe(true)
     })
+  })
+})
+
+// Alternatives must also respect the family's allergens and any active fast
+// ("don't suggest a peanut bar to a peanut-allergic family").
+describe('allergenConflict', () => {
+  const p = (over = {}) => ({ allergens_tags: [], traces_tags: [], ...over })
+
+  it('flags a direct allergen match', () => {
+    expect(allergenConflict(p({ allergens_tags: ['en:peanuts', 'en:gluten'] }), ['peanuts'])).toBe(true)
+  })
+
+  it('flags "may contain traces" too — never suggest a maybe', () => {
+    expect(allergenConflict(p({ traces_tags: ['en:milk'] }), ['milk'])).toBe(true)
+  })
+
+  it('passes when there is no overlap or no profile allergens', () => {
+    expect(allergenConflict(p({ allergens_tags: ['en:gluten'] }), ['peanuts'])).toBe(false)
+    expect(allergenConflict(p({ allergens_tags: ['en:peanuts'] }), [])).toBe(false)
+    expect(allergenConflict(p(), ['peanuts'])).toBe(false)
+  })
+})
+
+describe('fastingConflict', () => {
+  it('excludes clear conflicts during an active fast', () => {
+    expect(fastingConflict({ ingredients_text: 'refined wheat flour, salt, palm oil' }, 'navratri')).toBe(true)
+  })
+
+  it('keeps fast-friendly and unverifiable products', () => {
+    expect(fastingConflict({ ingredients_text: 'sabudana, rock salt' }, 'navratri')).toBe(false)
+    expect(fastingConflict({ ingredients_text: '' }, 'navratri')).toBe(false)
+  })
+
+  it('no-ops when not fasting', () => {
+    expect(fastingConflict({ ingredients_text: 'wheat flour' }, 'none')).toBe(false)
+    expect(fastingConflict({ ingredients_text: 'wheat flour' }, undefined)).toBe(false)
   })
 })

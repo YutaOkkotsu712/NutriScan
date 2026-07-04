@@ -72,7 +72,7 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
   const scoreAnchorRef = useRef(null)
 
   const profile = useProfile()
-  const { t } = useT()
+  const { t, lang } = useT()
   const verdict = getVerdict(result.overallScore)
   const dietBadge = getDietBadge(result)
 
@@ -107,7 +107,7 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
     setShareStatus('generating')
     try {
       const { shareResult } = await import('./ShareCard.js')
-      const status = await shareResult(result)
+      const status = await shareResult(result, lang)
       setShareStatus(status === 'downloaded' ? 'Image saved!' : '')
     } catch {
       setShareStatus('Failed to generate image')
@@ -297,7 +297,7 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
 
       {/* Score dial */}
       <div ref={scoreAnchorRef} className="flex flex-col items-center mb-4 animate-scaleIn" style={{ animationDelay: '200ms' }}>
-        <ScoreDial score={result.overallScore} label={result.scoreLabel} />
+        <ScoreDial score={result.overallScore} label={t(`scoreword.${result.scoreLabel}`)} />
         <div className="mt-2 text-center">
           <span className={`inline-block text-sm font-bold px-3 py-1 rounded-full ${verdict.cls}`}>
             {verdict.label}

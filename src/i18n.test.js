@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { translateProse, translate, PROSE_LANGS, getProseKeys } from './i18n'
+import { translateProse, translate, PROSE_LANGS, getProseKeys, getNamespaceKeys } from './i18n'
 import { generateExplanation } from './utils/scoreExplainer'
 import { analyzeFood } from './utils/scoreEngine'
 
@@ -47,6 +47,21 @@ describe('translateProse', () => {
   it('falls back to English for unknown sentences', () => {
     expect(translateProse('hi', 'A sentence the engines never emit.')).toBe('A sentence the engines never emit.')
     expect(translateProse('en', 'Watch portion size')).toBe('Watch portion size')
+  })
+
+  it('every language carries the full UI chrome namespaces', () => {
+    // Guards against a language missing keys added later (translate() would
+    // silently fall back to English, hiding the gap).
+    const NAMESPACES = ['scan', 'loadingStatus', 'errors', 'swap', 'swapn', 'ingsheet', 'data', 'correction', 'demographic', 'share', 'scoreword']
+    for (const ns of NAMESPACES) {
+      const reference = getNamespaceKeys('en', ns)
+      expect(reference, `en has ${ns}`).not.toBeNull()
+      for (const lang of PROSE_LANGS.filter(l => l !== 'en')) {
+        const keys = getNamespaceKeys(lang, ns)
+        expect(keys, `${lang} has ${ns}`).not.toBeNull()
+        expect(keys.sort(), `${lang}.${ns} keys match en`).toEqual([...reference].sort())
+      }
+    }
   })
 
   it('every covered language carries the same prose sentence set', () => {

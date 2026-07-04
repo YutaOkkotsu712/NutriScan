@@ -1,10 +1,12 @@
 import { analyzeFood } from './scoreEngine'
+import { evaluateFasting } from './fastingEngine'
+import { FASTING_STATUS } from '../data/fastingProfiles'
 
 // Same-origin caching proxy (Vercel Edge Function in prod, Vite proxy in dev).
 // See api/search.js — CORS-free, edge-cached, rate-limit-insulated search.
 const SEARCH_API = '/api/search'
 
-const SEARCH_FIELDS = 'code,product_name,brands,image_front_small_url,nutriscore_grade,nutriments,categories_tags,serving_size,ingredients_text,nova_group,ingredients_analysis_tags'
+const SEARCH_FIELDS = 'code,product_name,brands,image_front_small_url,nutriscore_grade,nutriments,categories_tags,serving_size,ingredients_text,nova_group,ingredients_analysis_tags,allergens_tags,traces_tags'
 
 // ---------------------------------------------------------------------------
 // Diet filtering for suggested alternatives (P1). OFF's analysis tags
@@ -49,6 +51,30 @@ export function dietConflict(product, diet) {
     return nonVeg || tags.includes('en:non-vegan') || NON_VEGAN_RE.test(withoutPlantDairy)
   }
   return false
+}
+
+// Does a product contain (or risk traces of) any of the user's allergens?
+// Strict on traces too: never *suggest* something that "may contain" the
+// family's allergen — the user can still find such products via search.
+export function allergenConflict(product, allergens) {
+  if (!allergens || allergens.length === 0) return false
+  const p = product || {}
+  const inProduct = new Set(
+    [...(p.allergens_tags || []), ...(p.traces_tags || [])].map(t => String(t).replace(/^[a-z]{2}:/, ''))
+  )
+  return allergens.some(a => inProduct.has(a))
+}
+
+// During an active fast, don't suggest products that clearly conflict with
+// the selected fasting profile. Only a definite conflict excludes — most
+// packaged products evaluate to "unknown" and excluding those would leave
+// the list empty; the fasting card on the product page stays authoritative.
+export function fastingConflict(product, fastingProfile, customFasting) {
+  if (!fastingProfile || fastingProfile === 'none') return false
+  const text = (product || {}).ingredients_text
+  if (!text) return false
+  const verdict = evaluateFasting(text, fastingProfile, customFasting)
+  return verdict?.status === FASTING_STATUS.NOT_SUITABLE
 }
 
 /**
@@ -115,7 +141,7 @@ export async function searchProducts(query, page = 1, pageSize = 20) {
  * Find alternatives with full nutrition comparison.
  * Tries multiple strategies to always return results.
  */
-export async function findAlternatives(product, originalNutrition, worstCategory, limit = 5, diet = 'none') {
+export async function findAlternatives(product, originalNutrition, worstCategory, limit = 5, profileFilters = {}) {
   const categories = product.categories || []
   const productName = product.name || ''
   const productBrand = product.brand || ''
@@ -148,7 +174,7 @@ export async function findAlternatives(product, originalNutrition, worstCategory
   const origNameNorm = normalizeName(productName, productBrand)
 
   for (const attempt of attempts) {
-    const results = await tryFetchAlternatives(attempt, product.barcode, origNameNorm, originalNutrition, worstCategory, limit, diet)
+    const results = await tryFetchAlternatives(attempt, product.barcode, origNameNorm, originalNutrition, worstCategory, limit, profileFilters)
     if (results.length > 0) {
       console.log(`[NutriScan] Found ${results.length} alternatives via ${attempt.type}: ${attempt.value}`)
       return results
@@ -170,7 +196,8 @@ function normalizeName(name, brand) {
     .trim()
 }
 
-async function tryFetchAlternatives(attempt, excludeBarcode, origNameNorm, originalNutrition, worstCategory, limit, diet = 'none') {
+async function tryFetchAlternatives(attempt, excludeBarcode, origNameNorm, originalNutrition, worstCategory, limit, profileFilters = {}) {
+  const { diet = 'none', allergens = [], fastingProfile = 'none', customFasting } = profileFilters
   const params = new URLSearchParams({
     page_size: String(limit + 15), // fetch extra to filter
     fields: SEARCH_FIELDS,
@@ -199,9 +226,12 @@ async function tryFetchAlternatives(attempt, excludeBarcode, origNameNorm, origi
     const products = (data.products || [])
       .filter(p => {
         if (p.code === excludeBarcode || !p.product_name || !p.nutriments) return false
-        // Diet filter (P1): don't suggest alternatives that conflict with the
-        // user's diet preference (e.g. non-veg to a vegetarian).
+        // Family-profile filters (P1): never suggest an alternative that
+        // conflicts with the diet, contains/traces a family allergen, or
+        // clearly breaks the active fasting profile.
         if (dietConflict(p, diet)) return false
+        if (allergenConflict(p, allergens)) return false
+        if (fastingConflict(p, fastingProfile, customFasting)) return false
         const norm = normalizeName(p.product_name, p.brands)
         if (!norm || seenNames.has(norm)) return false
         seenNames.add(norm)
@@ -229,15 +259,13 @@ async function tryFetchAlternatives(attempt, excludeBarcode, origNameNorm, origi
 
       const analysis = analyzeFood(altNutrition, p.ingredients_text || '', p.nova_group)
 
-      // Calculate deltas vs original (per 100g)
+      // Calculate deltas vs original (per 100g). Improvements are structured
+      // {pct, key} so the UI can render the nutrient label in the user's
+      // language rather than baked-in English.
       const deltas = {}
       const improvements = []
       if (originalNutrition) {
-        for (const [key, label] of [
-          ['calories', 'calories'], ['sugars', 'sugar'], ['totalFat', 'fat'],
-          ['saturatedFat', 'sat fat'], ['sodium', 'sodium'],
-          ['fiber', 'fiber'], ['protein', 'protein']
-        ]) {
+        for (const key of ['calories', 'sugars', 'totalFat', 'saturatedFat', 'sodium', 'fiber', 'protein']) {
           const orig = originalNutrition[key]
           const alt = altNutrition[key]
           if (orig !== undefined && alt !== undefined && orig > 0) {
@@ -245,8 +273,7 @@ async function tryFetchAlternatives(attempt, excludeBarcode, origNameNorm, origi
             deltas[key] = pct
             // Track what's better
             const isPositive = key === 'fiber' || key === 'protein'
-            if (isPositive && pct > 10) improvements.push(`+${pct}% ${label}`)
-            else if (!isPositive && pct < -10) improvements.push(`${pct}% ${label}`)
+            if ((isPositive && pct > 10) || (!isPositive && pct < -10)) improvements.push({ pct, key })
           }
         }
       }

@@ -33,7 +33,7 @@ export default function App() {
     // bogus "check your internet" error.
     const barcode = extractBarcode(rawBarcode)
     if (!barcode) {
-      setError(`"${String(rawBarcode).slice(0, 40)}" is not a product barcode. Aim at the striped barcode, or search by name.`)
+      setError(t('errors.notABarcode', { code: String(rawBarcode).slice(0, 40) }))
       setScreen('not-found')
       return
     }
@@ -46,7 +46,7 @@ export default function App() {
       const analysisResult = await lookupBarcode(barcode, setLoadingStatus)
 
       if (!analysisResult) {
-        setError(`Product not found in database (barcode: ${barcode}). Try searching by name instead.`)
+        setError(t('errors.notFound', { barcode }))
         setScreen('not-found')
         return
       }
@@ -63,12 +63,10 @@ export default function App() {
       setScreen('results')
     } catch (err) {
       console.error('[NutriScan] Barcode lookup failed:', err)
-      setError(navigator.onLine === false
-        ? 'You appear to be offline — reconnect and try again.'
-        : 'The product database did not respond — please try again in a moment.')
+      setError(navigator.onLine === false ? t('errors.offline') : t('errors.dbNotResponding'))
       setScreen('error')
     }
-  }, [comparePending, compareA])
+  }, [comparePending, compareA, t])
 
   // --- Barcode scan flow ---
   const handleScanBarcode = useCallback(() => {

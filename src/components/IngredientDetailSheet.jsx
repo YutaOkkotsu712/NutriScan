@@ -30,23 +30,25 @@ function usePublishedEntry(localEntry) {
 const TABS = ['Simple', 'Safety', 'Regulation', 'Cultural', 'Sources']
 
 const CULTURAL_BADGE = {
-  yes: { text: 'Yes', cls: 'bg-green-100 text-green-700' },
-  no: { text: 'No', cls: 'bg-red-100 text-red-700' },
-  depends: { text: 'Depends', cls: 'bg-amber-100 text-amber-700' },
-  unknown: { text: 'Unknown', cls: 'bg-gray-100 text-gray-500' },
+  yes: { key: 'yes', cls: 'bg-green-100 text-green-700' },
+  no: { key: 'no', cls: 'bg-red-100 text-red-700' },
+  depends: { key: 'depends', cls: 'bg-amber-100 text-amber-700' },
+  unknown: { key: 'unknown', cls: 'bg-gray-100 text-gray-500' },
 }
 
 function Badge({ state, label }) {
+  const { t } = useT()
   const b = CULTURAL_BADGE[state] || CULTURAL_BADGE.unknown
   return (
     <div className="flex items-center justify-between py-1.5">
       <span className="text-sm text-gray-700">{label}</span>
-      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${b.cls}`}>{b.text}</span>
+      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${b.cls}`}>{t(`ingsheet.badge.${b.key}`)}</span>
     </div>
   )
 }
 
 function ReportLink({ barcode }) {
+  const { t } = useT()
   const url = barcode ? `https://world.openfoodfacts.org/product/${barcode}` : 'https://world.openfoodfacts.org'
   return (
     <a href={url} target="_blank" rel="noopener noreferrer"
@@ -54,19 +56,20 @@ function ReportLink({ barcode }) {
       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
       </svg>
-      Report an issue
+      {t('ingsheet.reportIssue')}
     </a>
   )
 }
 
 function SimpleTab({ entry, fallback }) {
+  const { t } = useT()
   if (!entry) {
     return (
       <div className="space-y-3">
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-          <p className="text-sm text-amber-800 font-medium">Information not verified yet</p>
+          <p className="text-sm text-amber-800 font-medium">{t('ingsheet.notVerified')}</p>
           <p className="text-xs text-amber-700 mt-1">
-            We don't have a verified encyclopedia entry for this ingredient yet.
+            {t('ingsheet.noEntry')}
           </p>
         </div>
         {fallback?.reason && (
@@ -78,11 +81,11 @@ function SimpleTab({ entry, fallback }) {
   return (
     <div className="space-y-3">
       <div>
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">What it is</p>
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{t('ingsheet.whatItIs')}</p>
         <p className="text-sm text-gray-800 leading-snug">{entry.plainDescription}</p>
       </div>
       <div>
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Why it's used</p>
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{t('ingsheet.whyUsed')}</p>
         <p className="text-sm text-gray-800 leading-snug">{entry.function}</p>
       </div>
       {entry.riskSummary && (
@@ -95,22 +98,23 @@ function SimpleTab({ entry, fallback }) {
 }
 
 function SafetyTab({ entry, fallback, allergen }) {
+  const { t } = useT()
   const cautions = entry?.safety?.caution || []
   const allerg = entry?.safety?.allergen || allergen
   return (
     <div className="space-y-3">
       {allerg && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-          <p className="text-sm font-semibold text-red-800">Allergen: {allerg}</p>
+          <p className="text-sm font-semibold text-red-800">{t('ingsheet.allergenLabel')} {allerg}</p>
         </div>
       )}
       {cautions.length > 0 && (
         <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Who should be careful</p>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{t('ingsheet.whoCareful')}</p>
           <div className="flex flex-wrap gap-1.5">
             {cautions.map(c => (
-              <span key={c} className="text-xs font-medium bg-amber-100 text-amber-700 px-2 py-1 rounded-full capitalize">
-                {c.replace('-', ' / ')}
+              <span key={c} className="text-xs font-medium bg-amber-100 text-amber-700 px-2 py-1 rounded-full">
+                {t(`group.${c}`)}
               </span>
             ))}
           </div>
@@ -119,85 +123,88 @@ function SafetyTab({ entry, fallback, allergen }) {
       {entry?.safety?.note && <p className="text-sm text-gray-700 leading-snug">{entry.safety.note}</p>}
       {!entry && fallback?.reason && <p className="text-sm text-gray-700 leading-snug">{fallback.reason}</p>}
       {!entry && !fallback?.reason && cautions.length === 0 && !allerg && (
-        <p className="text-sm text-gray-500">No specific safety concerns recorded.</p>
+        <p className="text-sm text-gray-500">{t('ingsheet.noSafety')}</p>
       )}
     </div>
   )
 }
 
 function RegulationTab({ entry }) {
+  const { t } = useT()
   if (!entry?.regulation) {
     return (
       <div className="bg-gray-50 rounded-lg p-3">
-        <p className="text-sm text-gray-600">Limit not available in database. This may be category-specific.</p>
+        <p className="text-sm text-gray-600">{t('ingsheet.limitNA')}</p>
       </div>
     )
   }
   const r = entry.regulation
   const maxDisplay = r.maxLevel != null
     ? `${r.maxLevel}${r.unit ? ' ' + r.unit : ''}`
-    : 'Not available in database'
+    : t('ingsheet.notInDb')
   return (
     <div className="space-y-2 text-sm">
-      <div className="flex justify-between"><span className="text-gray-500">Status</span><span className="text-gray-800 capitalize">{r.status}</span></div>
-      {r.category && <div className="flex justify-between gap-3"><span className="text-gray-500 shrink-0">Category</span><span className="text-gray-800 text-right">{r.category}</span></div>}
+      <div className="flex justify-between"><span className="text-gray-500">{t('ingsheet.status')}</span><span className="text-gray-800 capitalize">{r.status}</span></div>
+      {r.category && <div className="flex justify-between gap-3"><span className="text-gray-500 shrink-0">{t('ingsheet.category')}</span><span className="text-gray-800 text-right">{r.category}</span></div>}
       <div className="flex justify-between gap-3">
-        <span className="text-gray-500 shrink-0">Maximum level</span>
+        <span className="text-gray-500 shrink-0">{t('ingsheet.maxLevel')}</span>
         <span className="text-gray-800 text-right">{maxDisplay}</span>
       </div>
       {r.confidence && (
-        <div className="flex justify-between"><span className="text-gray-500">Confidence</span><span className="text-gray-800 capitalize">{r.confidence}</span></div>
+        <div className="flex justify-between"><span className="text-gray-500">{t('ingsheet.confidence')}</span><span className="text-gray-800 capitalize">{r.confidence}</span></div>
       )}
       {r.effectiveDate && (
-        <div className="flex justify-between"><span className="text-gray-500">Effective from</span><span className="text-gray-800">{r.effectiveDate}</span></div>
+        <div className="flex justify-between"><span className="text-gray-500">{t('ingsheet.effectiveFrom')}</span><span className="text-gray-800">{r.effectiveDate}</span></div>
       )}
       {r.condition && <p className="text-xs text-gray-500 bg-gray-50 rounded-lg p-2.5 leading-relaxed">{r.condition}</p>}
-      {r.source && <p className="text-[10px] text-gray-400 leading-relaxed">Source: {r.source}</p>}
+      {r.source && <p className="text-[10px] text-gray-400 leading-relaxed">{t('ingsheet.source')}: {r.source}</p>}
       <p className="text-[10px] text-gray-400 leading-relaxed">
-        Regulatory limits can be category-specific and may change. We never guess a limit.
+        {t('ingsheet.regNote')}
       </p>
     </div>
   )
 }
 
 function CulturalTab({ entry }) {
+  const { t } = useT()
   if (!entry?.cultural) {
-    return <p className="text-sm text-gray-500">Cultural suitability not verified for this ingredient.</p>
+    return <p className="text-sm text-gray-500">{t('ingsheet.culturalNA')}</p>
   }
   const c = entry.cultural
   const note = c.culturalNote || c.jainNote || c.veganNote || c.upvasNote
   return (
     <div className="space-y-1">
-      <Badge state={c.veg} label="Vegetarian" />
-      <Badge state={c.jain} label="Jain" />
-      <Badge state={c.vegan} label="Vegan" />
-      <Badge state={c.upvas} label="Upvas / fasting" />
+      <Badge state={c.veg} label={t('ingsheet.vegetarian')} />
+      <Badge state={c.jain} label={t('ingsheet.jain')} />
+      <Badge state={c.vegan} label={t('ingsheet.vegan')} />
+      <Badge state={c.upvas} label={t('ingsheet.upvas')} />
       {note && <p className="text-xs text-gray-600 bg-gray-50 rounded-lg p-2.5 mt-2 leading-relaxed">{note}</p>}
     </div>
   )
 }
 
 function SourcesTab({ entry, barcode }) {
+  const { t } = useT()
   return (
     <div className="space-y-2 text-sm">
       {entry ? (
         <>
           <div className="flex justify-between">
-            <span className="text-gray-500">Confidence</span>
+            <span className="text-gray-500">{t('ingsheet.confidence')}</span>
             <span className="text-gray-800 capitalize font-medium">{entry.confidence}</span>
           </div>
           {entry.lastReviewed && (
-            <div className="flex justify-between"><span className="text-gray-500">Last reviewed</span><span className="text-gray-800">{entry.lastReviewed}</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">{t('ingsheet.lastReviewed')}</span><span className="text-gray-800">{entry.lastReviewed}</span></div>
           )}
           <div>
-            <p className="text-gray-500 mb-1">Sources</p>
+            <p className="text-gray-500 mb-1">{t('ingsheet.sources')}</p>
             <ul className="list-disc list-inside text-gray-700 text-xs space-y-0.5">
               {(entry.sources || []).map((s, i) => <li key={i}>{s}</li>)}
             </ul>
           </div>
         </>
       ) : (
-        <p className="text-gray-500">No verified source on file for this ingredient yet.</p>
+        <p className="text-gray-500">{t('ingsheet.noSource')}</p>
       )}
       <ReportLink barcode={barcode} />
     </div>
@@ -215,15 +222,15 @@ export default function IngredientDetailSheet({ open, onClose, ingredient, fallb
     <BottomSheet open={open} onClose={onClose} title={title}>
       {/* Tabs */}
       <div className="flex gap-1 mb-4 overflow-x-auto -mx-1 px-1 pb-1">
-        {TABS.map(t => (
+        {TABS.map(tabKey => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
+            key={tabKey}
+            onClick={() => setTab(tabKey)}
             className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
-              tab === t ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              tab === tabKey ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
-            {t}
+            {t(`ingsheet.tab.${tabKey}`)}
           </button>
         ))}
       </div>

@@ -1,7 +1,10 @@
 /**
  * Generate a shareable results card as a PNG image.
- * Uses Canvas API — no external libraries.
+ * Uses Canvas API — no external libraries. Text renders in the user's
+ * selected language (system fonts cover all 9 scripts).
  */
+
+import { translate } from '../i18n'
 
 const SCORE_COLORS = {
   bad: { bg: '#fef2f2', ring: '#ef4444', text: '#991b1b' },
@@ -17,18 +20,8 @@ function getColors(score) {
   return SCORE_COLORS.good
 }
 
-const CATEGORY_LABELS = {
-  calories: 'Calories',
-  sugars: 'Sugars',
-  fats: 'Fats',
-  sodium: 'Sodium',
-  protein: 'Protein',
-  fiber: 'Fiber',
-  processing: 'Processing',
-  additives: 'Additives',
-}
-
-export async function generateShareImage(result) {
+export async function generateShareImage(result, lang = 'en') {
+  const t = (path, vars) => translate(lang, path, vars)
   const W = 600
   const H = 860
   const canvas = document.createElement('canvas')
@@ -83,7 +76,7 @@ export async function generateShareImage(result) {
   ctx.fillText(result.overallScore.toFixed(1), cx, cy + 16)
   ctx.font = '14px -apple-system, Arial, sans-serif'
   ctx.fillStyle = '#64748b'
-  ctx.fillText('out of 10', cx, cy + 38)
+  ctx.fillText(t('common.outOf10'), cx, cy + 38)
 
   // Score label badge
   ctx.fillStyle = colors.bg
@@ -92,7 +85,7 @@ export async function generateShareImage(result) {
   ctx.fill()
   ctx.fillStyle = colors.text
   ctx.font = 'bold 14px -apple-system, Arial, sans-serif'
-  ctx.fillText(result.scoreLabel, cx, cy + 72)
+  ctx.fillText(t(`scoreword.${result.scoreLabel}`), cx, cy + 72)
 
   // Category bars
   ctx.textAlign = 'left'
@@ -111,7 +104,7 @@ export async function generateShareImage(result) {
     // Label
     ctx.fillStyle = '#475569'
     ctx.font = '13px -apple-system, Arial, sans-serif'
-    ctx.fillText(`${CATEGORY_LABELS[cat]}`, 24, y + 18)
+    ctx.fillText(t(`category.${cat}`), 24, y + 18)
 
     // Score
     ctx.textAlign = 'right'
@@ -149,7 +142,7 @@ export async function generateShareImage(result) {
 
     ctx.fillStyle = '#991b1b'
     ctx.font = 'bold 13px -apple-system, Arial, sans-serif'
-    ctx.fillText(`⚠️ ${misleading.length} misleading claim${misleading.length > 1 ? 's' : ''} detected`, 32, claimY + 22)
+    ctx.fillText(t(misleading.length > 1 ? 'share.claimsMany' : 'share.claimsOne', { n: misleading.length }), 32, claimY + 22)
     ctx.fillStyle = '#b91c1c'
     ctx.font = '12px -apple-system, Arial, sans-serif'
     const claimText = misleading.map(c => `"${c.claim}"`).join(', ')
@@ -161,13 +154,13 @@ export async function generateShareImage(result) {
   ctx.fillStyle = '#94a3b8'
   ctx.font = '12px -apple-system, Arial, sans-serif'
   ctx.textAlign = 'center'
-  ctx.fillText('Scanned with NutriScan — WHO-aligned food health scores', W / 2, H - 24)
+  ctx.fillText(t('share.footer'), W / 2, H - 24)
 
   return canvas.toDataURL('image/png')
 }
 
-export async function shareResult(result) {
-  const imageDataUrl = await generateShareImage(result)
+export async function shareResult(result, lang = 'en') {
+  const imageDataUrl = await generateShareImage(result, lang)
 
   // Convert data URL to blob
   const res = await fetch(imageDataUrl)

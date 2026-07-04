@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useProfile, DIET_OPTIONS } from '../utils/profile'
+import { useProfile } from '../utils/profile'
+import { useT } from '../i18n'
 
 function DeltaBadge({ value, label, positive }) {
   if (value === undefined) return null
@@ -33,7 +34,11 @@ function ScoreBadge({ score, label }) {
 
 export default function SmartSwapCard({ result, onSelectProduct }) {
   const profile = useProfile()
+  const { t } = useT()
   const diet = profile.diet || 'none'
+  // Stable reference from the profile store (defaults to [] there).
+  const allergens = profile.allergens
+  const fastingProfile = profile.fastingProfile && profile.fastingProfile !== 'none' ? profile.fastingProfile : 'none'
   const [alternatives, setAlternatives] = useState([])
   const [loading, setLoading] = useState(false)
   const [loaded, setLoaded] = useState(false)
@@ -58,7 +63,7 @@ export default function SmartSwapCard({ result, onSelectProduct }) {
           result.nutrition100g || result.parsedNutrition,
           result.worstCategory,
           5,
-          diet,
+          { diet, allergens, fastingProfile, customFasting: profile.customFasting },
         )
         if (!cancelled) {
           setAlternatives(alts)
@@ -73,31 +78,41 @@ export default function SmartSwapCard({ result, onSelectProduct }) {
 
     fetchAlternatives()
     return () => { cancelled = true }
-  }, [applicable, result.barcode, result.categoryTags, result.worstCategory, result.parsedNutrition, result.nutrition100g, result.productName, diet])
-
-  const dietLabel = DIET_OPTIONS.find(d => d.key === diet)?.label
+  }, [applicable, result.barcode, result.categoryTags, result.worstCategory, result.parsedNutrition, result.nutrition100g, result.productName, diet, allergens, fastingProfile, profile.customFasting])
 
   const betterAlts = alternatives.filter(a => a.nutriscanScore > result.overallScore)
   const similarAlts = alternatives.filter(a => a.nutriscanScore <= result.overallScore)
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-4">
-      <div className="flex items-center gap-2 mb-1">
+      <div className="flex items-center gap-2 mb-1 flex-wrap">
         <span className="text-lg">🔄</span>
         <span className="font-semibold text-gray-800">
-          {betterAlts.length > 0 ? 'Healthier Alternatives' : 'Similar Products'}
+          {betterAlts.length > 0 ? t('swap.healthier') : t('swap.similar')}
         </span>
-        {diet !== 'none' && (
-          <span className="ml-auto text-[10px] font-medium bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">
-            {dietLabel} only
-          </span>
-        )}
+        <span className="ml-auto flex items-center gap-1 flex-wrap justify-end">
+          {diet !== 'none' && (
+            <span className="text-[10px] font-medium bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">
+              {t('swap.onlyChip', { label: t(`diet.${diet}`) })}
+            </span>
+          )}
+          {allergens?.length > 0 && (
+            <span className="text-[10px] font-medium bg-red-50 text-red-700 px-1.5 py-0.5 rounded-full">
+              {t('swap.allergenChip')}
+            </span>
+          )}
+          {fastingProfile !== 'none' && (
+            <span className="text-[10px] font-medium bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded-full">
+              {t('swap.fastingChip')}
+            </span>
+          )}
+        </span>
       </div>
 
       {loading && (
         <div className="flex items-center gap-2 text-sm text-gray-500 py-4">
           <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
-          Finding alternatives in the same category...
+          {t('swap.finding')}
         </div>
       )}
 
@@ -110,7 +125,7 @@ export default function SmartSwapCard({ result, onSelectProduct }) {
       {!loading && betterAlts.length > 0 && (
         <>
           <p className="text-xs text-gray-500 mb-3">
-            These score higher on NutriScan's WHO-aligned analysis
+            {t('swap.scoreHigher')}
           </p>
           <div className="space-y-2 mb-3">
             {betterAlts.map((alt) => (
@@ -127,7 +142,7 @@ export default function SmartSwapCard({ result, onSelectProduct }) {
 
       {!loading && betterAlts.length > 0 && similarAlts.length > 0 && (
         <div className="border-t border-gray-100 pt-3 mt-2">
-          <p className="text-xs text-gray-400 mb-2">Other products in this category</p>
+          <p className="text-xs text-gray-400 mb-2">{t('swap.otherInCategory')}</p>
           <div className="space-y-2">
             {similarAlts.slice(0, 3).map((alt) => (
               <AlternativeCard
@@ -145,7 +160,7 @@ export default function SmartSwapCard({ result, onSelectProduct }) {
       {!loading && betterAlts.length === 0 && similarAlts.length > 0 && (
         <>
           <p className="text-xs text-gray-500 mb-3">
-            Products in the same category — tap to see full analysis
+            {t('swap.sameCategoryTap')}
           </p>
           <div className="space-y-2">
             {similarAlts.map((alt) => (
@@ -164,6 +179,7 @@ export default function SmartSwapCard({ result, onSelectProduct }) {
 }
 
 function AlternativeCard({ alt, currentScore, onSelect, compact = false }) {
+  const { t } = useT()
   const isBetter = alt.nutriscanScore > currentScore
   const scoreDiff = (alt.nutriscanScore - currentScore).toFixed(1)
 
@@ -199,14 +215,16 @@ function AlternativeCard({ alt, currentScore, onSelect, compact = false }) {
           )}
         </div>
 
-        <ScoreBadge score={alt.nutriscanScore} label={alt.scoreLabel} />
+        <ScoreBadge score={alt.nutriscanScore} label={t(`scoreword.${alt.scoreLabel}`)} />
       </div>
 
       {/* Improvement badges */}
       {!compact && alt.improvements && alt.improvements.length > 0 && (
         <div className="mt-2 ml-13">
           <p className="text-xs text-green-700 font-medium">
-            {alt.improvements.slice(0, 3).join(' · ')}
+            {alt.improvements.slice(0, 3).map(imp =>
+              `${imp.pct > 0 ? '+' : ''}${imp.pct}% ${t(`swapn.${imp.key}`)}`
+            ).join(' · ')}
           </p>
         </div>
       )}
@@ -214,12 +232,12 @@ function AlternativeCard({ alt, currentScore, onSelect, compact = false }) {
       {/* Nutrient deltas */}
       {!compact && Object.keys(alt.deltas).length > 0 && (
         <div className="flex flex-wrap gap-1 mt-2">
-          <DeltaBadge value={alt.deltas.sugars} label="sugar" />
-          <DeltaBadge value={alt.deltas.saturatedFat} label="sat fat" />
-          <DeltaBadge value={alt.deltas.sodium} label="sodium" />
-          <DeltaBadge value={alt.deltas.calories} label="cal" />
-          <DeltaBadge value={alt.deltas.fiber} label="fiber" positive />
-          <DeltaBadge value={alt.deltas.protein} label="protein" positive />
+          <DeltaBadge value={alt.deltas.sugars} label={t('swapn.sugars')} />
+          <DeltaBadge value={alt.deltas.saturatedFat} label={t('swapn.saturatedFat')} />
+          <DeltaBadge value={alt.deltas.sodium} label={t('swapn.sodium')} />
+          <DeltaBadge value={alt.deltas.calories} label={t('swapn.calories')} />
+          <DeltaBadge value={alt.deltas.fiber} label={t('swapn.fiber')} positive />
+          <DeltaBadge value={alt.deltas.protein} label={t('swapn.protein')} positive />
         </div>
       )}
     </button>

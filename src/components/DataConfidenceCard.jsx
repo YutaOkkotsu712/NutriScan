@@ -74,7 +74,7 @@ export default function DataConfidenceCard({ result }) {
         {t('data.reportCorrect')}
       </button>
       <p className="text-[10px] text-gray-400 mt-2 leading-relaxed">
-        Data is community-contributed via Open Food Facts and may be incomplete. Corrections update the shared database.
+        {t('data.communityNote')}
       </p>
 
       <CorrectionSheet open={correctionOpen} onClose={() => setCorrectionOpen(false)} result={result} />

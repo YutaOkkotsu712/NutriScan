@@ -92,7 +92,7 @@ export default function FastingCard({ result }) {
         ⚠️ {FASTING_META.globalCaveat}
       </p>
       <p className="text-[10px] text-gray-400 mt-1.5 leading-relaxed">
-        Confidence: {evalResult.confidence} · Source: {(evalResult.sources || [])[0]} · Reviewed {evalResult.lastReviewed}
+        {t('fasting.confidenceLabel')}: {evalResult.confidence} · {t('fasting.sourceLabel')}: {(evalResult.sources || [])[0]} · {t('fasting.reviewedLabel')} {evalResult.lastReviewed}
       </p>
     </div>
   )

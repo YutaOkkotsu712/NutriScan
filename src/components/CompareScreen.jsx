@@ -90,7 +90,7 @@ export default function CompareScreen({ productA, productB, onReset, onScanAnoth
           )}
           <p className="text-sm font-semibold text-gray-900 truncate mb-2">{left.productName}</p>
           <div className="flex justify-center">
-            <ScoreDial score={left.overallScore} label={left.scoreLabel} small />
+            <ScoreDial score={left.overallScore} label={t(`scoreword.${left.scoreLabel}`)} small />
           </div>
         </div>
         <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 text-center">
@@ -99,7 +99,7 @@ export default function CompareScreen({ productA, productB, onReset, onScanAnoth
           )}
           <p className="text-sm font-semibold text-gray-900 truncate mb-2">{right.productName}</p>
           <div className="flex justify-center">
-            <ScoreDial score={right.overallScore} label={right.scoreLabel} small />
+            <ScoreDial score={right.overallScore} label={t(`scoreword.${right.scoreLabel}`)} small />
           </div>
         </div>
       </div>

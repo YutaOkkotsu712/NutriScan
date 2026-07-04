@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { extractBarcode } from '../utils/barcodeExtract'
+import { useT } from '../i18n'
 
 export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
   const html5QrRef = useRef(null)
+  const { t } = useT()
+  // Errors/hints are stored as i18n keys and translated at render, so a
+  // language switch mid-scan re-translates them.
   const [error, setError] = useState('')
   const [hint, setHint] = useState('')
   const [manualCode, setManualCode] = useState('')
@@ -24,7 +28,7 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
         const el = document.getElementById('barcode-reader')
         if (!el) {
           setShowManual(true)
-          setError('Scanner element not found. Enter barcode manually.')
+          setError('scan.elementMissing')
           return
         }
 
@@ -54,7 +58,7 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
             const barcode = extractBarcode(decodedText)
             if (!barcode) {
               // Decoded a promo QR/URL — keep scanning and tell the user.
-              setHint('That looks like a promo QR code — aim at the striped barcode instead.')
+              setHint('scan.qrHint')
               return
             }
             hasScannedRef.current = true
@@ -77,11 +81,11 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
 
         const msg = String(err)
         if (msg.includes('NotAllowedError') || msg.includes('Permission')) {
-          setError('Camera permission denied. Please allow camera access or enter the barcode manually.')
+          setError('scan.permissionDenied')
         } else if (msg.includes('NotFoundError')) {
-          setError('No camera found. Please enter the barcode manually.')
+          setError('scan.noCamera')
         } else {
-          setError('Could not start camera. Try entering the barcode manually.')
+          setError('scan.cameraFailed')
         }
         setShowManual(true)
       }
@@ -117,9 +121,9 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
   return (
     <div className="max-w-lg mx-auto px-4 py-6 min-h-[80vh]">
       <div className="text-center mb-5">
-        <h2 className="text-lg font-bold text-gray-900 mb-1">Scan Barcode</h2>
+        <h2 className="text-lg font-bold text-gray-900 mb-1">{t('scan.title')}</h2>
         <p className="text-sm text-gray-500">
-          Point your camera at the barcode on the product
+          {t('scan.subtitle')}
         </p>
       </div>
 
@@ -130,13 +134,13 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
-          <p className="text-sm text-red-700">{error}</p>
+          <p className="text-sm text-red-700">{t(error)}</p>
         </div>
       )}
 
       {!error && hint && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
-          <p className="text-sm text-amber-700">{hint}</p>
+          <p className="text-sm text-amber-700">{t(hint)}</p>
         </div>
       )}
 
@@ -146,7 +150,7 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
           onClick={() => setShowManual(true)}
           className="w-full text-sm text-green-600 hover:text-green-700 font-medium mb-4"
         >
-          Can't scan? Enter barcode manually
+          {t('scan.cantScan')}
         </button>
       )}
 
@@ -154,7 +158,7 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
       {showManual && (
         <form onSubmit={handleManualSubmit} className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Enter barcode number
+            {t('scan.enterBarcode')}
           </label>
           <div className="flex gap-2">
             <input
@@ -176,11 +180,11 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}
             >
-              Go
+              {t('scan.go')}
             </button>
           </div>
           <p className="text-xs text-gray-400 mt-2">
-            Find the 8 or 13 digit number below the barcode lines
+            {t('scan.barcodeHelp')}
           </p>
         </form>
       )}
@@ -191,13 +195,13 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
           onClick={onCancel}
           className="flex-1 py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors"
         >
-          Back
+          {t('common.back')}
         </button>
         <button
           onClick={onManualEntry}
           className="flex-1 py-3 px-4 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-xl border-2 border-gray-200 transition-colors text-sm"
         >
-          Search by Name Instead
+          {t('scan.searchInstead')}
         </button>
       </div>
 
