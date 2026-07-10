@@ -153,6 +153,8 @@ const STRINGS = {
     account: {
       title: 'My membership',
       signedInAs: 'Signed in as',
+      userId: 'User ID (for support)',
+      copied: 'Copied',
       status: 'Status',
       memberActive: 'Member — unlimited scans',
       memberUntil: 'Renews / valid until {date}',
@@ -490,6 +492,8 @@ const STRINGS = {
     account: {
       title: 'मेरी सदस्यता',
       signedInAs: 'इस रूप में साइन इन',
+      userId: 'यूज़र आईडी (सहायता के लिए)',
+      copied: 'कॉपी हो गया',
       status: 'स्थिति',
       memberActive: 'सदस्य — असीमित स्कैन',
       memberUntil: '{date} तक वैध / नवीनीकरण',
@@ -930,6 +934,8 @@ const STRINGS = {
     account: {
       title: 'Meri membership',
       signedInAs: 'Is roop mein signed in',
+      userId: 'User ID (support ke liye)',
+      copied: 'Copy ho gaya',
       status: 'Status',
       memberActive: 'Member — unlimited scans',
       memberUntil: '{date} tak valid / renew',
@@ -1125,6 +1131,8 @@ const STRINGS = {
     account: {
       title: 'माझी सदस्यता',
       signedInAs: 'या रूपात साइन इन',
+      userId: 'यूज़र आयडी (मदतीसाठी)',
+      copied: 'कॉपी झाले',
       status: 'स्थिती',
       memberActive: 'सदस्य — अमर्यादित स्कॅन',
       memberUntil: '{date} पर्यंत वैध / नूतनीकरण',
@@ -1320,6 +1328,8 @@ const STRINGS = {
     account: {
       title: 'મારી સભ્યપદ',
       signedInAs: 'આ રૂપે સાઇન ઇન',
+      userId: 'યુઝર આઈડી (સહાય માટે)',
+      copied: 'કૉપિ થયું',
       status: 'સ્થિતિ',
       memberActive: 'સભ્ય — અમર્યાદિત સ્કેન',
       memberUntil: '{date} સુધી માન્ય / રિન્યૂ',
@@ -1515,6 +1525,8 @@ const STRINGS = {
     account: {
       title: 'আমার সদস্যপদ',
       signedInAs: 'এই হিসেবে সাইন ইন',
+      userId: 'ইউজার আইডি (সহায়তার জন্য)',
+      copied: 'কপি হয়েছে',
       status: 'অবস্থা',
       memberActive: 'সদস্য — সীমাহীন স্ক্যান',
       memberUntil: '{date} পর্যন্ত বৈধ / নবায়ন',
@@ -1710,6 +1722,8 @@ const STRINGS = {
     account: {
       title: 'என் உறுப்பினர் பதவி',
       signedInAs: 'இவராக உள்நுழைந்துள்ளீர்',
+      userId: 'பயனர் ஐடி (உதவிக்கு)',
+      copied: 'நகலெடுக்கப்பட்டது',
       status: 'நிலை',
       memberActive: 'உறுப்பினர் — வரம்பற்ற ஸ்கேன்',
       memberUntil: '{date} வரை செல்லுபடி / புதுப்பிப்பு',
@@ -1905,6 +1919,8 @@ const STRINGS = {
     account: {
       title: 'నా సభ్యత్వం',
       signedInAs: 'ఇలా సైన్ ఇన్',
+      userId: 'యూజర్ ఐడీ (సహాయం కోసం)',
+      copied: 'కాపీ అయింది',
       status: 'స్థితి',
       memberActive: 'సభ్యుడు — అపరిమిత స్కాన్‌లు',
       memberUntil: '{date} వరకు చెల్లుబాటు / పునరుద్ధరణ',
@@ -2100,6 +2116,8 @@ const STRINGS = {
     account: {
       title: 'ನನ್ನ ಸದಸ್ಯತ್ವ',
       signedInAs: 'ಈ ರೂಪದಲ್ಲಿ ಸೈನ್ ಇನ್',
+      userId: 'ಬಳಕೆದಾರ ಐಡಿ (ಸಹಾಯಕ್ಕಾಗಿ)',
+      copied: 'ನಕಲಿಸಲಾಗಿದೆ',
       status: 'ಸ್ಥಿತಿ',
       memberActive: 'ಸದಸ್ಯ — ಅಪರಿಮಿತ ಸ್ಕ್ಯಾನ್',
       memberUntil: '{date} ವರೆಗೆ ಮಾನ್ಯ / ನವೀಕರಣ',

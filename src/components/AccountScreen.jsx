@@ -14,11 +14,21 @@ import { isNativeApp } from '../utils/platform'
 // requirement for apps with account creation.
 export default function AccountScreen({ entitlement, onBack, onEntitlementChange }) {
   const { t } = useT()
-  const { email } = useAuth()
+  const { email, user } = useAuth()
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
+  const [copied, setCopied] = useState(false)
   const native = isNativeApp()
+
+  // Tap-to-copy for the uid. The admin Membership tab comps/looks up users by
+  // this id — support asks the user to read it from here. Clipboard API can be
+  // unavailable (old WebViews); the id stays selectable text either way.
+  function copyUid() {
+    navigator.clipboard?.writeText(user.uid)
+      .then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) })
+      .catch(() => {})
+  }
 
   const subscribed = entitlement?.subscribed
   const until = entitlement?.subscription?.until
@@ -65,6 +75,19 @@ export default function AccountScreen({ entitlement, onBack, onEntitlementChange
           <div>
             <p className="text-xs text-gray-500">{t('account.signedInAs')}</p>
             <p className="text-sm font-medium text-gray-800">{email}</p>
+          </div>
+        )}
+
+        {user?.uid && (
+          <div>
+            <p className="text-xs text-gray-500">{t('account.userId')}</p>
+            <button
+              onClick={copyUid}
+              className="text-left font-mono text-[11px] text-gray-500 break-all select-all hover:text-gray-700 transition-colors"
+              title={user.uid}
+            >
+              {user.uid}{copied && <span className="ml-2 font-sans text-green-600">✓ {t('account.copied')}</span>}
+            </button>
           </div>
         )}
 

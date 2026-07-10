@@ -103,8 +103,11 @@ vars). `npm test` runs the full suite (170 tests).
   hashes, compared in constant time. More than 30 failed attempts from one IP
   in 15 minutes blocks that IP (even with a valid token) until the window
   expires. Keep at least one strong `ADMIN_TOKEN` env var as the bootstrap
-  credential — console-created admins could otherwise delete themselves into a
-  lockout.
+  credential. The console also refuses to delete/disable the **last enabled
+  admin** when no env tokens are configured, so a lockout can't happen by
+  accident either way.
+- **Accountability**: every mutation AND every membership `lookupUser` read is
+  written to the audit log with the actor's name.
 - **CSRF/CORS**: admin endpoints authenticate via the `Authorization` header
   (no cookies) and send no CORS headers, so cross-site pages can neither
   authenticate nor read responses. Public write endpoints only echo CORS for
@@ -174,7 +177,12 @@ Admins get a **Membership** tab to:
 - Change the **free-scan limit** (default 100, lifetime) for all users.
 - **Look up** a user by their Firebase UID to see scans used / membership.
 - **Comp** a user — reset their free-scan count to zero.
-Every change is recorded in the audit log.
+Every change — and every lookup — is recorded in the audit log.
+
+**Getting a user's UID:** ask them to open the app → tap the scans badge in
+the header (their account page) → the **User ID** line under their email
+(tap it to copy). You can also find it in the Firebase console →
+Authentication → search by email.
 
 ### iOS caveat
 Apple usually requires **In-App Purchase** (30% cut) for digital subscriptions.

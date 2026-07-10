@@ -78,6 +78,19 @@ export default async function handler(request) {
       if (body.action) {
         const name = typeof body.name === 'string' ? body.name : ''
         if (!Object.hasOwn(users, name)) return json({ error: 'User not found', name }, 404)
+        // Lockout guard: without env bootstrap tokens (ADMIN_TOKEN/ADMIN_TOKENS),
+        // KV users are the ONLY way in. Removing or disabling the last enabled
+        // admin would lock the console forever — no credential could ever
+        // authenticate again, and there is no recovery path.
+        if ((body.action === 'delete' || body.action === 'disable')
+          && !env.ADMIN_TOKEN && !env.ADMIN_TOKENS
+          && users[name].role === 'admin' && !users[name].disabled) {
+          const otherAdmins = Object.entries(users)
+            .filter(([n, u]) => n !== name && u.role === 'admin' && !u.disabled)
+          if (otherAdmins.length === 0) {
+            return json({ error: 'Cannot remove the last active admin — the console would be locked out forever. Create another admin first.' }, 400)
+          }
+        }
         if (body.action === 'disable') users[name].disabled = true
         else if (body.action === 'enable') users[name].disabled = false
         else if (body.action === 'delete') delete users[name]

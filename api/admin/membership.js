@@ -61,6 +61,9 @@ export default async function handler(request) {
 
       if (body.action === 'lookupUser') {
         if (!uid) return json({ error: 'uid required' }, 400)
+        // Reads of a user's status are audited too — an admin quietly
+        // enumerating customer activity should leave a trace.
+        await audit(user.name, 'lookup_user', uid)
         return json({ ok: true, uid, entitlement: await getEntitlement(uid, env) })
       }
 

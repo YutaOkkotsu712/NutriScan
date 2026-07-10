@@ -75,6 +75,11 @@ describe('comp a user', () => {
     expect((await getEntitlement('u3', env)).used).toBe(1) // unchanged
   })
 
+  it('lookupUser leaves an audit trace', async () => {
+    await handler(req('POST', { body: { action: 'lookupUser', uid: 'u4' } }))
+    expect(JSON.parse(kv.list('corrections:audit')[0])).toMatchObject({ action: 'lookup_user', target: 'u4' })
+  })
+
   it('requires a uid for user actions', async () => {
     expect((await handler(req('POST', { body: { action: 'resetScans' } }))).status).toBe(400)
   })
