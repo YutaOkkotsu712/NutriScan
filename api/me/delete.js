@@ -20,7 +20,8 @@ import { kvConfigured, kvCmd } from '../_lib/auth.js'
 import { razorpayConfigured, cancelSubscription } from '../_lib/razorpay.js'
 import { corsHeadersFor, handlePreflight } from '../_lib/cors.js'
 
-export const config = { runtime: 'edge' }
+// Node runtime (no edge config): this endpoint cancels Razorpay subscriptions,
+// and Razorpay's WAF 406-rejects calls from edge runtimes — see subscription/create.js.
 
 const env = (typeof process !== 'undefined' && process.env) || {}
 

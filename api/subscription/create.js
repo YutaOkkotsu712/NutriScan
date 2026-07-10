@@ -11,7 +11,12 @@ import { kvConfigured, kvCmd } from '../_lib/auth.js'
 import { razorpayConfigured, createSubscription, fetchSubscription } from '../_lib/razorpay.js'
 import { corsHeadersFor, handlePreflight } from '../_lib/cors.js'
 
-export const config = { runtime: 'edge' }
+// Node runtime, NOT edge: Razorpay's WAF rejects requests originating from
+// edge/worker runtimes with an empty-body 406 (never reproducible locally).
+// Vercel's Node runtime supports the same web-standard Request→Response
+// handler, so only the runtime changes. Applies to every endpoint that makes
+// OUTBOUND Razorpay calls (create/cancel/me-delete); the webhook is inbound
+// and stays on edge.
 
 const env = (typeof process !== 'undefined' && process.env) || {}
 

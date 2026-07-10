@@ -11,7 +11,8 @@ import { razorpayConfigured, cancelSubscription } from '../_lib/razorpay.js'
 import { corsHeadersFor, handlePreflight } from '../_lib/cors.js'
 import { subKey } from '../_lib/entitlement.js'
 
-export const config = { runtime: 'edge' }
+// Node runtime (no edge config): outbound Razorpay calls get 406-rejected from
+// edge runtimes by Razorpay's WAF — see subscription/create.js.
 
 const env = (typeof process !== 'undefined' && process.env) || {}
 
