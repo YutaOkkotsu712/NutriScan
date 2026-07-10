@@ -17,6 +17,7 @@ const realFetch = globalThis.fetch
 let privateKey, jwkPublic
 let createCalls = 0
 let subStatus = 'created' // status Razorpay reports for fetched subscriptions
+let createFailsWith = null // Razorpay error description → POST /subscriptions fails
 
 beforeAll(async () => {
   const { publicKey, privateKey: pk } = await generateKeyPair('RS256')
@@ -31,6 +32,7 @@ beforeEach(() => {
   kv.reset()
   createCalls = 0
   subStatus = 'created'
+  createFailsWith = null
   process.env.FIREBASE_PROJECT_ID = PROJECT
   process.env.KV_REST_API_URL = KV_URL
   process.env.KV_REST_API_TOKEN = 'x'
@@ -42,6 +44,9 @@ beforeEach(() => {
     if (u.startsWith(KV_URL)) return kv.fetchImpl(u, opts)
     if (u === JWKS_URL) return Promise.resolve(new Response(JSON.stringify({ keys: [jwkPublic] }), { status: 200, headers: { 'content-type': 'application/json' } }))
     if (u === RZP && opts?.method === 'POST') {
+      if (createFailsWith) {
+        return Promise.resolve(new Response(JSON.stringify({ error: { description: createFailsWith } }), { status: 401 }))
+      }
       createCalls += 1
       return Promise.resolve(new Response(JSON.stringify({ id: `sub_${createCalls}`, status: 'created' }), { status: 200 }))
     }
@@ -113,6 +118,13 @@ describe('subscription create guardrails', () => {
     expect(r.status).toBe(429)
     expect((await r.json()).code).toBe('rate_limited')
     expect(createCalls).toBe(0)
+  })
+
+  it('502 carries Razorpay’s error description for self-diagnosis', async () => {
+    createFailsWith = 'Authentication failed'
+    const r = await req(await token())
+    expect(r.status).toBe(502)
+    expect((await r.json()).detail).toBe('Authentication failed')
   })
 
   it('throttle is per uid — another user can still subscribe', async () => {

@@ -84,6 +84,10 @@ export default async function handler(request) {
     return jsonC({ subscriptionId: sub.id, keyId: env.VITE_RAZORPAY_KEY_ID })
   } catch (err) {
     console.error('[ZOCO subscription/create]', err)
-    return jsonC({ error: 'Could not start subscription. Please try again.' }, 502)
+    // Surface Razorpay's own error text: it is generic and safe
+    // ("Authentication failed", "The id provided does not exist") and turns a
+    // blind 502 into a self-diagnosing one — misconfigured keys/plan ids on a
+    // fresh deployment are otherwise only visible in server logs.
+    return jsonC({ error: 'Could not start subscription. Please try again.', detail: err?.message || undefined }, 502)
   }
 }
