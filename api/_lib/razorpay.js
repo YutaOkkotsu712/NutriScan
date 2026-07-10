@@ -22,10 +22,32 @@ function basicAuth(env) {
 // webhook can map the payment back to the user. total_count is how many billing
 // cycles Razorpay auto-charges before it auto-completes; default high so it
 // behaves like an ongoing subscription until cancelled.
+// Explicit Accept + User-Agent: Razorpay sits behind a CDN/WAF that has been
+// seen rejecting header-bare server-to-server requests from cloud runtimes
+// with content-negotiation errors (406) that never reproduce from dev boxes.
+function rzpHeaders(env) {
+  return {
+    Authorization: basicAuth(env),
+    'content-type': 'application/json',
+    accept: 'application/json',
+    'user-agent': 'ZOCO/1.0 (server; +https://zocolabel.com)',
+  }
+}
+
+// Non-2xx → throw with Razorpay's description; when the body isn't Razorpay's
+// JSON error shape (e.g. a WAF error page), include a snippet so the failure
+// is diagnosable from the surfaced error instead of blind status codes.
+async function rzpError(res, action) {
+  const text = await res.text().catch(() => '')
+  let description
+  try { description = JSON.parse(text)?.error?.description } catch { /* not JSON */ }
+  return new Error(description || `Razorpay ${action} failed (${res.status}): ${text.slice(0, 160)}`)
+}
+
 export async function createSubscription(env, { uid }) {
   const res = await fetch(`${RZP_API}/subscriptions`, {
     method: 'POST',
-    headers: { Authorization: basicAuth(env), 'content-type': 'application/json' },
+    headers: rzpHeaders(env),
     body: JSON.stringify({
       plan_id: env.RAZORPAY_PLAN_ID,
       total_count: Number(env.RAZORPAY_TOTAL_COUNT) || 120,
@@ -33,33 +55,28 @@ export async function createSubscription(env, { uid }) {
       notes: { uid },
     }),
   })
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) {
-    throw new Error(data?.error?.description || `Razorpay create failed (${res.status})`)
-  }
-  return data // { id: 'sub_...', short_url, status, ... }
+  if (!res.ok) throw await rzpError(res, 'create')
+  return res.json() // { id: 'sub_...', short_url, status, ... }
 }
 
 // Look up a subscription's current state (used to reuse a still-pending
 // subscription instead of creating a new one on every checkout attempt).
 export async function fetchSubscription(env, subscriptionId) {
   const res = await fetch(`${RZP_API}/subscriptions/${subscriptionId}`, {
-    headers: { Authorization: basicAuth(env) },
+    headers: rzpHeaders(env),
   })
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data?.error?.description || `Razorpay fetch failed (${res.status})`)
-  return data
+  if (!res.ok) throw await rzpError(res, 'fetch')
+  return res.json()
 }
 
 export async function cancelSubscription(env, subscriptionId, cancelAtCycleEnd = true) {
   const res = await fetch(`${RZP_API}/subscriptions/${subscriptionId}/cancel`, {
     method: 'POST',
-    headers: { Authorization: basicAuth(env), 'content-type': 'application/json' },
+    headers: rzpHeaders(env),
     body: JSON.stringify({ cancel_at_cycle_end: cancelAtCycleEnd ? 1 : 0 }),
   })
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data?.error?.description || `Razorpay cancel failed (${res.status})`)
-  return data
+  if (!res.ok) throw await rzpError(res, 'cancel')
+  return res.json()
 }
 
 // HMAC-SHA256(message, secret) → lowercase hex, via Web Crypto (Edge-safe).
