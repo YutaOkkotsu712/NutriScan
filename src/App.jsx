@@ -85,8 +85,8 @@ export default function App() {
       }
       // Token expired / not signed in — bounce to login (rare; token auto-refreshes).
       if (analysisResult?.unauthenticated) {
-        setError(t('errors.dbNotResponding'))
-        setScreen('error')
+        setAuthScreen('signin')
+        await signOut().catch(() => {})
         return
       }
 
@@ -114,7 +114,7 @@ export default function App() {
       setError(navigator.onLine === false ? t('errors.offline') : t('errors.dbNotResponding'))
       setScreen('error')
     }
-  }, [comparePending, compareA, t])
+  }, [comparePending, compareA, signOut, t])
 
   // --- Subscribe (Razorpay checkout) ---
   const handleSubscribe = useCallback(() => {

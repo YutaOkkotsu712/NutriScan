@@ -25,16 +25,19 @@ beforeAll(async () => {
 })
 
 // One fetch mock, dispatched by URL.
-function installFetch({ productFound = true } = {}) {
+function installFetch({ productFound = true, upstreamStatus = 200, upstreamBody = null, upstreamHeaders = null } = {}) {
   globalThis.fetch = (url, opts) => {
     const u = typeof url === 'string' ? url : url.url
     if (u.startsWith(KV_URL)) return kv.fetchImpl(u, opts)
     if (u === JWKS_URL) return Promise.resolve(new Response(JSON.stringify({ keys: [jwkPublic] }), { status: 200, headers: { 'content-type': 'application/json' } }))
     if (u.startsWith(OFF)) {
+      if (upstreamBody !== null) {
+        return Promise.resolve(new Response(upstreamBody, { status: upstreamStatus, headers: upstreamHeaders || {} }))
+      }
       const body = productFound
         ? { status: 1, product: { product_name: 'Parle-G', nutriments: { sugars_100g: 20 } } }
         : { status: 0 }
-      return Promise.resolve(new Response(JSON.stringify(body), { status: 200 }))
+      return Promise.resolve(new Response(JSON.stringify(body), { status: upstreamStatus, headers: { 'content-type': 'application/json' } }))
     }
     return Promise.resolve(new Response('{}', { status: 404 }))
   }
@@ -87,6 +90,27 @@ describe('gated scan endpoint', () => {
     const body = await r.json()
     expect(body.product.product_name).toBe('Parle-G')
     expect(body.entitlement).toMatchObject({ subscribed: false, used: 1, limit: 100, remaining: 99 })
+  })
+
+  it('does not consume a scan when OFF returns a genuine product miss', async () => {
+    installFetch({ productFound: false })
+    const r = await req('8901719101045', await token('missing-user'))
+    expect(r.status).toBe(200)
+    const body = await r.json()
+    expect(body).toMatchObject({ status: 0, error: 'Product not found' })
+    expect(kv.strings.get('scans:missing-user')).toBeUndefined()
+  })
+
+  it('does not consume a scan when OFF returns non-JSON', async () => {
+    installFetch({
+      upstreamBody: '<!doctype html><title>temporarily unavailable</title>',
+      upstreamHeaders: { 'content-type': 'text/html' },
+    })
+    const r = await req('8901719101045', await token('html-user'))
+    expect(r.status).toBe(502)
+    const body = await r.json()
+    expect(body).toMatchObject({ status: 0, error: 'non-json-api-response' })
+    expect(kv.strings.get('scans:html-user')).toBeUndefined()
   })
 
   it('blocks the 101st scan with 402 (paywall)', async () => {

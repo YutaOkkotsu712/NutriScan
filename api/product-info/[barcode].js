@@ -17,7 +17,7 @@ import { evaluateFasting } from '../../src/utils/fastingEngine.js'
 import { getAllowance, DEMOGRAPHIC_KEYS } from '../../src/utils/demographicEngine.js'
 import { FASTING_PROFILE_ORDER } from '../../src/data/fastingProfiles.js'
 import { fetchOverrides, applyOverrides } from '../_lib/overrides.js'
-import { gateProductRequest } from '../_lib/scanGate.js'
+import { authenticateProductRequest, ensureScanAvailable, consumeAuthorizedScan } from '../_lib/scanGate.js'
 
 export const config = { runtime: 'edge' }
 
@@ -33,10 +33,12 @@ export default async function handler(request) {
     return json({ error: 'Invalid barcode' }, 400, 'no-store')
   }
 
-  // Paywall gate (see api/_lib/scanGate.js): a metered scan when membership is
-  // on, so this composed endpoint can't be used to bypass /api/scan.
-  const gate = await gateProductRequest(request, env)
-  if (gate.blocked) return gate.blocked
+  // Paywall gate (see api/_lib/scanGate.js): authenticate and check allowance
+  // before the lookup, then consume only when product data is actually returned.
+  const auth = await authenticateProductRequest(request, env)
+  if (auth.blocked) return auth.blocked
+  const available = await ensureScanAvailable(auth.user, env)
+  if (available.blocked) return available.blocked
 
   let product
   try {
@@ -47,7 +49,10 @@ export default async function handler(request) {
       },
     })
     if (!upstream.ok) return json({ error: 'Upstream error' }, 502, 'no-store')
-    const data = await upstream.json()
+    const data = await upstream.json().catch(() => null)
+    if (!data || typeof data !== 'object') {
+      return json({ error: 'non-json-api-response' }, 502, 'no-store')
+    }
     if (data.status !== 1 || !data.product) {
       return json({ error: 'Product not found', barcode }, 404, 'no-store')
     }
@@ -122,7 +127,9 @@ export default async function handler(request) {
 
   // Every response is per-user (metered): attach the allowance, never
   // shared-cache. (Fail-closed paywall: there is no public branch.)
-  return json({ ...body, entitlement: gate.entitlement }, 200, 'no-store')
+  const consumed = await consumeAuthorizedScan(auth.user, env)
+  if (consumed.blocked) return consumed.blocked
+  return json({ ...body, entitlement: consumed.entitlement }, 200, 'no-store')
 }
 
 function json(body, status, cacheControl) {
