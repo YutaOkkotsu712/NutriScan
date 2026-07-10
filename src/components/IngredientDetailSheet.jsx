@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import BottomSheet from './BottomSheet'
 import { lookupEncyclopedia } from '../data/ingredientEncyclopedia'
 import { useT } from '../i18n'
+import { apiUrl } from '../utils/apiBase'
 
 // Prefer the live entry from /api/ingredients/<id> when the CMS has published
 // a newer version (spec §10/§14 — reviewed edits reach users without an app
@@ -14,7 +15,7 @@ function usePublishedEntry(localEntry) {
   useEffect(() => {
     if (!id) return
     let cancelled = false
-    fetch(`/api/ingredients/${encodeURIComponent(id)}`)
+    fetch(apiUrl(`/api/ingredients/${encodeURIComponent(id)}`))
       .then(res => (res.ok ? res.json() : null))
       .then(data => {
         if (!cancelled && data?.published) setLive(data)

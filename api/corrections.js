@@ -12,6 +12,7 @@
 // review" per §11) — they are NOT auto-applied to what users see.
 
 import { clientIp } from './_lib/auth.js'
+import { corsHeadersFor } from './_lib/cors.js'
 
 export const config = { runtime: 'edge' }
 
@@ -37,17 +38,8 @@ const env = (typeof process !== 'undefined' && process.env) || {}
 // Origin matches an explicit allowlist (env ALLOWED_ORIGIN). Same-origin calls
 // from the app don't need CORS headers, so this closes cross-origin abuse.
 function corsHeaders(request) {
-  const allowed = env.ALLOWED_ORIGIN
-  const origin = request.headers.get('origin')
-  if (allowed && origin === allowed) {
-    return {
-      'access-control-allow-origin': allowed,
-      'access-control-allow-methods': 'POST, OPTIONS',
-      'access-control-allow-headers': 'Content-Type',
-      'vary': 'Origin',
-    }
-  }
-  return { vary: 'Origin' }
+  // Shared allowlist: Capacitor app origins + ALLOWED_APP_ORIGINS/ALLOWED_ORIGIN.
+  return corsHeadersFor(request, env)
 }
 
 function json(body, status = 200, request = null) {

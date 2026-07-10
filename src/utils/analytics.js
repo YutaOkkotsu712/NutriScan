@@ -4,7 +4,9 @@
 // sendBeacon when available so events survive navigation; failures are ignored
 // so analytics can never break or slow the app.
 
-const ENDPOINT = '/api/analytics'
+import { apiUrl } from './apiBase.js'
+
+const ENDPOINT = apiUrl('/api/analytics')
 
 export function track(event, props = {}) {
   try {

@@ -122,7 +122,61 @@ vars). `npm test` runs the full suite (170 tests).
   DENY`, strict referrer policy, and a Permissions-Policy granting only the
   camera. If you integrate an external service, extend the CSP deliberately
   rather than removing it.
-- **Privacy**: no accounts, no cookies; family profiles never leave the
-  device's localStorage; analytics accepts only whitelisted non-personal keys.
+- **Privacy**: family profiles never leave the device's localStorage; analytics
+  accepts only whitelisted non-personal keys. NOTE: the ZOCO membership layer
+  (below) adds consumer login + payments, which introduces real user PII (email
+  via Firebase, payment records via Razorpay) — covered by their DPDP/privacy
+  terms, not stored by us beyond a per-user scan counter + subscription state.
 - **Token rotation**: delete the console user and create a new one (old token
   dies immediately); env tokens rotate in Vercel project settings.
+
+## 7. ZOCO membership (login + 100 free scans + subscription)
+
+The ZOCO build adds consumer accounts, a **100 free scans (lifetime)** meter,
+and paid membership. The scan count is enforced **server-side per user** — it
+cannot be bypassed by clearing app storage. This is separate from the admin
+console auth above (that's for you; this is for shoppers).
+
+### One-time setup
+
+**Firebase (login) — free:**
+1. Create a project at console.firebase.google.com → add a Web app.
+2. Authentication → Sign-in method → enable **Google** and **Email/Password**.
+3. Env vars: `FIREBASE_PROJECT_ID` (server) and `VITE_FIREBASE_API_KEY`,
+   `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_APP_ID`
+   (client, from the web-app config — these are public by design).
+   *No Firebase server secret is needed — the server verifies tokens against
+   Google's public keys.*
+4. After deploying, add your domain under Authentication → Settings →
+   Authorized domains.
+
+**Razorpay (payments):**
+1. Create a Razorpay account. Use **Test mode** until launch.
+2. Subscriptions → Plans → create a monthly plan → copy its `plan_...` id.
+3. Env vars: `VITE_RAZORPAY_KEY_ID` (public), `RAZORPAY_KEY_SECRET` (secret),
+   `RAZORPAY_PLAN_ID`.
+4. Settings → Webhooks → add `https://<your-domain>/api/subscription/webhook`,
+   subscribe to the **`subscription.*`** events, set a signing secret → put it
+   in `RAZORPAY_WEBHOOK_SECRET`. The webhook is the ONLY thing that grants
+   membership, and it's HMAC-verified, so this secret matters.
+
+Add every var in Vercel → Settings → Environment Variables. `.env.example`
+lists them all with which are secret.
+
+### Running the live payment test
+The subscribe flow can only be tested on a **deployed** app (a webhook can't
+reach localhost). After deploy + env + webhook: sign in, use up the free scans
+(or set the limit to 1 in the console), tap Subscribe, pay with a Razorpay
+**test card** → the header badge flips to "Member".
+
+### The Membership tab (admin console)
+Admins get a **Membership** tab to:
+- Change the **free-scan limit** (default 100, lifetime) for all users.
+- **Look up** a user by their Firebase UID to see scans used / membership.
+- **Comp** a user — reset their free-scan count to zero.
+Every change is recorded in the audit log.
+
+### iOS caveat
+Apple usually requires **In-App Purchase** (30% cut) for digital subscriptions.
+Razorpay is fine for web and Android; budget iOS payments as a separate
+integration for later.

@@ -1,25 +1,42 @@
 import { analyzeFood } from './scoreEngine.js'
 import { checkClaims } from './claimsChecker.js'
+import { apiUrl } from './apiBase.js'
 
-// Same-origin caching proxy (Vercel Edge Function in prod, Vite proxy in dev).
-// See api/product/[barcode].js — gives us CORS-free, edge-cached lookups.
-const OFF_API = '/api/product'
+// Default lookup path: the auth-gated, metered scan endpoint. Callers pass
+// the Authorization header via opts.headers (see App.lookupProduct). There is
+// no ungated product endpoint — the paywall is fail-closed server-side.
+const SCAN_API = apiUrl('/api/scan')
 
 /**
- * Look up a barcode on Open Food Facts and return structured nutrition data.
- * Returns null if the product isn't found.
+ * Look up a barcode and return structured nutrition data.
+ *
+ * @param opts.endpoint  base path (defaults to the gated /api/scan).
+ * @param opts.headers   extra headers (e.g. Authorization for the gated path).
+ * @returns the analyzed result, `null` for a genuine not-found, or a control
+ *          object `{ limitReached, entitlement }` / `{ unauthenticated }` so
+ *          the caller can show the paywall / re-auth instead of a product.
+ *          A successful result carries `.entitlement` when the gated path
+ *          reports it (drives the "N scans left" badge).
  */
-export async function lookupBarcode(barcode, onProgress) {
+export async function lookupBarcode(barcode, onProgress, opts = {}) {
+  const { endpoint = SCAN_API, headers = {} } = opts
   onProgress?.('Looking up product...')
 
-  const res = await fetch(`${OFF_API}/${barcode}`)
+  const res = await fetch(`${endpoint}/${barcode}`, { headers })
+
+  // Paywall / auth signals from the gated endpoint — not errors, not misses.
+  if (res.status === 402) {
+    const body = await res.json().catch(() => ({}))
+    return { limitReached: true, entitlement: body.entitlement || null }
+  }
+  if (res.status === 401) return { unauthenticated: true }
 
   if (!res.ok) {
     throw new Error(`Product lookup failed with HTTP ${res.status}`)
   }
 
-  // A non-JSON body usually means the deployment rewrote /api/product to the
-  // SPA shell or the edge function failed. That is not a true product miss.
+  // A non-JSON body usually means the deployment rewrote the route to the SPA
+  // shell or the edge function failed. That is not a true product miss.
   const data = await res.json().catch(() => {
     throw new Error('Product lookup returned non-JSON')
   })
@@ -30,6 +47,7 @@ export async function lookupBarcode(barcode, onProgress) {
   onProgress?.('Calculating health score...')
 
   const result = normalizeOffProduct(data.product, barcode)
+  if (data.entitlement) result.entitlement = data.entitlement
 
   console.log('[NutriScan] OFF product:', result.productName)
   console.log('[NutriScan] OFF nutrition:', JSON.stringify(result.parsedNutrition))

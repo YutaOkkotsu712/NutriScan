@@ -1,12 +1,13 @@
 import { analyzeFood } from './scoreEngine'
 import { evaluateFasting } from './fastingEngine'
 import { FASTING_STATUS } from '../data/fastingProfiles'
+import { apiUrl } from './apiBase.js'
+import { authHeader } from './useAuth'
 
-// Same-origin caching proxy (Vercel Edge Function in prod, Vite proxy in dev).
-// See api/search.js — CORS-free, edge-cached, rate-limit-insulated search.
-const SEARCH_API = '/api/search'
-
-const SEARCH_FIELDS = 'code,product_name,brands,image_front_small_url,nutriscore_grade,nutriments,categories_tags,serving_size,ingredients_text,nova_group,ingredients_analysis_tags,allergens_tags,traces_tags'
+// Same-origin caching proxy (api/search.js, both prod and dev). Auth-gated
+// like /api/scan — the returned fields are server-owned, so no `fields` param
+// is sent; requests carry the Firebase ID token when auth is enabled.
+const SEARCH_API = apiUrl('/api/search')
 
 // ---------------------------------------------------------------------------
 // Diet filtering for suggested alternatives (P1). OFF's analysis tags
@@ -109,10 +110,9 @@ export async function searchProducts(query, page = 1, pageSize = 20) {
     search_terms: query,
     page: String(page),
     page_size: String(pageSize),
-    fields: SEARCH_FIELDS,
   })
 
-  const res = await fetchWithRetry(`${SEARCH_API}?${params}`)
+  const res = await fetchWithRetry(`${SEARCH_API}?${params}`, { headers: await authHeader() })
 
   if (!res.ok) throw new Error('Search failed')
 
@@ -200,8 +200,11 @@ async function tryFetchAlternatives(attempt, excludeBarcode, origNameNorm, origi
   const { diet = 'none', allergens = [], fastingProfile = 'none', customFasting } = profileFilters
   const params = new URLSearchParams({
     page_size: String(limit + 15), // fetch extra to filter
-    fields: SEARCH_FIELDS,
     sort_by: 'nutriscore_score',
+    // Only suggest swaps the user can actually buy — restrict alternatives to
+    // products sold in India (OFF countries taxonomy). Explicit search stays
+    // unfiltered; this only narrows the SmartSwap suggestions.
+    countries_tags: 'en:india',
   })
 
   if (attempt.type === 'category') {
@@ -213,7 +216,7 @@ async function tryFetchAlternatives(attempt, excludeBarcode, origNameNorm, origi
   }
 
   try {
-    const res = await fetchWithRetry(`${SEARCH_API}?${params}`)
+    const res = await fetchWithRetry(`${SEARCH_API}?${params}`, { headers: await authHeader() })
 
     if (!res.ok) return []
 

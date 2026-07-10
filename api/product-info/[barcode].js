@@ -17,6 +17,7 @@ import { evaluateFasting } from '../../src/utils/fastingEngine.js'
 import { getAllowance, DEMOGRAPHIC_KEYS } from '../../src/utils/demographicEngine.js'
 import { FASTING_PROFILE_ORDER } from '../../src/data/fastingProfiles.js'
 import { fetchOverrides, applyOverrides } from '../_lib/overrides.js'
+import { gateProductRequest } from '../_lib/scanGate.js'
 
 export const config = { runtime: 'edge' }
 
@@ -31,6 +32,11 @@ export default async function handler(request) {
   if (!barcode || !/^\d{6,14}$/.test(barcode)) {
     return json({ error: 'Invalid barcode' }, 400, 'no-store')
   }
+
+  // Paywall gate (see api/_lib/scanGate.js): a metered scan when membership is
+  // on, so this composed endpoint can't be used to bypass /api/scan.
+  const gate = await gateProductRequest(request, env)
+  if (gate.blocked) return gate.blocked
 
   let product
   try {
@@ -114,8 +120,9 @@ export default async function handler(request) {
     dataConfidence: result.dataConfidence,
   }
 
-  // Same caching posture as /api/product — products rarely change.
-  return json(body, 200, 'public, s-maxage=86400, stale-while-revalidate=604800')
+  // Every response is per-user (metered): attach the allowance, never
+  // shared-cache. (Fail-closed paywall: there is no public branch.)
+  return json({ ...body, entitlement: gate.entitlement }, 200, 'no-store')
 }
 
 function json(body, status, cacheControl) {
@@ -124,7 +131,6 @@ function json(body, status, cacheControl) {
     headers: {
       'content-type': 'application/json; charset=utf-8',
       'cache-control': cacheControl,
-      'access-control-allow-origin': '*',
     },
   })
 }

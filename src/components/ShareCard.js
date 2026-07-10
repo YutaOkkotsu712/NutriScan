@@ -38,7 +38,7 @@ export async function generateShareImage(result, lang = 'en') {
   ctx.fillRect(0, 0, W, 70)
   ctx.fillStyle = '#ffffff'
   ctx.font = 'bold 26px -apple-system, Arial, sans-serif'
-  ctx.fillText('\u{1F52C} NutriScan', 24, 46)
+  ctx.fillText('\u{1F52C} ZOCO', 24, 46)
 
   // Product name
   ctx.fillStyle = '#1e293b'
@@ -171,8 +171,8 @@ export async function shareResult(result, lang = 'en') {
   if (navigator.share && navigator.canShare?.({ files: [file] })) {
     try {
       await navigator.share({
-        title: `NutriScan: ${result.productName} scored ${result.overallScore}/10`,
-        text: `${result.productName} scored ${result.overallScore}/10 on NutriScan's WHO-aligned health analysis.`,
+        title: `ZOCO: ${result.productName} scored ${result.overallScore}/10`,
+        text: `${result.productName} scored ${result.overallScore}/10 on ZOCO's WHO-aligned health analysis.`,
         files: [file],
       })
       return 'shared'

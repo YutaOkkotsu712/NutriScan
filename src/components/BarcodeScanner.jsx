@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Capacitor } from '@capacitor/core'
 import { extractBarcode } from '../utils/barcodeExtract'
 import { useT } from '../i18n'
 
@@ -13,12 +14,57 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
   const [showManual, setShowManual] = useState(false)
   const hasScannedRef = useRef(false)
   const mountedRef = useRef(true)
+  const isNative = Capacitor.isNativePlatform()
 
   useEffect(() => {
     mountedRef.current = true
     let scanner = null
 
+    // Native app (Capacitor): use ML Kit's native scanner — dramatically better
+    // than browser scanning in low light and on low-end phones. Same
+    // extractBarcode validation as the web path, so promo QR codes are still
+    // rejected. On any failure we fall back to manual entry, never a dead end.
+    async function startNativeScan() {
+      try {
+        const { BarcodeScanner: MLKit, BarcodeFormat } = await import('@capacitor-mlkit/barcode-scanning')
+        const perm = await MLKit.requestPermissions().catch(() => ({ camera: 'granted' }))
+        if (perm.camera === 'denied') {
+          setError('scan.permissionDenied')
+          setShowManual(true)
+          return
+        }
+        const { barcodes } = await MLKit.scan({
+          formats: [
+            BarcodeFormat.Ean13, BarcodeFormat.Ean8,
+            BarcodeFormat.UpcA, BarcodeFormat.UpcE,
+            BarcodeFormat.Code128, BarcodeFormat.Code39,
+            BarcodeFormat.QrCode,
+          ],
+        })
+        if (!mountedRef.current) return
+        for (const b of barcodes || []) {
+          const code = extractBarcode(b.rawValue || b.displayValue)
+          if (code) {
+            hasScannedRef.current = true
+            if (navigator.vibrate) navigator.vibrate(100)
+            onScan(code)
+            return
+          }
+        }
+        // Scanned something that isn't a product barcode (promo QR) or nothing.
+        if (barcodes?.length) setHint('scan.qrHint')
+        setShowManual(true)
+      } catch (err) {
+        if (!mountedRef.current) return
+        // User closed the native scanner, or the ML Kit module is unavailable
+        // on this device — degrade to manual entry.
+        if (!/cancel/i.test(String(err?.message || err))) setError('scan.cameraFailed')
+        setShowManual(true)
+      }
+    }
+
     async function startScanner() {
+      if (Capacitor.isNativePlatform()) return startNativeScan()
       try {
         const { Html5Qrcode, Html5QrcodeSupportedFormats } = await import('html5-qrcode')
 
@@ -128,7 +174,7 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
       </div>
 
       {/* Camera viewport — always render the div so html5-qrcode can find it */}
-      <div className={`relative rounded-2xl overflow-hidden bg-black mb-4 ${showManual ? 'hidden' : ''}`}>
+      <div className={`relative rounded-2xl overflow-hidden bg-black mb-4 ${showManual || isNative ? 'hidden' : ''}`}>
         <div id="barcode-reader" className="w-full" />
       </div>
 

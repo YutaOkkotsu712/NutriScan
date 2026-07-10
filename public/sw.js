@@ -1,11 +1,14 @@
-const CACHE_NAME = 'nutriscan-v5'
-const DATA_CACHE = 'nutriscan-data-v5'
+const CACHE_NAME = 'nutriscan-v6'
+const DATA_CACHE = 'nutriscan-data-v6'
 const PRECACHE = ['/', '/index.html']
 
 // Same-origin API paths whose GET responses are safe to cache for offline use:
-// previously-scanned products and the reference database. Search, corrections
-// and analytics are intentionally excluded (dynamic / write / privacy).
-const CACHEABLE_API = ['/api/product/', '/api/ingredients/', '/api/reference/']
+// the PUBLIC reference database only. Authenticated/metered responses
+// (/api/scan, entitlement, subscriptions) are deliberately NOT cached: the
+// server marks them no-store, and caching them would expose one user's scan
+// history to another profile user and keep metered data readable after
+// sign-out. Search, corrections and analytics are excluded too.
+const CACHEABLE_API = ['/api/ingredients/', '/api/reference/']
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE)))

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import BottomSheet from './BottomSheet'
 import { useT } from '../i18n'
+import { apiUrl } from '../utils/apiBase'
 import { track } from '../utils/analytics'
 
 const TYPES = ['nutrition', 'ingredient', 'allergen', 'regulation', 'other']
@@ -22,7 +23,7 @@ export default function CorrectionSheet({ open, onClose, result, defaultType = '
     if (detail.trim().length < 3) { setStatus('needDetail'); return }
     setStatus('submitting')
     try {
-      const res = await fetch('/api/corrections', {
+      const res = await fetch(apiUrl('/api/corrections'), {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({

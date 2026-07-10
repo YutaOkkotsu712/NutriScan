@@ -1,20 +1,24 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { pathToFileURL } from 'node:url'
 import path from 'node:path'
 
 // In production, /api/* is served by the Vercel Functions in /api.
-// In local dev:
-//  - /api/search proxies straight to Open Food Facts (below)
-//  - every other /api/* route (including /api/product, so reviewed data
-//    overrides apply in dev too) is served by the SAME edge-function modules
-//    via the dev middleware plugin, so dev and prod share one code path.
+// In local dev every /api/* route (including /api/search, so its auth gate
+// and param clamping apply in dev too) is served by the SAME edge-function
+// modules via the dev middleware plugin, so dev and prod share one code path.
 
 const EDGE_ROUTES = [
   // [URL prefix, module path relative to this file]
+  ['/api/scan/', 'api/scan/[barcode].js'],
+  ['/api/search', 'api/search.js'],
+  ['/api/me/entitlement', 'api/me/entitlement.js'],
+  ['/api/me/delete', 'api/me/delete.js'],
+  ['/api/subscription/create', 'api/subscription/create.js'],
+  ['/api/subscription/cancel', 'api/subscription/cancel.js'],
+  ['/api/subscription/webhook', 'api/subscription/webhook.js'],
   ['/api/product-info/', 'api/product-info/[barcode].js'],
-  ['/api/product/', 'api/product/[barcode].js'],
   ['/api/ingredients', 'api/ingredients/[id].js'],
   ['/api/reference/nutrients', 'api/reference/nutrients.js'],
   ['/api/reference/fasting', 'api/reference/fasting.js'],
@@ -23,6 +27,7 @@ const EDGE_ROUTES = [
   ['/api/admin/corrections', 'api/admin/corrections.js'],
   ['/api/admin/users', 'api/admin/users.js'],
   ['/api/admin/reference', 'api/admin/reference.js'],
+  ['/api/admin/membership', 'api/admin/membership.js'],
   ['/api/corrections', 'api/corrections.js'],
   ['/api/analytics', 'api/analytics.js'],
 ]
@@ -53,13 +58,25 @@ function devKvMiddleware() {
 }
 
 function edgeFunctionsDev() {
-  return {
-    name: 'nutriscan-edge-functions-dev',
-    configureServer(server) {
+  // Shared between the dev server and `vite preview` (prod-bundle testing):
+  // same env bootstrap, same in-memory KV, same edge-function bridge.
+  function setup(server) {
+      // Vite only exposes VITE_* to the client. The edge functions run here in
+      // Node and read process.env, so load the non-VITE server vars (Firebase
+      // project id, Razorpay secrets) from .env.local into process.env.
+      const fileEnv = loadEnv(server.config.mode, process.cwd(), '')
+      for (const key of ['FIREBASE_PROJECT_ID', 'RAZORPAY_KEY_SECRET', 'RAZORPAY_WEBHOOK_SECRET', 'RAZORPAY_PLAN_ID', 'VITE_RAZORPAY_KEY_ID']) {
+        if (!process.env[key] && fileEnv[key]) process.env[key] = fileEnv[key]
+      }
+
       // Dev-only admin credential + in-memory KV so the corrections flow is
       // fully testable locally. Prod uses the real ADMIN_TOKEN / KV env vars
       // on Vercel; nothing here ships in the build.
       if (!process.env.ADMIN_TOKEN) process.env.ADMIN_TOKEN = 'dev-admin-token'
+      // Dev-only webhook secret so a simulated Razorpay webhook can be tested
+      // locally (real webhooks can't reach localhost). Prod uses the real
+      // RAZORPAY_WEBHOOK_SECRET from Vercel.
+      if (!process.env.RAZORPAY_WEBHOOK_SECRET) process.env.RAZORPAY_WEBHOOK_SECRET = 'dev-webhook-secret'
       const kvHandler = devKvMiddleware()
       server.httpServer?.once('listening', () => {
         const { port } = server.httpServer.address()
@@ -102,20 +119,17 @@ function edgeFunctionsDev() {
           res.end(JSON.stringify({ error: 'Dev edge function error' }))
         }
       })
-    },
+  }
+
+  return {
+    name: 'nutriscan-edge-functions-dev',
+    configureServer: setup,
+    // `vite preview` serves the PROD bundle — register the same API bridge so
+    // the production build is fully testable locally (never ships to Vercel).
+    configurePreviewServer: setup,
   }
 }
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), edgeFunctionsDev()],
-  server: {
-    proxy: {
-      // /api/search?...  ->  OFF v2 search
-      '/api/search': {
-        target: 'https://world.openfoodfacts.org',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/search/, '/api/v2/search'),
-      },
-    },
-  },
 })
