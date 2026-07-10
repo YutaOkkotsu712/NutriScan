@@ -8,6 +8,7 @@ import CompareScreen from './components/CompareScreen'
 import ProfileSheet from './components/ProfileSheet'
 import OfflineBanner from './components/OfflineBanner'
 import LoginScreen from './components/LoginScreen'
+import WelcomeScreen from './components/WelcomeScreen'
 import PaywallScreen from './components/PaywallScreen'
 import AccountScreen from './components/AccountScreen'
 import { useProfile, setProfile } from './utils/profile'
@@ -31,6 +32,9 @@ export default function App() {
   const profile = useProfile()
   const { user, ready: authReady, authEnabled, signOut } = useAuth()
   const [entitlement, setEntitlement] = useState(null)
+  // Logged-out flow: marketing landing first, then the login form.
+  // null = WelcomeScreen; 'signup' | 'signin' = LoginScreen in that mode.
+  const [authScreen, setAuthScreen] = useState(null)
   const { t, lang } = useT()
 
   // Load the membership status once signed in (drives the "N scans left"
@@ -182,7 +186,15 @@ export default function App() {
     return <div className="min-h-screen bg-gray-50" />
   }
   if (!user) {
-    return <LoginScreen />
+    if (!authScreen) {
+      return (
+        <WelcomeScreen
+          onGetStarted={() => setAuthScreen('signup')}
+          onSignIn={() => setAuthScreen('signin')}
+        />
+      )
+    }
+    return <LoginScreen initialMode={authScreen} onBack={() => setAuthScreen(null)} />
   }
 
   return (

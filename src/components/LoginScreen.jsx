@@ -10,11 +10,11 @@ import { isNativeApp } from '../utils/platform'
 // Native app: the Google button is hidden — signInWithPopup cannot open a
 // popup inside the Capacitor WebView. Email/password works everywhere; native
 // Google sign-in needs @capacitor-firebase/authentication (follow-up).
-export default function LoginScreen() {
+export default function LoginScreen({ initialMode = 'signin', onBack }) {
   const { t } = useT()
   const native = isNativeApp()
   const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth()
-  const [mode, setMode] = useState('signin') // 'signin' | 'signup'
+  const [mode, setMode] = useState(initialMode) // 'signin' | 'signup'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
@@ -47,6 +47,11 @@ export default function LoginScreen() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-gray-50">
       <div className="w-full max-w-sm">
+        {onBack && (
+          <button onClick={onBack} className="text-sm text-gray-500 hover:text-gray-700 font-medium mb-4">
+            ← {t('account.back')}
+          </button>
+        )}
         <div className="text-center mb-8">
           <div className="text-4xl mb-2">🔬</div>
           <h1 className="text-2xl font-bold text-gray-900">{t('auth.welcome')}</h1>

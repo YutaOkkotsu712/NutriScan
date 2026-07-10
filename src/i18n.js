@@ -123,6 +123,22 @@ const STRINGS = {
       cameraFailed: 'Could not start camera. Try entering the barcode manually.',
       elementMissing: 'Scanner element not found. Enter barcode manually.',
     },
+    welcome: {
+      headline: 'Know what’s inside before you buy',
+      sub: 'Scan any packaged food for a clear health score, allergen alerts and diet checks — made for India.',
+      cta: 'Get started free',
+      freeNote: '100 free scans · no card needed',
+      signIn: 'I already have an account',
+      f1t: 'WHO-aligned health score',
+      f1d: 'Sugar, salt, fat and additives — explained in plain words.',
+      f2t: 'Veg, Jain, vegan & allergen alerts',
+      f2d: 'Instant checks for your family’s diet and allergies.',
+      f3t: 'Fasting-friendly checks',
+      f3d: 'Navratri, Ekadashi, Shravan and your own family rules.',
+      f4t: 'Healthier swaps, sold in India',
+      f4d: 'Better alternatives compared side by side.',
+      privacy: 'Privacy policy',
+    },
     auth: {
       welcome: 'Sign in to ZOCO',
       subtitle: 'Know what’s inside before you buy. Sign in to start scanning.',
@@ -320,7 +336,7 @@ const STRINGS = {
 
   hi: {
     common: {
-      appName: 'न्यूट्रीस्कैन',
+      appName: 'ZOCO',
       tagline: 'जानिए आपके भोजन में वास्तव में क्या है। WHO-आधारित स्वास्थ्य स्कोर, पूरी जानकारी के साथ।',
       home: 'होम', done: 'हो गया', reset: 'रीसेट', back: 'वापस',
       showDetails: 'विवरण देखें', hideDetails: 'विवरण छिपाएँ',
@@ -460,6 +476,22 @@ const STRINGS = {
     },
     share: { footer: 'ZOCO से स्कैन किया — WHO-आधारित फ़ूड हेल्थ स्कोर', claimsOne: '⚠️ {n} भ्रामक दावा मिला', claimsMany: '⚠️ {n} भ्रामक दावे मिले' },
     scoreword: { "Avoid": 'टालें', "Poor": 'कमज़ोर', "Below Average": 'औसत से कम', "Average": 'औसत', "Decent": 'ठीक-ठाक', "Good": 'अच्छा', "Excellent": 'बेहतरीन' },
+    welcome: {
+      headline: 'खरीदने से पहले जानिए अंदर क्या है',
+      sub: 'कोई भी पैक्ड फ़ूड स्कैन करें — साफ़ हेल्थ स्कोर, एलर्जी अलर्ट और डाइट जाँच, भारत के लिए बना।',
+      cta: 'मुफ़्त शुरू करें',
+      freeNote: '100 मुफ़्त स्कैन · कार्ड की ज़रूरत नहीं',
+      signIn: 'मेरा खाता पहले से है',
+      f1t: 'WHO-आधारित हेल्थ स्कोर',
+      f1d: 'चीनी, नमक, फैट और एडिटिव्स — आसान भाषा में।',
+      f2t: 'वेज, जैन, वीगन और एलर्जी अलर्ट',
+      f2d: 'परिवार की डाइट और एलर्जी की तुरंत जाँच।',
+      f3t: 'व्रत-अनुकूल जाँच',
+      f3d: 'नवरात्रि, एकादशी, श्रावण और आपके अपने नियम।',
+      f4t: 'भारत में मिलने वाले बेहतर विकल्प',
+      f4d: 'बेहतर विकल्पों की आमने-सामने तुलना।',
+      privacy: 'प्राइवेसी पॉलिसी',
+    },
     auth: {
       welcome: 'ZOCO में साइन इन करें',
       subtitle: 'खरीदने से पहले जानें अंदर क्या है। स्कैन शुरू करने के लिए साइन इन करें।',
@@ -902,6 +934,22 @@ const STRINGS = {
     },
     share: { footer: 'ZOCO se scan kiya — WHO-based food health scores', claimsOne: '⚠️ {n} misleading claim mila', claimsMany: '⚠️ {n} misleading claims mile' },
     scoreword: { "Avoid": 'Avoid', "Poor": 'Kamzor', "Below Average": 'Average se kam', "Average": 'Average', "Decent": 'Theek-thaak', "Good": 'Achha', "Excellent": 'Behtareen' },
+    welcome: {
+      headline: 'Khareedne se pehle jaaniye andar kya hai',
+      sub: 'Koi bhi packed food scan karein — clear health score, allergy alerts aur diet check, India ke liye bana.',
+      cta: 'Free shuru karein',
+      freeNote: '100 free scans · card ki zaroorat nahi',
+      signIn: 'Mera account pehle se hai',
+      f1t: 'WHO-based health score',
+      f1d: 'Cheeni, namak, fat aur additives — aasan bhasha mein.',
+      f2t: 'Veg, Jain, vegan aur allergy alerts',
+      f2d: 'Family ki diet aur allergies ki turant jaanch.',
+      f3t: 'Vrat-friendly checks',
+      f3d: 'Navratri, Ekadashi, Shravan aur aapke apne niyam.',
+      f4t: 'India mein milne waale behtar options',
+      f4d: 'Behtar alternatives ki side-by-side tulna.',
+      privacy: 'Privacy policy',
+    },
     auth: {
       welcome: 'ZOCO mein sign in karein',
       subtitle: 'Khareedne se pehle jaanein andar kya hai. Scan shuru karne ke liye sign in karein.',
@@ -956,7 +1004,7 @@ const STRINGS = {
 
   // Marathi (core; falls back to English for uncovered keys).
   mr: {
-    common: { appName: 'न्यूट्रीस्कॅन', tagline: 'तुमच्या अन्नात नेमकं काय आहे ते जाणून घ्या. WHO-आधारित आरोग्य स्कोअर, संपूर्ण माहितीसह.', home: 'होम', done: 'झाले', reset: 'रीसेट', back: 'मागे', showDetails: 'तपशील पाहा', hideDetails: 'तपशील लपवा', translationPending: 'इंग्रजीत दाखवले — मराठी अनुवाद लवकरच.', outOf10: '10 पैकी', offline: 'तुम्ही ऑफलाइन आहात — उपलब्ध असेल तिथे साठवलेला डेटा दाखवत आहोत.' },
+    common: { appName: 'ZOCO', tagline: 'तुमच्या अन्नात नेमकं काय आहे ते जाणून घ्या. WHO-आधारित आरोग्य स्कोअर, संपूर्ण माहितीसह.', home: 'होम', done: 'झाले', reset: 'रीसेट', back: 'मागे', showDetails: 'तपशील पाहा', hideDetails: 'तपशील लपवा', translationPending: 'इंग्रजीत दाखवले — मराठी अनुवाद लवकरच.', outOf10: '10 पैकी', offline: 'तुम्ही ऑफलाइन आहात — उपलब्ध असेल तिथे साठवलेला डेटा दाखवत आहोत.' },
     landing: { scanBarcode: 'बारकोड स्कॅन करा', searchByName: 'नावाने शोधा', uploadPhoto: 'बारकोड फोटो अपलोड करा', readingBarcode: 'बारकोड वाचत आहे...', footer: 'बारकोड आणि शोध Open Food Facts वापरतात. विश्लेषण त्वरित होते.' },
     verdict: { Buy: 'घ्या', Limit: 'मर्यादित करा', Avoid: 'टाळा', BuyDesc: 'रोजच्यासाठी चांगला पर्याय', LimitDesc: 'कधीकधी ठीक', AvoidDesc: 'क्वचितच घ्या' },
     results: { containsYourAllergens: 'तुमचे अ‍ॅलर्जन आहेत', whyThisScore: 'हा स्कोअर का?', share: 'शेअर करा', compare: 'तुलना करा', scanAnother: 'दुसरे स्कॅन करा', dataFromOFF: 'डेटा Open Food Facts कडून — पडताळलेला पोषण डेटाबेस', containsAllergens: 'अ‍ॅलर्जन आहेत', mayContainTracesOf: 'यांचे अंश असू शकतात' },
@@ -1099,6 +1147,22 @@ const STRINGS = {
     ingsheet: { "tab.Simple": 'सोपे', "tab.Safety": 'सुरक्षा', "tab.Regulation": 'नियमन', "tab.Cultural": 'सांस्कृतिक', "tab.Sources": 'स्रोत', "badge.yes": 'होय', "badge.no": 'नाही', "badge.depends": 'अवलंबून', "badge.unknown": 'अज्ञात', reportIssue: 'समस्या नोंदवा', notVerified: 'माहिती अद्याप सत्यापित नाही', noEntry: 'या घटकाची सत्यापित नोंद अद्याप उपलब्ध नाही.', whatItIs: 'हे काय आहे', whyUsed: 'का वापरले जाते', allergenLabel: 'एलर्जन:', whoCareful: 'कोणी काळजी घ्यावी', noSafety: 'कोणतीही विशेष सुरक्षा चिंता नोंदलेली नाही.', limitNA: 'मर्यादा डेटाबेसमध्ये उपलब्ध नाही. ती श्रेणी-विशिष्ट असू शकते.', status: 'स्थिती', category: 'श्रेणी', maxLevel: 'कमाल पातळी', notInDb: 'डेटाबेसमध्ये उपलब्ध नाही', confidence: 'विश्वास', effectiveFrom: 'लागू दिनांक', source: 'स्रोत', regNote: 'नियामक मर्यादा श्रेणी-विशिष्ट असू शकतात व बदलू शकतात. आम्ही कधीही मर्यादेचा अंदाज लावत नाही.', culturalNA: 'या घटकाची सांस्कृतिक योग्यता सत्यापित नाही.', vegetarian: 'शाकाहारी', jain: 'जैन', vegan: 'व्हीगन', upvas: 'उपवास', lastReviewed: 'शेवटची समीक्षा', sources: 'स्रोत', noSource: 'या घटकाचा सत्यापित स्रोत अद्याप नोंदलेला नाही.' },
     share: { footer: 'ZOCO ने स्कॅन केले — WHO-आधारित फूड हेल्थ स्कोअर', claimsOne: '⚠️ {n} दिशाभूल करणारा दावा आढळला', claimsMany: '⚠️ {n} दिशाभूल करणारे दावे आढळले' },
     scoreword: { "Avoid": 'टाळा', "Poor": 'कमकुवत', "Below Average": 'सरासरीपेक्षा कमी', "Average": 'सरासरी', "Decent": 'बरे', "Good": 'चांगले', "Excellent": 'उत्कृष्ट' },
+    welcome: {
+      headline: 'खरेदी करण्यापूर्वी आत काय आहे ते जाणा',
+      sub: 'कोणतेही पॅक्ड फूड स्कॅन करा — स्पष्ट हेल्थ स्कोअर, ॲलर्जी अलर्ट आणि आहार तपासणी, भारतासाठी बनवले.',
+      cta: 'मोफत सुरू करा',
+      freeNote: '100 मोफत स्कॅन · कार्डची गरज नाही',
+      signIn: 'माझे खाते आधीपासून आहे',
+      f1t: 'WHO-आधारित हेल्थ स्कोअर',
+      f1d: 'साखर, मीठ, फॅट आणि ॲडिटिव्ह — सोप्या भाषेत.',
+      f2t: 'व्हेज, जैन, व्हेगन आणि ॲलर्जी अलर्ट',
+      f2d: 'कुटुंबाच्या आहाराची आणि ॲलर्जीची त्वरित तपासणी.',
+      f3t: 'उपवास-अनुकूल तपासणी',
+      f3d: 'नवरात्री, एकादशी, श्रावण आणि तुमचे स्वतःचे नियम.',
+      f4t: 'भारतात मिळणारे चांगले पर्याय',
+      f4d: 'चांगल्या पर्यायांची समोरासमोर तुलना.',
+      privacy: 'गोपनीयता धोरण',
+    },
     auth: {
       welcome: 'ZOCO मध्ये साइन इन करा',
       subtitle: 'खरेदी करण्यापूर्वी आत काय आहे ते जाणून घ्या. स्कॅन सुरू करण्यासाठी साइन इन करा.',
@@ -1153,7 +1217,7 @@ const STRINGS = {
 
   // Gujarati (core).
   gu: {
-    common: { appName: 'ન્યુટ્રીસ્કૅન', tagline: 'તમારા ખોરાકમાં ખરેખર શું છે તે જાણો. WHO-આધારિત આરોગ્ય સ્કોર, સંપૂર્ણ વિગત સાથે.', home: 'હોમ', done: 'થઈ ગયું', reset: 'રીસેટ', back: 'પાછળ', showDetails: 'વિગત જુઓ', hideDetails: 'વિગત છુપાવો', translationPending: 'અંગ્રેજીમાં બતાવ્યું — ગુજરાતી અનુવાદ ટૂંક સમયમાં.', outOf10: '10 માંથી', offline: 'તમે ઑફલાઇન છો — જ્યાં ઉપલબ્ધ હોય ત્યાં સાચવેલ ડેટા બતાવીએ છીએ.' },
+    common: { appName: 'ZOCO', tagline: 'તમારા ખોરાકમાં ખરેખર શું છે તે જાણો. WHO-આધારિત આરોગ્ય સ્કોર, સંપૂર્ણ વિગત સાથે.', home: 'હોમ', done: 'થઈ ગયું', reset: 'રીસેટ', back: 'પાછળ', showDetails: 'વિગત જુઓ', hideDetails: 'વિગત છુપાવો', translationPending: 'અંગ્રેજીમાં બતાવ્યું — ગુજરાતી અનુવાદ ટૂંક સમયમાં.', outOf10: '10 માંથી', offline: 'તમે ઑફલાઇન છો — જ્યાં ઉપલબ્ધ હોય ત્યાં સાચવેલ ડેટા બતાવીએ છીએ.' },
     landing: { scanBarcode: 'બારકોડ સ્કૅન કરો', searchByName: 'નામથી શોધો', uploadPhoto: 'બારકોડ ફોટો અપલોડ કરો', readingBarcode: 'બારકોડ વાંચી રહ્યા છીએ...', footer: 'બારકોડ અને શોધ Open Food Facts વાપરે છે. વિશ્લેષણ તરત થાય છે.' },
     verdict: { Buy: 'ખરીદો', Limit: 'મર્યાદિત કરો', Avoid: 'ટાળો', BuyDesc: 'રોજ માટે સારો વિકલ્પ', LimitDesc: 'ક્યારેક ઠીક', AvoidDesc: 'ભાગ્યે જ લો' },
     results: { containsYourAllergens: 'તમારા એલર્જન છે', whyThisScore: 'આ સ્કોર કેમ?', share: 'શેર કરો', compare: 'સરખાવો', scanAnother: 'બીજું સ્કૅન કરો', dataFromOFF: 'ડેટા Open Food Facts તરફથી — ચકાસાયેલ પોષણ ડેટાબેઝ', containsAllergens: 'એલર્જન છે', mayContainTracesOf: 'આના અંશ હોઈ શકે' },
@@ -1296,6 +1360,22 @@ const STRINGS = {
     ingsheet: { "tab.Simple": 'સરળ', "tab.Safety": 'સલામતી', "tab.Regulation": 'નિયમન', "tab.Cultural": 'સાંસ્કૃતિક', "tab.Sources": 'સ્રોત', "badge.yes": 'હા', "badge.no": 'ના', "badge.depends": 'આધારિત', "badge.unknown": 'અજ્ઞાત', reportIssue: 'સમસ્યા જણાવો', notVerified: 'માહિતી હજી ચકાસાયેલ નથી', noEntry: 'આ સામગ્રીની ચકાસાયેલ નોંધ હજી ઉપલબ્ધ નથી.', whatItIs: 'આ શું છે', whyUsed: 'કેમ વપરાય છે', allergenLabel: 'એલર્જન:', whoCareful: 'કોણે સાવધ રહેવું', noSafety: 'કોઈ ખાસ સલામતી ચિંતા નોંધાયેલી નથી.', limitNA: 'મર્યાદા ડેટાબેસમાં ઉપલબ્ધ નથી. તે શ્રેણી-વિશિષ્ટ હોઈ શકે.', status: 'સ્થિતિ', category: 'શ્રેણી', maxLevel: 'મહત્તમ સ્તર', notInDb: 'ડેટાબેસમાં ઉપલબ્ધ નથી', confidence: 'વિશ્વાસ', effectiveFrom: 'લાગુ તારીખ', source: 'સ્રોત', regNote: 'નિયામક મર્યાદાઓ શ્રેણી-વિશિષ્ટ હોઈ શકે અને બદલાઈ શકે. અમે ક્યારેય મર્યાદાનું અનુમાન કરતા નથી.', culturalNA: 'આ સામગ્રીની સાંસ્કૃતિક યોગ્યતા ચકાસાયેલ નથી.', vegetarian: 'શાકાહારી', jain: 'જૈન', vegan: 'વીગન', upvas: 'ઉપવાસ', lastReviewed: 'છેલ્લી સમીક્ષા', sources: 'સ્રોત', noSource: 'આ સામગ્રીનો ચકાસાયેલ સ્રોત હજી નોંધાયો નથી.' },
     share: { footer: 'ZOCO થી સ્કેન કર્યું — WHO-આધારિત ફૂડ હેલ્થ સ્કોર', claimsOne: '⚠️ {n} ભ્રામક દાવો મળ્યો', claimsMany: '⚠️ {n} ભ્રામક દાવા મળ્યા' },
     scoreword: { "Avoid": 'ટાળો', "Poor": 'નબળું', "Below Average": 'સરેરાશથી ઓછું', "Average": 'સરેરાશ', "Decent": 'ઠીક', "Good": 'સારું', "Excellent": 'ઉત્તમ' },
+    welcome: {
+      headline: 'ખરીદતા પહેલાં જાણો અંદર શું છે',
+      sub: 'કોઈપણ પેક્ડ ફૂડ સ્કેન કરો — સ્પષ્ટ હેલ્થ સ્કોર, એલર્જી અલર્ટ અને ડાયેટ તપાસ, ભારત માટે બનેલું.',
+      cta: 'મફત શરૂ કરો',
+      freeNote: '100 મફત સ્કેન · કાર્ડની જરૂર નથી',
+      signIn: 'મારું ખાતું પહેલેથી છે',
+      f1t: 'WHO-આધારિત હેલ્થ સ્કોર',
+      f1d: 'ખાંડ, મીઠું, ફેટ અને એડિટિવ્સ — સરળ ભાષામાં.',
+      f2t: 'વેજ, જૈન, વીગન અને એલર્જી અલર્ટ',
+      f2d: 'પરિવારના ડાયેટ અને એલર્જીની તરત તપાસ.',
+      f3t: 'ઉપવાસ-અનુકૂળ તપાસ',
+      f3d: 'નવરાત્રિ, એકાદશી, શ્રાવણ અને તમારા પોતાના નિયમો.',
+      f4t: 'ભારતમાં મળતા સારા વિકલ્પો',
+      f4d: 'સારા વિકલ્પોની સામસામે સરખામણી.',
+      privacy: 'પ્રાઇવસી પોલિસી',
+    },
     auth: {
       welcome: 'ZOCO માં સાઇન ઇન કરો',
       subtitle: 'ખરીદતા પહેલાં અંદર શું છે તે જાણો. સ્કેન શરૂ કરવા સાઇન ઇન કરો.',
@@ -1350,7 +1430,7 @@ const STRINGS = {
 
   // Bengali (core).
   bn: {
-    common: { appName: 'নিউট্রিস্ক্যান', tagline: 'আপনার খাবারে আসলে কী আছে জানুন। WHO-ভিত্তিক স্বাস্থ্য স্কোর, বিস্তারিত সহ।', home: 'হোম', done: 'সম্পন্ন', reset: 'রিসেট', back: 'পিছনে', showDetails: 'বিস্তারিত দেখুন', hideDetails: 'বিস্তারিত লুকান', translationPending: 'ইংরেজিতে দেখানো হয়েছে — বাংলা অনুবাদ শীঘ্রই।', outOf10: '10 এর মধ্যে', offline: 'আপনি অফলাইন — যেখানে সম্ভব সংরক্ষিত ডেটা দেখানো হচ্ছে।' },
+    common: { appName: 'ZOCO', tagline: 'আপনার খাবারে আসলে কী আছে জানুন। WHO-ভিত্তিক স্বাস্থ্য স্কোর, বিস্তারিত সহ।', home: 'হোম', done: 'সম্পন্ন', reset: 'রিসেট', back: 'পিছনে', showDetails: 'বিস্তারিত দেখুন', hideDetails: 'বিস্তারিত লুকান', translationPending: 'ইংরেজিতে দেখানো হয়েছে — বাংলা অনুবাদ শীঘ্রই।', outOf10: '10 এর মধ্যে', offline: 'আপনি অফলাইন — যেখানে সম্ভব সংরক্ষিত ডেটা দেখানো হচ্ছে।' },
     landing: { scanBarcode: 'বারকোড স্ক্যান করুন', searchByName: 'নাম দিয়ে খুঁজুন', uploadPhoto: 'বারকোড ছবি আপলোড করুন', readingBarcode: 'বারকোড পড়া হচ্ছে...', footer: 'বারকোড ও অনুসন্ধান Open Food Facts ব্যবহার করে। বিশ্লেষণ তৎক্ষণাৎ হয়।' },
     verdict: { Buy: 'কিনুন', Limit: 'সীমিত করুন', Avoid: 'এড়িয়ে চলুন', BuyDesc: 'প্রতিদিনের জন্য ভালো', LimitDesc: 'মাঝে মাঝে ঠিক', AvoidDesc: 'কদাচিৎ নিন' },
     results: { containsYourAllergens: 'আপনার অ্যালার্জেন আছে', whyThisScore: 'এই স্কোর কেন?', share: 'শেয়ার', compare: 'তুলনা', scanAnother: 'আরেকটি স্ক্যান করুন', dataFromOFF: 'ডেটা Open Food Facts থেকে — যাচাইকৃত পুষ্টি ডেটাবেস', containsAllergens: 'অ্যালার্জেন আছে', mayContainTracesOf: 'এগুলির অংশ থাকতে পারে' },
@@ -1493,6 +1573,22 @@ const STRINGS = {
     ingsheet: { "tab.Simple": 'সহজ', "tab.Safety": 'নিরাপত্তা', "tab.Regulation": 'নিয়ন্ত্রণ', "tab.Cultural": 'সাংস্কৃতিক', "tab.Sources": 'উৎস', "badge.yes": 'হ্যাঁ', "badge.no": 'না', "badge.depends": 'নির্ভরশীল', "badge.unknown": 'অজানা', reportIssue: 'সমস্যা জানান', notVerified: 'তথ্য এখনো যাচাই হয়নি', noEntry: 'এই উপাদানের যাচাইকৃত ভুক্তি এখনো নেই।', whatItIs: 'এটি কী', whyUsed: 'কেন ব্যবহার হয়', allergenLabel: 'অ্যালার্জেন:', whoCareful: 'কারা সতর্ক থাকবেন', noSafety: 'কোনো বিশেষ নিরাপত্তা উদ্বেগ নথিভুক্ত নেই।', limitNA: 'সীমা ডেটাবেসে নেই। এটি শ্রেণি-নির্দিষ্ট হতে পারে।', status: 'অবস্থা', category: 'শ্রেণি', maxLevel: 'সর্বোচ্চ মাত্রা', notInDb: 'ডেটাবেসে নেই', confidence: 'আস্থা', effectiveFrom: 'কার্যকর তারিখ', source: 'উৎস', regNote: 'নিয়ন্ত্রক সীমা শ্রেণি-নির্দিষ্ট হতে পারে ও বদলাতে পারে। আমরা কখনো সীমা অনুমান করি না।', culturalNA: 'এই উপাদানের সাংস্কৃতিক উপযুক্ততা যাচাই হয়নি।', vegetarian: 'নিরামিষ', jain: 'জৈন', vegan: 'ভিগান', upvas: 'উপবাস', lastReviewed: 'শেষ সমীক্ষা', sources: 'উৎস', noSource: 'এই উপাদানের যাচাইকৃত উৎস এখনো নথিভুক্ত নেই।' },
     share: { footer: 'ZOCO দিয়ে স্ক্যান — WHO-ভিত্তিক ফুড হেলথ স্কোর', claimsOne: '⚠️ {n}টি বিভ্রান্তিকর দাবি পাওয়া গেছে', claimsMany: '⚠️ {n}টি বিভ্রান্তিকর দাবি পাওয়া গেছে' },
     scoreword: { "Avoid": 'এড়িয়ে চলুন', "Poor": 'দুর্বল', "Below Average": 'গড়ের নিচে', "Average": 'গড়', "Decent": 'মোটামুটি', "Good": 'ভালো', "Excellent": 'চমৎকার' },
+    welcome: {
+      headline: 'কেনার আগে জানুন ভিতরে কী আছে',
+      sub: 'যেকোনো প্যাকেটজাত খাবার স্ক্যান করুন — স্পষ্ট হেলথ স্কোর, অ্যালার্জি সতর্কতা ও ডায়েট যাচাই, ভারতের জন্য তৈরি।',
+      cta: 'ফ্রি শুরু করুন',
+      freeNote: '১০০টি ফ্রি স্ক্যান · কার্ড লাগবে না',
+      signIn: 'আমার অ্যাকাউন্ট আগে থেকেই আছে',
+      f1t: 'WHO-ভিত্তিক হেলথ স্কোর',
+      f1d: 'চিনি, লবণ, ফ্যাট ও অ্যাডিটিভ — সহজ ভাষায়।',
+      f2t: 'ভেজ, জৈন, ভেগান ও অ্যালার্জি সতর্কতা',
+      f2d: 'পরিবারের ডায়েট ও অ্যালার্জির তাৎক্ষণিক যাচাই।',
+      f3t: 'উপবাস-বান্ধব যাচাই',
+      f3d: 'নবরাত্রি, একাদশী, শ্রাবণ ও আপনার নিজের নিয়ম।',
+      f4t: 'ভারতে পাওয়া যায় এমন ভালো বিকল্প',
+      f4d: 'ভালো বিকল্পের পাশাপাশি তুলনা।',
+      privacy: 'প্রাইভেসি পলিসি',
+    },
     auth: {
       welcome: 'ZOCO তে সাইন ইন করুন',
       subtitle: 'কেনার আগে ভেতরে কী আছে জানুন। স্ক্যান শুরু করতে সাইন ইন করুন।',
@@ -1547,7 +1643,7 @@ const STRINGS = {
 
   // Tamil (core).
   ta: {
-    common: { appName: 'நியூட்ரிஸ்கேன்', tagline: 'உங்கள் உணவில் உண்மையில் என்ன இருக்கிறது என்பதை அறியுங்கள். WHO அடிப்படையிலான சுகாதார மதிப்பெண்கள், முழு விவரங்களுடன்.', home: 'முகப்பு', done: 'முடிந்தது', reset: 'மீட்டமை', back: 'பின்', showDetails: 'விவரங்களைக் காட்டு', hideDetails: 'விவரங்களை மறை', translationPending: 'ஆங்கிலத்தில் காட்டப்பட்டது — தமிழ் மொழிபெயர்ப்பு விரைவில்.', outOf10: '10 இல்', offline: 'நீங்கள் ஆஃப்லைனில் உள்ளீர்கள் — கிடைக்கும் இடத்தில் சேமித்த தரவைக் காட்டுகிறோம்.' },
+    common: { appName: 'ZOCO', tagline: 'உங்கள் உணவில் உண்மையில் என்ன இருக்கிறது என்பதை அறியுங்கள். WHO அடிப்படையிலான சுகாதார மதிப்பெண்கள், முழு விவரங்களுடன்.', home: 'முகப்பு', done: 'முடிந்தது', reset: 'மீட்டமை', back: 'பின்', showDetails: 'விவரங்களைக் காட்டு', hideDetails: 'விவரங்களை மறை', translationPending: 'ஆங்கிலத்தில் காட்டப்பட்டது — தமிழ் மொழிபெயர்ப்பு விரைவில்.', outOf10: '10 இல்', offline: 'நீங்கள் ஆஃப்லைனில் உள்ளீர்கள் — கிடைக்கும் இடத்தில் சேமித்த தரவைக் காட்டுகிறோம்.' },
     landing: { scanBarcode: 'பார்கோடு ஸ்கேன்', searchByName: 'பெயரால் தேடு', uploadPhoto: 'பார்கோடு படத்தை பதிவேற்று', readingBarcode: 'பார்கோடு படிக்கிறது...', footer: 'பார்கோடு மற்றும் தேடல் Open Food Facts பயன்படுத்துகிறது. பகுப்பாய்வு உடனடியாக நடக்கிறது.' },
     verdict: { Buy: 'வாங்கு', Limit: 'கட்டுப்படுத்து', Avoid: 'தவிர்', BuyDesc: 'தினசரிக்கு நல்லது', LimitDesc: 'எப்போதாவது சரி', AvoidDesc: 'அரிதாகவே எடு' },
     results: { containsYourAllergens: 'உங்கள் ஒவ்வாமைப் பொருட்கள் உள்ளன', whyThisScore: 'இந்த மதிப்பெண் ஏன்?', share: 'பகிர்', compare: 'ஒப்பிடு', scanAnother: 'மற்றொன்றை ஸ்கேன் செய்', dataFromOFF: 'தரவு Open Food Facts இலிருந்து — சரிபார்க்கப்பட்ட ஊட்டச்சத்து தரவுத்தளம்', containsAllergens: 'ஒவ்வாமைப் பொருட்கள் உள்ளன', mayContainTracesOf: 'இவற்றின் தடயங்கள் இருக்கலாம்' },
@@ -1690,6 +1786,22 @@ const STRINGS = {
     ingsheet: { "tab.Simple": 'எளிய', "tab.Safety": 'பாதுகாப்பு', "tab.Regulation": 'ஒழுங்குமுறை', "tab.Cultural": 'கலாச்சாரம்', "tab.Sources": 'மூலங்கள்', "badge.yes": 'ஆம்', "badge.no": 'இல்லை', "badge.depends": 'சார்ந்தது', "badge.unknown": 'தெரியவில்லை', reportIssue: 'சிக்கலைப் புகாரளிக்க', notVerified: 'தகவல் இன்னும் சரிபார்க்கப்படவில்லை', noEntry: 'இந்தப் பொருளுக்கான சரிபார்க்கப்பட்ட பதிவு இன்னும் இல்லை.', whatItIs: 'இது என்ன', whyUsed: 'ஏன் பயன்படுகிறது', allergenLabel: 'ஒவ்வாமை:', whoCareful: 'யார் கவனமாக இருக்க வேண்டும்', noSafety: 'சிறப்புப் பாதுகாப்புக் கவலைகள் பதிவாகவில்லை.', limitNA: 'வரம்பு தரவுத்தளத்தில் இல்லை. அது வகை-சார்ந்ததாக இருக்கலாம்.', status: 'நிலை', category: 'வகை', maxLevel: 'அதிகபட்ச அளவு', notInDb: 'தரவுத்தளத்தில் இல்லை', confidence: 'நம்பிக்கை', effectiveFrom: 'நடைமுறை தேதி', source: 'மூலம்', regNote: 'ஒழுங்குமுறை வரம்புகள் வகை-சார்ந்தவை; மாறலாம். நாங்கள் ஒருபோதும் வரம்பை யூகிக்க மாட்டோம்.', culturalNA: 'இந்தப் பொருளின் கலாச்சார பொருத்தம் சரிபார்க்கப்படவில்லை.', vegetarian: 'சைவம்', jain: 'ஜைனம்', vegan: 'வீகன்', upvas: 'விரதம்', lastReviewed: 'கடைசி சமீக்ஷை', sources: 'மூலங்கள்', noSource: 'இந்தப் பொருளுக்கு சரிபார்க்கப்பட்ட மூலம் இன்னும் பதிவாகவில்லை.' },
     share: { footer: 'ZOCO மூலம் ஸ்கேன் — WHO-அடிப்படை உணவு ஹெல்த் ஸ்கோர்', claimsOne: '⚠️ {n} தவறாக வழிநடத்தும் கூற்று கண்டறியப்பட்டது', claimsMany: '⚠️ {n} தவறாக வழிநடத்தும் கூற்றுகள் கண்டறியப்பட்டன' },
     scoreword: { "Avoid": 'தவிர்க்கவும்', "Poor": 'மோசம்', "Below Average": 'சராசரிக்கு கீழ்', "Average": 'சராசரி', "Decent": 'பரவாயில்லை', "Good": 'நல்லது', "Excellent": 'சிறப்பு' },
+    welcome: {
+      headline: 'வாங்கும் முன் உள்ளே என்ன இருக்கிறது என்று அறியுங்கள்',
+      sub: 'எந்த பேக்கேஜ் உணவையும் ஸ்கேன் செய்யுங்கள் — தெளிவான ஹெல்த் ஸ்கோர், அலர்ஜி எச்சரிக்கை, டயட் சரிபார்ப்பு — இந்தியாவுக்காக.',
+      cta: 'இலவசமாக தொடங்குங்கள்',
+      freeNote: '100 இலவச ஸ்கேன்கள் · கார்டு தேவையில்லை',
+      signIn: 'எனக்கு ஏற்கனவே கணக்கு உள்ளது',
+      f1t: 'WHO-அடிப்படை ஹெல்த் ஸ்கோர்',
+      f1d: 'சர்க்கரை, உப்பு, கொழுப்பு, சேர்க்கைகள் — எளிய விளக்கம்.',
+      f2t: 'வெஜ், ஜைன், வீகன் & அலர்ஜி எச்சரிக்கை',
+      f2d: 'குடும்ப உணவு முறை, அலர்ஜிகளின் உடனடி சரிபார்ப்பு.',
+      f3t: 'விரதத்திற்கு ஏற்ற சரிபார்ப்பு',
+      f3d: 'நவராத்திரி, ஏகாதசி, ஷ்ராவண் மற்றும் உங்கள் சொந்த விதிகள்.',
+      f4t: 'இந்தியாவில் கிடைக்கும் சிறந்த மாற்றுகள்',
+      f4d: 'சிறந்த மாற்றுகளின் அருகருகே ஒப்பீடு.',
+      privacy: 'தனியுரிமைக் கொள்கை',
+    },
     auth: {
       welcome: 'ZOCO இல் உள்நுழையவும்',
       subtitle: 'வாங்கும் முன் உள்ளே என்ன இருக்கிறது என்று அறியுங்கள். ஸ்கேன் தொடங்க உள்நுழையவும்.',
@@ -1744,7 +1856,7 @@ const STRINGS = {
 
   // Telugu (core).
   te: {
-    common: { appName: 'న్యూట్రిస్కాన్', tagline: 'మీ ఆహారంలో నిజంగా ఏముందో తెలుసుకోండి. WHO ఆధారిత ఆరోగ్య స్కోర్‌లు, పూర్తి వివరాలతో.', home: 'హోమ్', done: 'పూర్తయింది', reset: 'రీసెట్', back: 'వెనుకకు', showDetails: 'వివరాలు చూపు', hideDetails: 'వివరాలు దాచు', translationPending: 'ఆంగ్లంలో చూపబడింది — తెలుగు అనువాదం త్వరలో.', outOf10: '10 లో', offline: 'మీరు ఆఫ్‌లైన్‌లో ఉన్నారు — అందుబాటులో ఉన్న చోట సేవ్ చేసిన డేటాను చూపుతున్నాము.' },
+    common: { appName: 'ZOCO', tagline: 'మీ ఆహారంలో నిజంగా ఏముందో తెలుసుకోండి. WHO ఆధారిత ఆరోగ్య స్కోర్‌లు, పూర్తి వివరాలతో.', home: 'హోమ్', done: 'పూర్తయింది', reset: 'రీసెట్', back: 'వెనుకకు', showDetails: 'వివరాలు చూపు', hideDetails: 'వివరాలు దాచు', translationPending: 'ఆంగ్లంలో చూపబడింది — తెలుగు అనువాదం త్వరలో.', outOf10: '10 లో', offline: 'మీరు ఆఫ్‌లైన్‌లో ఉన్నారు — అందుబాటులో ఉన్న చోట సేవ్ చేసిన డేటాను చూపుతున్నాము.' },
     landing: { scanBarcode: 'బార్‌కోడ్ స్కాన్', searchByName: 'పేరుతో వెతుకు', uploadPhoto: 'బార్‌కోడ్ ఫోటో అప్‌లోడ్', readingBarcode: 'బార్‌కోడ్ చదువుతోంది...', footer: 'బార్‌కోడ్ మరియు శోధన Open Food Facts ఉపయోగిస్తాయి. విశ్లేషణ వెంటనే జరుగుతుంది.' },
     verdict: { Buy: 'కొను', Limit: 'పరిమితం చేయి', Avoid: 'తప్పించు', BuyDesc: 'రోజువారీకి మంచిది', LimitDesc: 'అప్పుడప్పుడు సరే', AvoidDesc: 'అరుదుగా తీసుకో' },
     results: { containsYourAllergens: 'మీ అలర్జీ పదార్థాలు ఉన్నాయి', whyThisScore: 'ఈ స్కోర్ ఎందుకు?', share: 'షేర్', compare: 'పోల్చు', scanAnother: 'మరొకటి స్కాన్ చేయి', dataFromOFF: 'డేటా Open Food Facts నుండి — ధృవీకరించిన పోషకాహార డేటాబేస్', containsAllergens: 'అలర్జీ పదార్థాలు ఉన్నాయి', mayContainTracesOf: 'వీటి అంశాలు ఉండవచ్చు' },
@@ -1887,6 +1999,22 @@ const STRINGS = {
     ingsheet: { "tab.Simple": 'సరళం', "tab.Safety": 'భద్రత', "tab.Regulation": 'నియంత్రణ', "tab.Cultural": 'సాంస్కృతిక', "tab.Sources": 'మూలాలు', "badge.yes": 'అవును', "badge.no": 'కాదు', "badge.depends": 'ఆధారపడి', "badge.unknown": 'తెలియదు', reportIssue: 'సమస్యను నివేదించండి', notVerified: 'సమాచారం ఇంకా ధృవీకరించలేదు', noEntry: 'ఈ పదార్థానికి ధృవీకరించిన నమోదు ఇంకా లేదు.', whatItIs: 'ఇది ఏమిటి', whyUsed: 'ఎందుకు వాడతారు', allergenLabel: 'అలర్జెన్:', whoCareful: 'ఎవరు జాగ్రత్తగా ఉండాలి', noSafety: 'ప్రత్యేక భద్రతా ఆందోళనలు నమోదు కాలేదు.', limitNA: 'పరిమితి డేటాబేస్‌లో లేదు. ఇది వర్గ-నిర్దిష్టం కావచ్చు.', status: 'స్థితి', category: 'వర్గం', maxLevel: 'గరిష్ఠ స్థాయి', notInDb: 'డేటాబేస్‌లో లేదు', confidence: 'నమ్మకం', effectiveFrom: 'అమలు తేదీ', source: 'మూలం', regNote: 'నియంత్రణ పరిమితులు వర్గ-నిర్దిష్టం కావచ్చు, మారవచ్చు. మేము ఎప్పుడూ పరిమితిని ఊహించం.', culturalNA: 'ఈ పదార్థపు సాంస్కృతిక అనుకూలత ధృవీకరించలేదు.', vegetarian: 'శాకాహారం', jain: 'జైన', vegan: 'వీగన్', upvas: 'ఉపవాసం', lastReviewed: 'చివరి సమీక్ష', sources: 'మూలాలు', noSource: 'ఈ పదార్థానికి ధృవీకరించిన మూలం ఇంకా నమోదు కాలేదు.' },
     share: { footer: 'ZOCO తో స్కాన్ — WHO-ఆధారిత ఫుడ్ హెల్త్ స్కోర్లు', claimsOne: '⚠️ {n} తప్పుదోవ పట్టించే వాదన కనబడింది', claimsMany: '⚠️ {n} తప్పుదోవ పట్టించే వాదనలు కనబడ్డాయి' },
     scoreword: { "Avoid": 'నివారించండి', "Poor": 'బలహీనం', "Below Average": 'సగటు కంటే తక్కువ', "Average": 'సగటు', "Decent": 'ఫర్వాలేదు', "Good": 'మంచిది', "Excellent": 'అద్భుతం' },
+    welcome: {
+      headline: 'కొనే ముందు లోపల ఏముందో తెలుసుకోండి',
+      sub: 'ఏ ప్యాక్డ్ ఫుడ్ అయినా స్కాన్ చేయండి — స్పష్టమైన హెల్త్ స్కోర్, అలర్జీ హెచ్చరికలు, డైట్ తనిఖీ — భారత్ కోసం.',
+      cta: 'ఉచితంగా ప్రారంభించండి',
+      freeNote: '100 ఉచిత స్కాన్‌లు · కార్డ్ అవసరం లేదు',
+      signIn: 'నాకు ఇప్పటికే ఖాతా ఉంది',
+      f1t: 'WHO-ఆధారిత హెల్త్ స్కోర్',
+      f1d: 'చక్కెర, ఉప్పు, ఫ్యాట్, యాడిటివ్స్ — సులభ భాషలో.',
+      f2t: 'వెజ్, జైన్, వీగన్ & అలర్జీ హెచ్చరికలు',
+      f2d: 'కుటుంబ డైట్, అలర్జీల తక్షణ తనిఖీ.',
+      f3t: 'ఉపవాసానికి అనుకూల తనిఖీ',
+      f3d: 'నవరాత్రి, ఏకాదశి, శ్రావణం మరియు మీ సొంత నియమాలు.',
+      f4t: 'భారత్‌లో దొరికే మంచి ప్రత్యామ్నాయాలు',
+      f4d: 'మంచి ప్రత్యామ్నాయాల పక్కపక్క పోలిక.',
+      privacy: 'ప్రైవసీ పాలసీ',
+    },
     auth: {
       welcome: 'ZOCO లో సైన్ ఇన్ చేయండి',
       subtitle: 'కొనే ముందు లోపల ఏముందో తెలుసుకోండి. స్కాన్ ప్రారంభించడానికి సైన్ ఇన్ చేయండి.',
@@ -1941,7 +2069,7 @@ const STRINGS = {
 
   // Kannada (core).
   kn: {
-    common: { appName: 'ನ್ಯೂಟ್ರಿಸ್ಕ್ಯಾನ್', tagline: 'ನಿಮ್ಮ ಆಹಾರದಲ್ಲಿ ನಿಜವಾಗಿ ಏನಿದೆ ಎಂದು ತಿಳಿಯಿರಿ. WHO ಆಧಾರಿತ ಆರೋಗ್ಯ ಸ್ಕೋರ್‌ಗಳು, ಪೂರ್ಣ ವಿವರಗಳೊಂದಿಗೆ.', home: 'ಹೋಮ್', done: 'ಮುಗಿಯಿತು', reset: 'ರೀಸೆಟ್', back: 'ಹಿಂದೆ', showDetails: 'ವಿವರ ತೋರಿಸು', hideDetails: 'ವಿವರ ಮರೆಮಾಡು', translationPending: 'ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ತೋರಿಸಲಾಗಿದೆ — ಕನ್ನಡ ಅನುವಾದ ಶೀಘ್ರದಲ್ಲೇ.', outOf10: '10 ರಲ್ಲಿ', offline: 'ನೀವು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿದ್ದೀರಿ — ಲಭ್ಯವಿರುವಲ್ಲಿ ಉಳಿಸಿದ ಡೇಟಾವನ್ನು ತೋರಿಸುತ್ತಿದ್ದೇವೆ.' },
+    common: { appName: 'ZOCO', tagline: 'ನಿಮ್ಮ ಆಹಾರದಲ್ಲಿ ನಿಜವಾಗಿ ಏನಿದೆ ಎಂದು ತಿಳಿಯಿರಿ. WHO ಆಧಾರಿತ ಆರೋಗ್ಯ ಸ್ಕೋರ್‌ಗಳು, ಪೂರ್ಣ ವಿವರಗಳೊಂದಿಗೆ.', home: 'ಹೋಮ್', done: 'ಮುಗಿಯಿತು', reset: 'ರೀಸೆಟ್', back: 'ಹಿಂದೆ', showDetails: 'ವಿವರ ತೋರಿಸು', hideDetails: 'ವಿವರ ಮರೆಮಾಡು', translationPending: 'ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ತೋರಿಸಲಾಗಿದೆ — ಕನ್ನಡ ಅನುವಾದ ಶೀಘ್ರದಲ್ಲೇ.', outOf10: '10 ರಲ್ಲಿ', offline: 'ನೀವು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿದ್ದೀರಿ — ಲಭ್ಯವಿರುವಲ್ಲಿ ಉಳಿಸಿದ ಡೇಟಾವನ್ನು ತೋರಿಸುತ್ತಿದ್ದೇವೆ.' },
     landing: { scanBarcode: 'ಬಾರ್‌ಕೋಡ್ ಸ್ಕ್ಯಾನ್', searchByName: 'ಹೆಸರಿನಿಂದ ಹುಡುಕಿ', uploadPhoto: 'ಬಾರ್‌ಕೋಡ್ ಫೋಟೋ ಅಪ್‌ಲೋಡ್', readingBarcode: 'ಬಾರ್‌ಕೋಡ್ ಓದುತ್ತಿದೆ...', footer: 'ಬಾರ್‌ಕೋಡ್ ಮತ್ತು ಹುಡುಕಾಟ Open Food Facts ಬಳಸುತ್ತವೆ. ವಿಶ್ಲೇಷಣೆ ತಕ್ಷಣ ನಡೆಯುತ್ತದೆ.' },
     verdict: { Buy: 'ಖರೀದಿಸಿ', Limit: 'ಮಿತಿಗೊಳಿಸಿ', Avoid: 'ತಪ್ಪಿಸಿ', BuyDesc: 'ದೈನಂದಿನಕ್ಕೆ ಒಳ್ಳೆಯದು', LimitDesc: 'ಕೆಲವೊಮ್ಮೆ ಸರಿ', AvoidDesc: 'ಅಪರೂಪವಾಗಿ ತೆಗೆದುಕೊಳ್ಳಿ' },
     results: { containsYourAllergens: 'ನಿಮ್ಮ ಅಲರ್ಜಿ ಪದಾರ್ಥಗಳಿವೆ', whyThisScore: 'ಈ ಸ್ಕೋರ್ ಏಕೆ?', share: 'ಹಂಚಿಕೊಳ್ಳಿ', compare: 'ಹೋಲಿಸಿ', scanAnother: 'ಇನ್ನೊಂದು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ', dataFromOFF: 'ಡೇಟಾ Open Food Facts ನಿಂದ — ಪರಿಶೀಲಿಸಿದ ಪೋಷಣೆ ಡೇಟಾಬೇಸ್', containsAllergens: 'ಅಲರ್ಜಿ ಪದಾರ್ಥಗಳಿವೆ', mayContainTracesOf: 'ಇವುಗಳ ಅಂಶಗಳಿರಬಹುದು' },
@@ -2084,6 +2212,22 @@ const STRINGS = {
     ingsheet: { "tab.Simple": 'ಸರಳ', "tab.Safety": 'ಸುರಕ್ಷತೆ', "tab.Regulation": 'ನಿಯಂತ್ರಣ', "tab.Cultural": 'ಸಾಂಸ್ಕೃತಿಕ', "tab.Sources": 'ಮೂಲಗಳು', "badge.yes": 'ಹೌದು', "badge.no": 'ಇಲ್ಲ', "badge.depends": 'ಅವಲಂಬಿತ', "badge.unknown": 'ಅಜ್ಞಾತ', reportIssue: 'ಸಮಸ್ಯೆ ವರದಿ ಮಾಡಿ', notVerified: 'ಮಾಹಿತಿ ಇನ್ನೂ ದೃಢೀಕರಿಸಿಲ್ಲ', noEntry: 'ಈ ಪದಾರ್ಥಕ್ಕೆ ದೃಢೀಕರಿಸಿದ ನಮೂದು ಇನ್ನೂ ಇಲ್ಲ.', whatItIs: 'ಇದು ಏನು', whyUsed: 'ಏಕೆ ಬಳಸುತ್ತಾರೆ', allergenLabel: 'ಅಲರ್ಜನ್:', whoCareful: 'ಯಾರು ಎಚ್ಚರವಿರಬೇಕು', noSafety: 'ವಿಶೇಷ ಸುರಕ್ಷತಾ ಕಳವಳಗಳು ದಾಖಲಾಗಿಲ್ಲ.', limitNA: 'ಮಿತಿ ಡೇಟಾಬೇಸ್‌ನಲ್ಲಿ ಇಲ್ಲ. ಇದು ವರ್ಗ-ನಿರ್ದಿಷ್ಟ ಇರಬಹುದು.', status: 'ಸ್ಥಿತಿ', category: 'ವರ್ಗ', maxLevel: 'ಗರಿಷ್ಠ ಮಟ್ಟ', notInDb: 'ಡೇಟಾಬೇಸ್‌ನಲ್ಲಿ ಇಲ್ಲ', confidence: 'ನಂಬಿಕೆ', effectiveFrom: 'ಜಾರಿ ದಿನಾಂಕ', source: 'ಮೂಲ', regNote: 'ನಿಯಂತ್ರಣ ಮಿತಿಗಳು ವರ್ಗ-ನಿರ್ದಿಷ್ಟ ಇರಬಹುದು, ಬದಲಾಗಬಹುದು. ನಾವು ಎಂದಿಗೂ ಮಿತಿಯನ್ನು ಊಹಿಸುವುದಿಲ್ಲ.', culturalNA: 'ಈ ಪದಾರ್ಥದ ಸಾಂಸ್ಕೃತಿಕ ಸೂಕ್ತತೆ ದೃಢೀಕರಿಸಿಲ್ಲ.', vegetarian: 'ಸಸ್ಯಾಹಾರಿ', jain: 'ಜೈನ', vegan: 'ವೀಗನ್', upvas: 'ಉಪವಾಸ', lastReviewed: 'ಕೊನೆಯ ಸಮೀಕ್ಷೆ', sources: 'ಮೂಲಗಳು', noSource: 'ಈ ಪದಾರ್ಥಕ್ಕೆ ದೃಢೀಕರಿಸಿದ ಮೂಲ ಇನ್ನೂ ದಾಖಲಾಗಿಲ್ಲ.' },
     share: { footer: 'ZOCO ನಿಂದ ಸ್ಕ್ಯಾನ್ — WHO-ಆಧಾರಿತ ಫುಡ್ ಹೆಲ್ತ್ ಸ್ಕೋರ್', claimsOne: '⚠️ {n} ದಾರಿತಪ್ಪಿಸುವ ಹೇಳಿಕೆ ಕಂಡುಬಂದಿದೆ', claimsMany: '⚠️ {n} ದಾರಿತಪ್ಪಿಸುವ ಹೇಳಿಕೆಗಳು ಕಂಡುಬಂದಿವೆ' },
     scoreword: { "Avoid": 'ತಪ್ಪಿಸಿ', "Poor": 'ದುರ್ಬಲ', "Below Average": 'ಸರಾಸರಿಗಿಂತ ಕಡಿಮೆ', "Average": 'ಸರಾಸರಿ', "Decent": 'ಪರವಾಗಿಲ್ಲ', "Good": 'ಉತ್ತಮ', "Excellent": 'ಅತ್ಯುತ್ತಮ' },
+    welcome: {
+      headline: 'ಖರೀದಿಸುವ ಮೊದಲು ಒಳಗೇನಿದೆ ಎಂದು ತಿಳಿಯಿರಿ',
+      sub: 'ಯಾವುದೇ ಪ್ಯಾಕ್ಡ್ ಆಹಾರವನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ — ಸ್ಪಷ್ಟ ಹೆಲ್ತ್ ಸ್ಕೋರ್, ಅಲರ್ಜಿ ಎಚ್ಚರಿಕೆ, ಡಯಟ್ ಪರಿಶೀಲನೆ — ಭಾರತಕ್ಕಾಗಿ.',
+      cta: 'ಉಚಿತವಾಗಿ ಪ್ರಾರಂಭಿಸಿ',
+      freeNote: '100 ಉಚಿತ ಸ್ಕ್ಯಾನ್‌ಗಳು · ಕಾರ್ಡ್ ಬೇಕಿಲ್ಲ',
+      signIn: 'ನನಗೆ ಈಗಾಗಲೇ ಖಾತೆ ಇದೆ',
+      f1t: 'WHO-ಆಧಾರಿತ ಹೆಲ್ತ್ ಸ್ಕೋರ್',
+      f1d: 'ಸಕ್ಕರೆ, ಉಪ್ಪು, ಕೊಬ್ಬು, ಸೇರ್ಪಡೆಗಳು — ಸರಳ ಭಾಷೆಯಲ್ಲಿ.',
+      f2t: 'ವೆಜ್, ಜೈನ್, ವೀಗನ್ & ಅಲರ್ಜಿ ಎಚ್ಚರಿಕೆ',
+      f2d: 'ಕುಟುಂಬದ ಡಯಟ್ ಮತ್ತು ಅಲರ್ಜಿಗಳ ತಕ್ಷಣದ ಪರಿಶೀಲನೆ.',
+      f3t: 'ಉಪವಾಸ-ಸ್ನೇಹಿ ಪರಿಶೀಲನೆ',
+      f3d: 'ನವರಾತ್ರಿ, ಏಕಾದಶಿ, ಶ್ರಾವಣ ಮತ್ತು ನಿಮ್ಮ ಸ್ವಂತ ನಿಯಮಗಳು.',
+      f4t: 'ಭಾರತದಲ್ಲಿ ಸಿಗುವ ಉತ್ತಮ ಪರ್ಯಾಯಗಳು',
+      f4d: 'ಉತ್ತಮ ಪರ್ಯಾಯಗಳ ಅಕ್ಕಪಕ್ಕ ಹೋಲಿಕೆ.',
+      privacy: 'ಗೌಪ್ಯತಾ ನೀತಿ',
+    },
     auth: {
       welcome: 'ZOCO ನಲ್ಲಿ ಸೈನ್ ಇನ್ ಮಾಡಿ',
       subtitle: 'ಖರೀದಿಸುವ ಮೊದಲು ಒಳಗೆ ಏನಿದೆ ಎಂದು ತಿಳಿಯಿರಿ. ಸ್ಕ್ಯಾನ್ ಪ್ರಾರಂಭಿಸಲು ಸೈನ್ ಇನ್ ಮಾಡಿ.',
