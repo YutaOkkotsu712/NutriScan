@@ -184,6 +184,19 @@ the header (their account page) → the **User ID** line under their email
 (tap it to copy). You can also find it in the Firebase console →
 Authentication → search by email.
 
+### Going LIVE with payments (when switching from test money to real money)
+Razorpay keeps **Test Mode and Live Mode fully separate** — keys, plans AND
+webhooks. Everything must be redone in Live Mode, in the SAME Razorpay
+account the live keys come from (a webhook in any other account/mode watches
+an empty stream and its event counter never moves — this burned us in test):
+1. Live keys (`rzp_live_…`) → Vercel `VITE_RAZORPAY_KEY_ID` + `RAZORPAY_KEY_SECRET`.
+2. Create the plan again in Live Mode → `RAZORPAY_PLAN_ID`.
+3. Create the webhook again in Live Mode (same URL + a secret →
+   `RAZORPAY_WEBHOOK_SECRET`), tick all `subscription.*` events.
+4. Redeploy (env changes never apply to the existing deployment; the key id
+   is also baked into the client bundle at build time).
+5. One real ₹-payment end-to-end before announcing.
+
 ### iOS caveat
 Apple usually requires **In-App Purchase** (30% cut) for digital subscriptions.
 Razorpay is fine for web and Android; budget iOS payments as a separate
