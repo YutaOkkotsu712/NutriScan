@@ -1,0 +1,14 @@
+# Files excluded from Vercel deployments (gitignore syntax).
+#
+# CRITICAL: every non-test exclusion here is load-bearing for the Hobby-plan
+# function limit — each api/**/*.test.js would otherwise deploy as its own
+# Node serverless function (max 12 on Hobby). The real Node functions are
+# subscription/create, subscription/cancel and me/delete (Razorpay callers);
+# everything else in api/ is edge runtime and uncounted.
+api/**/*.test.js
+src/**/*.test.js
+
+# Native app project + release docs + icon sources — not part of the web deploy.
+android/
+docs/
+assets/
