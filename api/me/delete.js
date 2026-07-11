@@ -19,6 +19,7 @@ import { authenticateUser, authConfigured } from '../_lib/firebaseAuth.js'
 import { kvConfigured, kvCmd } from '../_lib/auth.js'
 import { razorpayConfigured, cancelSubscription } from '../_lib/razorpay.js'
 import { corsHeadersFor, handlePreflight } from '../_lib/cors.js'
+import { asNodeHandler } from '../_lib/nodeAdapter.js'
 
 // Node runtime (no edge config): this endpoint cancels Razorpay subscriptions,
 // and Razorpay's WAF 406-rejects calls from edge runtimes — see subscription/create.js.
@@ -32,7 +33,7 @@ function json(body, status = 200, extraHeaders = {}) {
   })
 }
 
-export default async function handler(request) {
+export default asNodeHandler(async function handler(request) {
   const pre = handlePreflight(request, env)
   if (pre) return pre
   const cors = corsHeadersFor(request, env)
@@ -73,4 +74,4 @@ export default async function handler(request) {
   await kvCmd(env, ['EXPIRE', `scans:${user.uid}`, 30 * 24 * 3600]).catch(() => {})
 
   return jsonC({ deleted: true })
-}
+})

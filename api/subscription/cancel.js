@@ -10,6 +10,7 @@ import { kvConfigured, kvCmd } from '../_lib/auth.js'
 import { razorpayConfigured, cancelSubscription } from '../_lib/razorpay.js'
 import { corsHeadersFor, handlePreflight } from '../_lib/cors.js'
 import { subKey } from '../_lib/entitlement.js'
+import { asNodeHandler } from '../_lib/nodeAdapter.js'
 
 // Node runtime (no edge config): outbound Razorpay calls get 406-rejected from
 // edge runtimes by Razorpay's WAF — see subscription/create.js.
@@ -22,7 +23,7 @@ function json(body, status = 200, extraHeaders = {}) {
   })
 }
 
-export default async function handler(request) {
+export default asNodeHandler(async function handler(request) {
   const pre = handlePreflight(request, env)
   if (pre) return pre
   const cors = corsHeadersFor(request, env)
@@ -49,4 +50,4 @@ export default async function handler(request) {
     console.error('[ZOCO subscription/cancel]', err)
     return jsonC({ error: 'Could not cancel. Please try again.' }, 502)
   }
-}
+})

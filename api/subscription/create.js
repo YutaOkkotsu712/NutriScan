@@ -10,6 +10,7 @@ import { authenticateUser, authConfigured } from '../_lib/firebaseAuth.js'
 import { kvConfigured, kvCmd } from '../_lib/auth.js'
 import { razorpayConfigured, createSubscription, fetchSubscription } from '../_lib/razorpay.js'
 import { corsHeadersFor, handlePreflight } from '../_lib/cors.js'
+import { asNodeHandler } from '../_lib/nodeAdapter.js'
 
 // Node runtime, NOT edge: Razorpay's WAF rejects requests originating from
 // edge/worker runtimes with an empty-body 406 (never reproducible locally).
@@ -39,7 +40,7 @@ function json(body, status = 200, extraHeaders = {}) {
   })
 }
 
-export default async function handler(request) {
+export default asNodeHandler(async function handler(request) {
   const pre = handlePreflight(request, env)
   if (pre) return pre
   const cors = corsHeadersFor(request, env)
@@ -95,4 +96,4 @@ export default async function handler(request) {
     // fresh deployment are otherwise only visible in server logs.
     return jsonC({ error: 'Could not start subscription. Please try again.', detail: err?.message || undefined }, 502)
   }
-}
+})
