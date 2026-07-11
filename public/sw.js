@@ -1,5 +1,5 @@
-const CACHE_NAME = 'nutriscan-v6'
-const DATA_CACHE = 'nutriscan-data-v6'
+const CACHE_NAME = 'nutriscan-v7'
+const DATA_CACHE = 'nutriscan-data-v7'
 const PRECACHE = ['/', '/index.html']
 
 // Same-origin API paths whose GET responses are safe to cache for offline use:
@@ -30,6 +30,35 @@ function isCacheableApi(pathname) {
 
 function isJsonResponse(res) {
   return (res.headers.get('content-type') || '').toLowerCase().includes('application/json')
+}
+
+function isStaticAsset(pathname) {
+  return pathname.startsWith('/assets/')
+    || /\.(?:js|mjs|css|png|jpe?g|webp|svg|ico|json|webmanifest|wasm|woff2?)$/i.test(pathname)
+}
+
+function isUsableStaticResponse(url, res) {
+  if (!res || res.status !== 200 || res.type !== 'basic') return false
+  const contentType = (res.headers.get('content-type') || '').toLowerCase()
+  if (url.pathname.endsWith('.js')) {
+    return contentType.includes('javascript') || contentType.includes('ecmascript')
+  }
+  if (url.pathname.endsWith('.css')) return contentType.includes('text/css')
+  // A missing hashed asset used to be rewritten to index.html and cached under
+  // the asset URL, which makes future module loads fail with a text/html MIME.
+  return !contentType.includes('text/html')
+}
+
+async function staticAssetError(request, url, status = 404) {
+  const cached = await caches.match(request)
+  if (cached && isUsableStaticResponse(url, cached)) return cached
+  return new Response('Asset not found', {
+    status,
+    headers: {
+      'content-type': 'text/plain; charset=utf-8',
+      'cache-control': 'no-store',
+    },
+  })
 }
 
 async function cachedJsonOrError(request, body, status = 503) {
@@ -72,6 +101,23 @@ self.addEventListener('fetch', (e) => {
         .catch(async () => {
           return cachedJsonOrError(e.request, { status: 0, error: 'offline' })
         })
+    )
+    return
+  }
+
+  // --- Static assets: never cache the app shell as a JS/CSS/image asset ---
+  if (isStaticAsset(url.pathname)) {
+    e.respondWith(
+      fetch(e.request)
+        .then(async (res) => {
+          if (!isUsableStaticResponse(url, res)) {
+            return staticAssetError(e.request, url, res?.status && res.status !== 200 ? res.status : 404)
+          }
+          const clone = res.clone()
+          caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone))
+          return res
+        })
+        .catch(() => staticAssetError(e.request, url))
     )
     return
   }

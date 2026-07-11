@@ -19,6 +19,40 @@ import { extractBarcode } from './utils/barcodeExtract'
 import { useT } from './i18n'
 import { track } from './utils/analytics'
 
+const STALE_ASSET_RELOAD_KEY = 'zoco:stale-asset-reload-at'
+
+function isStaleAssetImportError(err) {
+  const text = `${err?.message || ''} ${err?.stack || ''}`
+  return /dynamically imported module|module script|MIME type|text\/html|failed to fetch/i.test(text)
+    && /import|module|assets\/|barcodeEngine/i.test(text)
+}
+
+async function reloadFreshAppBundle() {
+  if (typeof window === 'undefined') return false
+  try {
+    const last = Number(window.sessionStorage.getItem(STALE_ASSET_RELOAD_KEY) || 0)
+    if (last && Date.now() - last < 60000) return false
+    window.sessionStorage.setItem(STALE_ASSET_RELOAD_KEY, String(Date.now()))
+  } catch {
+    return false
+  }
+
+  try {
+    if ('caches' in window) {
+      const keys = await window.caches.keys()
+      await Promise.all(keys.filter((key) => key.startsWith('nutriscan-')).map((key) => window.caches.delete(key)))
+    }
+  } catch { /* best-effort cache cleanup */ }
+
+  try {
+    const registration = await navigator.serviceWorker?.getRegistration?.()
+    await registration?.update?.()
+  } catch { /* reload is still the important part */ }
+
+  window.location.reload()
+  return true
+}
+
 export default function App() {
   const [screen, setScreen] = useState('landing')
   const [loadingStatus, setLoadingStatus] = useState('')
@@ -110,6 +144,14 @@ export default function App() {
       setResult(analysisResult)
       setScreen('results')
     } catch (err) {
+      if (isStaleAssetImportError(err)) {
+        console.warn('[NutriScan] Stale app asset detected; reloading fresh bundle:', err)
+        setLoadingStatus('Updating app...')
+        if (await reloadFreshAppBundle()) return
+        setError('The app updated while scanning. Please refresh and try again.')
+        setScreen('error')
+        return
+      }
       console.error('[NutriScan] Barcode lookup failed:', err)
       setError(navigator.onLine === false ? t('errors.offline') : t('errors.dbNotResponding'))
       setScreen('error')
