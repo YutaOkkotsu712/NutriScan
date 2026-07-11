@@ -76,6 +76,19 @@ export async function authHeader() {
 // still exists and can retry; the reverse would orphan server records.
 export async function deleteAccount() {
   if (!authEnabled || !auth?.currentUser) throw new Error('not signed in')
+
+  // Firebase refuses deleteUser() unless the user signed in within the last
+  // ~5 minutes (auth/requires-recent-login). Check BEFORE the server cleanup:
+  // otherwise a stale session cancels billing and wipes server records, then
+  // fails to delete the login — leaving a confusing half-deleted account.
+  const { claims } = await auth.currentUser.getIdTokenResult()
+  const authAgeSec = Date.now() / 1000 - Number(claims.auth_time || 0)
+  if (!Number.isFinite(authAgeSec) || authAgeSec > 4 * 60) {
+    const err = new Error('recent login required')
+    err.code = 'auth/requires-recent-login'
+    throw err
+  }
+
   const res = await fetch(apiUrl('/api/me/delete'), { method: 'POST', headers: await authHeader() })
   if (!res.ok) throw new Error('server cleanup failed')
   await deleteUser(auth.currentUser) // signs the user out via onAuthStateChanged
