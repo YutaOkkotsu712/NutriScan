@@ -130,6 +130,41 @@ function edgeFunctionsDev() {
   }
 }
 
+// Tailwind v4 emits responsive breakpoints as CSS range-syntax media queries
+// — `@media (width>=48rem)` — which only Safari 16.4+, Chrome 104+ and
+// Firefox 102+ understand. Older browsers ignore the whole block, so EVERY
+// `md:`/`sm:`/`lg:` rule silently fails and the layout is stuck in its mobile
+// (base) form no matter the screen size. Our audience includes older Android
+// Chrome and iOS Safari, so we rewrite the range syntax to the classic
+// `(min-width: …)` / `(max-width: …)` forms, which are equivalent and
+// supported everywhere back to ~2017. Runs in dev (transform) and build
+// (generateBundle) so the preview matches production.
+function widthRangeToMinMax(css) {
+  return css
+    .replace(/\(\s*width\s*>=\s*([0-9.]+)(rem|px|em)\s*\)/g, '(min-width:$1$2)')
+    .replace(/\(\s*width\s*<=\s*([0-9.]+)(rem|px|em)\s*\)/g, '(max-width:$1$2)')
+}
+
+function cssBreakpointCompat() {
+  return {
+    name: 'css-breakpoint-compat',
+    enforce: 'post',
+    transform(code, id) {
+      if (id.includes('.css') && /\(\s*width\s*[<>]=/.test(code)) {
+        return { code: widthRangeToMinMax(code), map: null }
+      }
+      return null
+    },
+    generateBundle(_options, bundle) {
+      for (const file of Object.values(bundle)) {
+        if (file.type === 'asset' && file.fileName.endsWith('.css') && typeof file.source === 'string') {
+          file.source = widthRangeToMinMax(file.source)
+        }
+      }
+    },
+  }
+}
+
 export default defineConfig({
-  plugins: [react(), tailwindcss(), edgeFunctionsDev()],
+  plugins: [react(), tailwindcss(), cssBreakpointCompat(), edgeFunctionsDev()],
 })
