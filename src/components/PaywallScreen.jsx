@@ -1,6 +1,7 @@
 // Paywall — src/components/PaywallScreen.jsx (full replacement)
 import { useT } from '../i18n'
 import { isNativeApp } from '../utils/platform'
+import LegalNote from './LegalNote'
 
 // Shown when a free user hits the scan limit (server returned 402). The server
 // is the source of truth — this screen never controls access.
@@ -59,6 +60,7 @@ export default function PaywallScreen({ entitlement, onSubscribe, onHome, onSign
       </div>
 
       <p className="text-[11px] text-faint mt-6 leading-relaxed max-w-[260px]">{t('auth.trust')}</p>
+      <LegalNote className="mt-3" />
     </div>
   )
 }

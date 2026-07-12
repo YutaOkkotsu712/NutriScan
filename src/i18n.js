@@ -129,6 +129,10 @@ const STRINGS = {
     plan: {
       current: 'Current plan', free: 'Free',
     },
+    legal: {
+      disclaimer: 'ZOCO gives label-based educational information — not medical advice, certification, or a guarantee of safety. Formulations and labels can change; always check the physical product.',
+      privacy: 'Privacy', terms: 'Terms', contact: 'Contact',
+    },
     welcome: {
       headline: 'Know what’s inside before you buy',
       sub: 'Scan any packaged food for a clear health score, allergen alerts and diet checks — made for India.',
@@ -490,6 +494,10 @@ const STRINGS = {
     },
     plan: {
       current: 'मौजूदा प्लान', free: 'मुफ़्त',
+    },
+    legal: {
+      disclaimer: 'ZOCO लेबल-आधारित शैक्षिक जानकारी देता है — चिकित्सा सलाह, प्रमाणन या सुरक्षा की गारंटी नहीं। फ़ॉर्मूला और लेबल बदल सकते हैं; हमेशा असली उत्पाद जाँचें।',
+      privacy: 'प्राइवेसी', terms: 'शर्तें', contact: 'संपर्क',
     },
     welcome: {
       headline: 'खरीदने से पहले जानिए अंदर क्या है',
@@ -958,6 +966,10 @@ const STRINGS = {
     plan: {
       current: 'Current plan', free: 'Free',
     },
+    legal: {
+      disclaimer: 'ZOCO label-based educational jankari deta hai — medical advice, certification ya safety guarantee nahi. Formula aur label badal sakte hain; hamesha asli product check karein.',
+      privacy: 'Privacy', terms: 'Terms', contact: 'Contact',
+    },
     welcome: {
       headline: 'Khareedne se pehle jaaniye andar kya hai',
       sub: 'Koi bhi packed food scan karein — clear health score, allergy alerts aur diet check, India ke liye bana.',
@@ -1179,6 +1191,10 @@ const STRINGS = {
     },
     plan: {
       current: 'सध्याचा प्लॅन', free: 'मोफत',
+    },
+    legal: {
+      disclaimer: 'ZOCO लेबल-आधारित शैक्षणिक माहिती देते — वैद्यकीय सल्ला, प्रमाणपत्र किंवा सुरक्षिततेची हमी नाही. फॉर्म्युला आणि लेबल बदलू शकतात; नेहमी प्रत्यक्ष उत्पादन तपासा.',
+      privacy: 'गोपनीयता', terms: 'अटी', contact: 'संपर्क',
     },
     welcome: {
       headline: 'खरेदी करण्यापूर्वी आत काय आहे ते जाणा',
@@ -1402,6 +1418,10 @@ const STRINGS = {
     plan: {
       current: 'વર્તમાન પ્લાન', free: 'મફત',
     },
+    legal: {
+      disclaimer: 'ZOCO લેબલ-આધારિત શૈક્ષણિક માહિતી આપે છે — તબીબી સલાહ, પ્રમાણપત્ર કે સલામતીની ગેરંટી નહીં. ફોર્મ્યુલા અને લેબલ બદલાઈ શકે; હંમેશા વાસ્તવિક ઉત્પાદન તપાસો.',
+      privacy: 'ગોપનીયતા', terms: 'શરતો', contact: 'સંપર્ક',
+    },
     welcome: {
       headline: 'ખરીદતા પહેલાં જાણો અંદર શું છે',
       sub: 'કોઈપણ પેક્ડ ફૂડ સ્કેન કરો — સ્પષ્ટ હેલ્થ સ્કોર, એલર્જી અલર્ટ અને ડાયેટ તપાસ, ભારત માટે બનેલું.',
@@ -1623,6 +1643,10 @@ const STRINGS = {
     },
     plan: {
       current: 'বর্তমান প্ল্যান', free: 'ফ্রি',
+    },
+    legal: {
+      disclaimer: 'ZOCO লেবেল-ভিত্তিক শিক্ষামূলক তথ্য দেয় — চিকিৎসা পরামর্শ, সার্টিফিকেশন বা নিরাপত্তার নিশ্চয়তা নয়। ফর্মুলা ও লেবেল বদলাতে পারে; সর্বদা আসল পণ্য যাচাই করুন।',
+      privacy: 'গোপনীয়তা', terms: 'শর্তাবলী', contact: 'যোগাযোগ',
     },
     welcome: {
       headline: 'কেনার আগে জানুন ভিতরে কী আছে',
@@ -1846,6 +1870,10 @@ const STRINGS = {
     plan: {
       current: 'தற்போதைய திட்டம்', free: 'இலவசம்',
     },
+    legal: {
+      disclaimer: 'ZOCO லேபிள் அடிப்படையிலான கல்வித் தகவலை வழங்குகிறது — மருத்துவ ஆலோசனை, சான்றிதழ் அல்லது பாதுகாப்பு உத்தரவாதம் அல்ல. சூத்திரமும் லேபிளும் மாறலாம்; எப்போதும் நேரடித் தயாரிப்பைச் சரிபார்க்கவும்.',
+      privacy: 'தனியுரிமை', terms: 'விதிமுறைகள்', contact: 'தொடர்பு',
+    },
     welcome: {
       headline: 'வாங்கும் முன் உள்ளே என்ன இருக்கிறது என்று அறியுங்கள்',
       sub: 'எந்த பேக்கேஜ் உணவையும் ஸ்கேன் செய்யுங்கள் — தெளிவான ஹெல்த் ஸ்கோர், அலர்ஜி எச்சரிக்கை, டயட் சரிபார்ப்பு — இந்தியாவுக்காக.',
@@ -2068,6 +2096,10 @@ const STRINGS = {
     plan: {
       current: 'ప్రస్తుత ప్లాన్', free: 'ఉచితం',
     },
+    legal: {
+      disclaimer: 'ZOCO లేబుల్ ఆధారిత విద్యా సమాచారాన్ని ఇస్తుంది — వైద్య సలహా, ధృవీకరణ లేదా భద్రతా హామీ కాదు. ఫార్ములా, లేబుళ్లు మారవచ్చు; ఎల్లప్పుడూ అసలు ఉత్పత్తిని తనిఖీ చేయండి.',
+      privacy: 'గోప్యత', terms: 'నిబంధనలు', contact: 'సంప్రదించండి',
+    },
     welcome: {
       headline: 'కొనే ముందు లోపల ఏముందో తెలుసుకోండి',
       sub: 'ఏ ప్యాక్డ్ ఫుడ్ అయినా స్కాన్ చేయండి — స్పష్టమైన హెల్త్ స్కోర్, అలర్జీ హెచ్చరికలు, డైట్ తనిఖీ — భారత్ కోసం.',
@@ -2289,6 +2321,10 @@ const STRINGS = {
     },
     plan: {
       current: 'ಪ್ರಸ್ತುತ ಪ್ಲಾನ್', free: 'ಉಚಿತ',
+    },
+    legal: {
+      disclaimer: 'ZOCO ಲೇಬಲ್ ಆಧಾರಿತ ಶೈಕ್ಷಣಿಕ ಮಾಹಿತಿಯನ್ನು ನೀಡುತ್ತದೆ — ವೈದ್ಯಕೀಯ ಸಲಹೆ, ಪ್ರಮಾಣೀಕರಣ ಅಥವಾ ಸುರಕ್ಷತೆಯ ಖಾತರಿ ಅಲ್ಲ. ಫಾರ್ಮುಲಾ ಮತ್ತು ಲೇಬಲ್‌ಗಳು ಬದಲಾಗಬಹುದು; ಯಾವಾಗಲೂ ನಿಜವಾದ ಉತ್ಪನ್ನವನ್ನು ಪರಿಶೀಲಿಸಿ.',
+      privacy: 'ಗೌಪ್ಯತೆ', terms: 'ನಿಯಮಗಳು', contact: 'ಸಂಪರ್ಕ',
     },
     welcome: {
       headline: 'ಖರೀದಿಸುವ ಮೊದಲು ಒಳಗೇನಿದೆ ಎಂದು ತಿಳಿಯಿರಿ',

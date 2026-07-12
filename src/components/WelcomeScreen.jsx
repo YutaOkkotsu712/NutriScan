@@ -110,10 +110,14 @@ export default function WelcomeScreen({ onGetStarted, onSignIn }) {
 
       {/* Footer */}
       <footer className="max-w-lg mx-auto w-full px-6 pb-8 text-center">
-        <p className="text-[11px] text-faint leading-relaxed mb-1.5">{t('auth.trust')}</p>
-        <a href="/privacy.html" className="text-[11px] text-faint underline hover:text-moss">
-          {t('welcome.privacy')}
-        </a>
+        <p className="text-[11px] text-faint leading-relaxed mb-2">{t('auth.trust')}</p>
+        <div className="flex items-center justify-center gap-2.5 text-[11px] text-faint">
+          <a href="/privacy.html" className="underline hover:text-moss">{t('legal.privacy')}</a>
+          <span className="text-edge">·</span>
+          <a href="/terms.html" className="underline hover:text-moss">{t('legal.terms')}</a>
+          <span className="text-edge">·</span>
+          <a href="mailto:akashmeh017@gmail.com" className="underline hover:text-moss">{t('legal.contact')}</a>
+        </div>
       </footer>
     </div>
   )

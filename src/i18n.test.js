@@ -52,7 +52,7 @@ describe('translateProse', () => {
   it('every language carries the full UI chrome namespaces', () => {
     // Guards against a language missing keys added later (translate() would
     // silently fall back to English, hiding the gap).
-    const NAMESPACES = ['scan', 'loadingStatus', 'errors', 'swap', 'swapn', 'ingsheet', 'data', 'correction', 'demographic', 'share', 'scoreword', 'auth', 'account', 'welcome', 'nav', 'plan']
+    const NAMESPACES = ['scan', 'loadingStatus', 'errors', 'swap', 'swapn', 'ingsheet', 'data', 'correction', 'demographic', 'share', 'scoreword', 'auth', 'account', 'welcome', 'nav', 'plan', 'legal']
     for (const ns of NAMESPACES) {
       const reference = getNamespaceKeys('en', ns)
       expect(reference, `en has ${ns}`).not.toBeNull()

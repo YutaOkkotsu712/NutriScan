@@ -11,6 +11,7 @@ import ScoreExplainer from './ScoreExplainer'
 import IngredientDeepDive from './IngredientDeepDive'
 import SuitabilityChips from './SuitabilityChips'
 import NutrientAllowanceCard from './NutrientAllowanceCard'
+import LegalNote from './LegalNote'
 import FastingCard from './FastingCard'
 import DataConfidenceCard from './DataConfidenceCard'
 import { useProfile } from '../utils/profile'
@@ -442,6 +443,9 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
         </div>
       )}
       </div>{/* end desktop two-column grid */}
+
+      {/* Legal-safe disclaimer (spec §15.2 / §20) — bottom of every result */}
+      <LegalNote className="mt-6 mb-20 md:mb-6" />
 
       {/* Scan another — floats above the bottom nav on mobile */}
       <button

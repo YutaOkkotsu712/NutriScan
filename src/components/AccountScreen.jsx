@@ -5,6 +5,7 @@ import { useT } from '../i18n'
 import { useAuth, deleteAccount } from '../utils/useAuth'
 import { startCheckout, cancelMembership } from '../utils/subscription'
 import { isNativeApp } from '../utils/platform'
+import LegalNote from './LegalNote'
 
 // Membership / account screen: shows the plan status, and lets a free user
 // subscribe or a member cancel. Server is the source of truth; this only
@@ -195,6 +196,8 @@ export default function AccountScreen({ entitlement, onBack, onEntitlementChange
           {t('account.deleteAccount')}
         </button>
       </div>
+
+      <LegalNote className="mt-6" />
     </div>
   )
 }
