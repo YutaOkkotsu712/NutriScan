@@ -26,11 +26,16 @@ async function fetchEntitlement() {
   return res.ok ? (await res.json()).entitlement : null
 }
 
-// Poll for the webhook to activate membership (usually a few seconds).
-async function waitForActivation(tries = 10, delayMs = 1500) {
+// Poll for the webhook to make the membership active AND renewing. We wait for
+// willRenew===true rather than just `subscribed`, so RENEW works too: a
+// renewing user is ALREADY subscribed (cancelled-but-active), so waiting only
+// for `subscribed` returns instantly with the stale willRenew:false and the UI
+// never leaves the "Renew" state. A fresh subscription also lands on
+// willRenew:true, so this one condition covers both flows.
+async function waitForActivation(tries = 12, delayMs = 1500) {
   for (let i = 0; i < tries; i++) {
     const e = await fetchEntitlement()
-    if (e?.subscribed) return e
+    if (e?.subscribed && e?.willRenew === true) return e
     await new Promise(r => setTimeout(r, delayMs))
   }
   return fetchEntitlement()
