@@ -34,7 +34,12 @@ export default function AccountScreen({ entitlement, onBack, onEntitlementChange
   const used = entitlement?.used ?? 0
   const limit = entitlement?.limit ?? 100
   const remaining = entitlement?.remaining ?? Math.max(0, limit - used)
+  // Subscribed but cancellation scheduled: keep access until `until`, but offer
+  // Renew (not Cancel) and show a "won't renew" status.
+  const cancelScheduled = subscribed && entitlement?.willRenew === false
 
+  // Renew === start a fresh subscription checkout (Razorpay can't un-cancel a
+  // cancel-at-cycle-end sub; the new one's webhook overwrites the record).
   function subscribe() {
     setBusy(true); setError(''); setNotice('')
     startCheckout({
@@ -48,7 +53,8 @@ export default function AccountScreen({ entitlement, onBack, onEntitlementChange
     if (!window.confirm(t('account.cancelConfirm'))) return
     setBusy(true); setError(''); setNotice('')
     try {
-      await cancelMembership()
+      const res = await cancelMembership()
+      if (res?.entitlement) onEntitlementChange?.(res.entitlement)
       setNotice(t('account.cancelDone'))
     } catch {
       setError(t('account.cancelFailed'))
@@ -99,7 +105,9 @@ export default function AccountScreen({ entitlement, onBack, onEntitlementChange
             <p className="font-display font-extrabold text-[23px] mt-2">{t('auth.subscribed')}</p>
             {until && (
               <p className="text-xs text-white/70 mt-1.5">
-                {t('account.memberUntil', { date: String(until).slice(0, 10) })}
+                {cancelScheduled
+                  ? t('account.accessUntil', { date: String(until).slice(0, 10) })
+                  : t('account.memberUntil', { date: String(until).slice(0, 10) })}
               </p>
             )}
           </>
@@ -142,7 +150,7 @@ export default function AccountScreen({ entitlement, onBack, onEntitlementChange
         <div className="py-3">
           <p className="text-[11.5px] text-faint">{t('account.status')}</p>
           <p className="text-sm font-semibold text-leaf mt-0.5">
-            {subscribed ? t('account.memberActive') : t('account.freeTier')}
+            {cancelScheduled ? t('account.wontRenew') : subscribed ? t('account.memberActive') : t('account.freeTier')}
           </p>
         </div>
       </div>
@@ -150,9 +158,10 @@ export default function AccountScreen({ entitlement, onBack, onEntitlementChange
       {notice && <p className="text-sm text-deep bg-mint rounded-xl px-3.5 py-2.5 mt-3">{notice}</p>}
       {error && <p className="text-sm text-chili-ink bg-blush rounded-xl px-3.5 py-2.5 mt-3">{error}</p>}
 
-      {/* Primary action */}
+      {/* Primary action: active member → Cancel; cancelled or free → Renew /
+          Subscribe (a purchase, so hidden on native per Play billing policy). */}
       <div className="mt-3">
-        {subscribed ? (
+        {subscribed && !cancelScheduled ? (
           <button
             onClick={cancel} disabled={busy}
             className="w-full py-3.5 text-sm font-semibold text-chili-ink border border-blush-line rounded-2xl hover:bg-blush disabled:opacity-50 transition-colors"
@@ -166,7 +175,7 @@ export default function AccountScreen({ entitlement, onBack, onEntitlementChange
             onClick={subscribe} disabled={busy}
             className="w-full py-4 bg-gradient-to-br from-brand-hi to-brand-lo text-white font-display font-bold text-base rounded-2xl shadow-lg shadow-brand-lo/25 disabled:opacity-50 transition-all active:scale-[.98]"
           >
-            {busy ? t('auth.activating') : t('account.subscribe')}
+            {busy ? t('auth.activating') : cancelScheduled ? t('account.renew') : t('account.subscribe')}
           </button>
         )}
       </div>

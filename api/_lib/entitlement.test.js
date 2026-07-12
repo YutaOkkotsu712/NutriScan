@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterAll } from 'vitest'
 import { createFakeKv } from './fakeKv.js'
 import {
   consumeScan, getEntitlement, setSubscription, clearSubscription,
-  setFreeScanLimit, getFreeScanLimit, resetScans, DEFAULT_FREE_LIMIT,
+  markCancelPending, setFreeScanLimit, getFreeScanLimit, resetScans, DEFAULT_FREE_LIMIT,
 } from './entitlement.js'
 
 const kv = createFakeKv()
@@ -82,6 +82,46 @@ describe('getEntitlement (read-only, no consume)', () => {
     await setSubscription(env, UID, { status: 'active', until: null, plan: 'yearly' })
     const e = await getEntitlement(UID, env)
     expect(e).toMatchObject({ subscribed: true, remaining: null })
+  })
+
+  it('a fresh subscription will renew by default', async () => {
+    await setSubscription(env, UID, { status: 'active', until: null, subscriptionId: 'sub_1' })
+    expect((await getEntitlement(UID, env)).willRenew).toBe(true)
+  })
+
+  it('willRenew is null when not subscribed', async () => {
+    expect((await getEntitlement(UID, env)).willRenew).toBe(null)
+  })
+})
+
+describe('cancellation (cancel at cycle end)', () => {
+  it('markCancelPending keeps access but flips willRenew to false', async () => {
+    await setSubscription(env, UID, { status: 'active', until: '2099-01-01T00:00:00Z', subscriptionId: 'sub_1' })
+    const rec = await markCancelPending(env, UID)
+    expect(rec).toMatchObject({ willRenew: false, subscriptionId: 'sub_1', status: 'active' })
+    const e = await getEntitlement(UID, env)
+    expect(e.subscribed).toBe(true)      // still has access
+    expect(e.willRenew).toBe(false)      // but won't renew
+  })
+
+  it('markCancelPending is a no-op with no subscription', async () => {
+    expect(await markCancelPending(env, UID)).toBe(null)
+  })
+
+  it('a renewal (new setSubscription) resets willRenew to true', async () => {
+    await setSubscription(env, UID, { status: 'active', until: null, subscriptionId: 'sub_1' })
+    await markCancelPending(env, UID)
+    expect((await getEntitlement(UID, env)).willRenew).toBe(false)
+    await setSubscription(env, UID, { status: 'active', until: null, subscriptionId: 'sub_2' })
+    expect((await getEntitlement(UID, env)).willRenew).toBe(true)
+  })
+
+  it('clearSubscription ignores a stale cancel for a different subscription id', async () => {
+    await setSubscription(env, UID, { status: 'active', until: null, subscriptionId: 'sub_new' })
+    await clearSubscription(env, UID, 'sub_old') // late cancel of the replaced sub
+    expect((await getEntitlement(UID, env)).subscribed).toBe(true) // new sub survives
+    await clearSubscription(env, UID, 'sub_new') // matching cancel does clear
+    expect((await getEntitlement(UID, env)).subscribed).toBe(false)
   })
 })
 

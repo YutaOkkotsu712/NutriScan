@@ -64,6 +64,10 @@ export async function getEntitlement(uid, env) {
   const used = Math.max(0, Number(scansRaw) || 0)
   return {
     subscribed: active,
+    // Will the membership auto-renew? false once the user has cancelled (they
+    // keep access until `until`, but the button should offer Renew, not Cancel).
+    // null when not subscribed. Absence of the flag on the record = will renew.
+    willRenew: active ? record?.willRenew !== false : null,
     used: Math.min(used, limit),
     limit,
     remaining: active ? null : Math.max(0, limit - used),
@@ -106,9 +110,32 @@ export async function setSubscription(env, uid, { status = 'active', until = nul
   return record
 }
 
-export async function clearSubscription(env, uid) {
+// Mark the current subscription as "will not renew" (user cancelled at cycle
+// end). Keeps status 'active' — they keep access until `until` — but flips
+// willRenew so the UI offers Renew and repeat cancels are idempotent.
+// Returns the updated record, or null if there's nothing to cancel.
+export async function markCancelPending(env, uid) {
   const raw = await kvCmd(env, ['GET', subKey(uid)])
-  const record = raw ? { ...JSON.parse(raw), status: 'cancelled', updatedAt: new Date().toISOString() } : { status: 'cancelled' }
+  if (!raw) return null
+  let current
+  try { current = JSON.parse(raw) } catch { return null }
+  if (!current?.subscriptionId) return null
+  const record = { ...current, willRenew: false, cancelRequestedAt: new Date().toISOString() }
+  await kvCmd(env, ['SET', subKey(uid), JSON.stringify(record)])
+  return record
+}
+
+export async function clearSubscription(env, uid, expectedSubscriptionId = null) {
+  const raw = await kvCmd(env, ['GET', subKey(uid)])
+  const current = raw ? JSON.parse(raw) : null
+  // Guard: when a specific subscription id is named (webhook path) and the
+  // stored record is for a DIFFERENT subscription — e.g. the user cancelled,
+  // then renewed with a new subscription — a late "cancelled" event for the
+  // OLD subscription must not revoke the new active one.
+  if (expectedSubscriptionId && current?.subscriptionId && current.subscriptionId !== expectedSubscriptionId) {
+    return current
+  }
+  const record = current ? { ...current, status: 'cancelled', updatedAt: new Date().toISOString() } : { status: 'cancelled' }
   await kvCmd(env, ['SET', subKey(uid), JSON.stringify(record)])
   return record
 }

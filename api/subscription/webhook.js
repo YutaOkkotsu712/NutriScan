@@ -59,7 +59,9 @@ export default async function handler(request) {
         status: 'active', until, plan: entity.plan_id || null, subscriptionId: entity.id || null,
       })
     } else {
-      await clearSubscription(env, uid)
+      // Only clear if this event is for the subscription we currently track —
+      // a stale cancel of a replaced/old subscription must not revoke a newer one.
+      await clearSubscription(env, uid, entity.id || null)
     }
     return json({ ok: true, event: type, uid })
   } catch (err) {

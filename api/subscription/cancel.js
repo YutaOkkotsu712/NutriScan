@@ -9,7 +9,7 @@ import { authenticateUser, authConfigured } from '../_lib/firebaseAuth.js'
 import { kvConfigured, kvCmd } from '../_lib/auth.js'
 import { razorpayConfigured, cancelSubscription } from '../_lib/razorpay.js'
 import { corsHeadersFor, handlePreflight } from '../_lib/cors.js'
-import { subKey } from '../_lib/entitlement.js'
+import { subKey, markCancelPending, getEntitlement } from '../_lib/entitlement.js'
 import { asNodeHandler } from '../_lib/nodeAdapter.js'
 
 // Node runtime (no edge config): outbound Razorpay calls get 406-rejected from
@@ -43,9 +43,19 @@ export default asNodeHandler(async function handler(request) {
 
   if (!record?.subscriptionId) return jsonC({ error: 'No active subscription found.' }, 404)
 
+  // Idempotent: if the user already cancelled (willRenew already false), don't
+  // hit Razorpay again — re-cancelling fires another "subscription cancelled"
+  // SMS/email each time. Just re-confirm the current state.
+  if (record.willRenew === false) {
+    return jsonC({ ok: true, cancelAtCycleEnd: true, alreadyCancelled: true, entitlement: await getEntitlement(user.uid, env) })
+  }
+
   try {
     await cancelSubscription(env, record.subscriptionId, true)
-    return jsonC({ ok: true, cancelAtCycleEnd: true })
+    // Record the pending cancellation locally so the app reflects it (Renew
+    // button, "won't renew" status) without waiting for the cycle-end webhook.
+    await markCancelPending(env, user.uid)
+    return jsonC({ ok: true, cancelAtCycleEnd: true, entitlement: await getEntitlement(user.uid, env) })
   } catch (err) {
     console.error('[ZOCO subscription/cancel]', err)
     return jsonC({ error: 'Could not cancel. Please try again.' }, 502)
