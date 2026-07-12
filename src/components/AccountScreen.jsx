@@ -1,3 +1,5 @@
+// Membership / account — src/components/AccountScreen.jsx (full replacement)
+// Adds a sign-out button here (removed from the app header in the redesign).
 import { useState } from 'react'
 import { useT } from '../i18n'
 import { useAuth, deleteAccount } from '../utils/useAuth'
@@ -9,21 +11,18 @@ import { isNativeApp } from '../utils/platform'
 // reflects and triggers.
 //
 // PLAY STORE COMPLIANCE: the native Android app shows membership status but
-// no subscribe button (website-only billing — see PaywallScreen). Cancelling
-// and account deletion stay available everywhere: deletion is a hard Play
-// requirement for apps with account creation.
+// no subscribe button (website-only billing). Cancelling and account deletion
+// stay available everywhere: deletion is a hard Play requirement.
 export default function AccountScreen({ entitlement, onBack, onEntitlementChange }) {
   const { t } = useT()
-  const { email, user } = useAuth()
+  const { email, user, signOut } = useAuth()
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
   const native = isNativeApp()
 
-  // Tap-to-copy for the uid. The admin Membership tab comps/looks up users by
-  // this id — support asks the user to read it from here. Clipboard API can be
-  // unavailable (old WebViews); the id stays selectable text either way.
+  // Tap-to-copy for the uid. Support looks up users by this id.
   function copyUid() {
     navigator.clipboard?.writeText(user.uid)
       .then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) })
@@ -32,6 +31,9 @@ export default function AccountScreen({ entitlement, onBack, onEntitlementChange
 
   const subscribed = entitlement?.subscribed
   const until = entitlement?.subscription?.until
+  const used = entitlement?.used ?? 0
+  const limit = entitlement?.limit ?? 100
+  const remaining = entitlement?.remaining ?? Math.max(0, limit - used)
 
   function subscribe() {
     setBusy(true); setError(''); setNotice('')
@@ -67,81 +69,123 @@ export default function AccountScreen({ entitlement, onBack, onEntitlementChange
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8">
-      <h2 className="text-xl font-bold text-gray-900 mb-6">{t('account.title')}</h2>
+    <div className="max-w-lg mx-auto px-5 py-5 pb-28 md:pb-10">
+      {/* Title row */}
+      <div className="flex items-center gap-2.5 mb-4">
+        <button
+          onClick={onBack}
+          className="flex items-center justify-center w-9 h-9 rounded-full bg-white border border-edge"
+          aria-label={t('account.back')}
+        >
+          <svg className="w-[17px] h-[17px] text-fern" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <h2 className="font-display font-bold text-lg text-ink">{t('account.title')}</h2>
+      </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-4">
+      {/* Plan card */}
+      <div className="bg-gradient-to-br from-brand-hi to-brand-lo rounded-[20px] p-4.5 text-white shadow-lg shadow-brand-lo/25">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-bold tracking-[.14em] text-white/65 uppercase">
+            {t('plan.current')}
+          </span>
+          <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${subscribed ? 'bg-white text-deep' : 'bg-marigold text-spice'}`}>
+            {subscribed ? t('account.memberActive') : t('plan.free')}
+          </span>
+        </div>
+        {subscribed ? (
+          <>
+            <p className="font-display font-extrabold text-[23px] mt-2">{t('auth.subscribed')}</p>
+            {until && (
+              <p className="text-xs text-white/70 mt-1.5">
+                {t('account.memberUntil', { date: String(until).slice(0, 10) })}
+              </p>
+            )}
+          </>
+        ) : (
+          <>
+            <p className="font-display font-extrabold text-[23px] mt-2">
+              {t('account.scansUsed', { used, limit })}
+            </p>
+            <div className="h-1.5 bg-white/20 rounded-full mt-3 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-marigold animate-barGrow"
+                style={{ width: `${Math.max(0, Math.min(100, (used / limit) * 100))}%` }}
+              />
+            </div>
+            <p className="text-xs text-white/70 mt-2">{t('auth.freeScansLeft', { n: remaining })}</p>
+          </>
+        )}
+      </div>
+
+      {/* Account details */}
+      <div className="bg-white border border-line rounded-[18px] px-4 mt-3">
         {email && (
-          <div>
-            <p className="text-xs text-gray-500">{t('account.signedInAs')}</p>
-            <p className="text-sm font-medium text-gray-800">{email}</p>
+          <div className="py-3 border-b border-hairline">
+            <p className="text-[11.5px] text-faint">{t('account.signedInAs')}</p>
+            <p className="text-sm font-semibold text-leaf mt-0.5">{email}</p>
           </div>
         )}
-
         {user?.uid && (
-          <div>
-            <p className="text-xs text-gray-500">{t('account.userId')}</p>
+          <div className="py-3 border-b border-hairline">
+            <p className="text-[11.5px] text-faint">{t('account.userId')}</p>
             <button
               onClick={copyUid}
-              className="text-left font-mono text-[11px] text-gray-500 break-all select-all hover:text-gray-700 transition-colors"
+              className="text-left font-mono text-[11px] text-moss break-all select-all hover:text-sage transition-colors mt-0.5"
               title={user.uid}
             >
-              {user.uid}{copied && <span className="ml-2 font-sans text-green-600">✓ {t('account.copied')}</span>}
+              {user.uid}{copied && <span className="ml-2 font-sans font-semibold text-brand">✓ {t('account.copied')}</span>}
             </button>
           </div>
         )}
-
-        <div>
-          <p className="text-xs text-gray-500">{t('account.status')}</p>
-          {subscribed ? (
-            <>
-              <p className="text-sm font-semibold text-green-700">{t('account.memberActive')}</p>
-              {until && <p className="text-xs text-gray-500 mt-0.5">{t('account.memberUntil', { date: String(until).slice(0, 10) })}</p>}
-            </>
-          ) : (
-            <>
-              <p className="text-sm font-semibold text-gray-800">{t('account.freeTier')}</p>
-              <p className="text-xs text-gray-500 mt-0.5">
-                {t('account.scansUsed', { used: entitlement?.used ?? 0, limit: entitlement?.limit ?? 100 })}
-              </p>
-            </>
-          )}
+        <div className="py-3">
+          <p className="text-[11.5px] text-faint">{t('account.status')}</p>
+          <p className="text-sm font-semibold text-leaf mt-0.5">
+            {subscribed ? t('account.memberActive') : t('account.freeTier')}
+          </p>
         </div>
+      </div>
 
-        {notice && <p className="text-sm text-green-700">{notice}</p>}
-        {error && <p className="text-sm text-red-600">{error}</p>}
+      {notice && <p className="text-sm text-deep bg-mint rounded-xl px-3.5 py-2.5 mt-3">{notice}</p>}
+      {error && <p className="text-sm text-chili-ink bg-blush rounded-xl px-3.5 py-2.5 mt-3">{error}</p>}
 
+      {/* Primary action */}
+      <div className="mt-3">
         {subscribed ? (
           <button
             onClick={cancel} disabled={busy}
-            className="w-full py-2.5 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 disabled:opacity-50 transition-colors"
+            className="w-full py-3.5 text-sm font-semibold text-chili-ink border border-blush-line rounded-2xl hover:bg-blush disabled:opacity-50 transition-colors"
           >
             {t('account.cancel')}
           </button>
         ) : native ? (
-          <p className="text-sm text-gray-500 leading-relaxed">{t('auth.webOnlyPurchase')}</p>
+          <p className="text-sm text-moss leading-relaxed text-center px-2">{t('auth.webOnlyPurchase')}</p>
         ) : (
           <button
             onClick={subscribe} disabled={busy}
-            className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl disabled:opacity-50 transition-colors"
+            className="w-full py-4 bg-gradient-to-br from-brand-hi to-brand-lo text-white font-display font-bold text-base rounded-2xl shadow-lg shadow-brand-lo/25 disabled:opacity-50 transition-all active:scale-[.98]"
           >
             {busy ? t('auth.activating') : t('account.subscribe')}
           </button>
         )}
       </div>
 
-      <div className="mt-8 pt-4 border-t border-gray-100">
+      {/* Sign out / delete */}
+      <div className="grid grid-cols-2 gap-2.5 mt-2.5">
+        <button
+          onClick={() => signOut()}
+          className="py-3.5 bg-white border border-edge text-fern text-[13.5px] font-semibold rounded-[14px] transition-all active:scale-[.98]"
+        >
+          {t('auth.signOut')}
+        </button>
         <button
           onClick={removeAccount} disabled={busy}
-          className="text-sm text-red-500 hover:text-red-700 font-medium disabled:opacity-50 transition-colors"
+          className="py-3.5 border border-blush-line text-chili-ink text-[13.5px] font-semibold rounded-[14px] hover:bg-blush disabled:opacity-50 transition-colors"
         >
           {t('account.deleteAccount')}
         </button>
       </div>
-
-      <button onClick={onBack} className="mt-6 text-sm text-gray-500 hover:text-gray-700 font-medium">
-        ← {t('account.back')}
-      </button>
     </div>
   )
 }

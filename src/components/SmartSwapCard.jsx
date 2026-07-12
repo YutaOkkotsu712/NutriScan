@@ -1,6 +1,12 @@
+// Smart swap / alternatives — src/components/SmartSwapCard.jsx (full replacement)
+// Verdict-first: the numeric score badge and "+1.2" diff badges are replaced
+// with the scoreword pill and a "Better" tag (score still drives sorting
+// internally). All fetching/filter logic unchanged. Needs i18n keys
+// swap.better + swap.neverSponsored (see i18n-additions).
 import { useState, useEffect } from 'react'
 import { useProfile } from '../utils/profile'
 import { useT } from '../i18n'
+import { ImageStripe } from './ZocoBrand'
 
 function DeltaBadge({ value, label, positive }) {
   if (value === undefined) return null
@@ -9,26 +15,24 @@ function DeltaBadge({ value, label, positive }) {
   if (absVal < 5) return null
 
   return (
-    <span className={`inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded ${
-      isBetter ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+    <span className={`inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full ${
+      isBetter ? 'bg-mint text-deep' : 'bg-blush text-chili-ink'
     }`}>
       {value > 0 ? '+' : ''}{value}% {label}
     </span>
   )
 }
 
-function ScoreBadge({ score, label }) {
-  let color = 'bg-red-500'
-  if (score > 7) color = 'bg-green-500'
-  else if (score > 4) color = 'bg-amber-500'
+// Verdict pill from the score (numeric score never rendered).
+function ScoreWordPill({ score, label }) {
+  let cls = 'bg-blush text-chili-ink'
+  if (score > 7) cls = 'bg-mint text-deep'
+  else if (score > 4) cls = 'bg-sand text-ochre'
 
   return (
-    <div className="flex flex-col items-center shrink-0">
-      <span className={`${color} text-white text-xs font-bold w-9 h-9 rounded-full flex items-center justify-center`}>
-        {score.toFixed(1)}
-      </span>
-      <span className="text-[10px] text-gray-500 mt-0.5">{label}</span>
-    </div>
+    <span className={`shrink-0 text-[10.5px] font-bold px-2 py-1 rounded-full ${cls}`}>
+      {label}
+    </span>
   )
 }
 
@@ -36,7 +40,6 @@ export default function SmartSwapCard({ result, onSelectProduct }) {
   const profile = useProfile()
   const { t } = useT()
   const diet = profile.diet || 'none'
-  // Stable reference from the profile store (defaults to [] there).
   const allergens = profile.allergens
   const fastingProfile = profile.fastingProfile && profile.fastingProfile !== 'none' ? profile.fastingProfile : 'none'
   const [alternatives, setAlternatives] = useState([])
@@ -84,25 +87,25 @@ export default function SmartSwapCard({ result, onSelectProduct }) {
   const similarAlts = alternatives.filter(a => a.nutriscanScore <= result.overallScore)
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4">
-      <div className="flex items-center gap-2 mb-1 flex-wrap">
-        <span className="text-lg">🔄</span>
-        <span className="font-semibold text-gray-800">
+    <div className="bg-white border border-line rounded-[18px] p-4">
+      <div className="flex items-baseline gap-2 mb-1 flex-wrap">
+        <span className="font-display font-bold text-[15.5px] text-ink">
           {betterAlts.length > 0 ? t('swap.healthier') : t('swap.similar')}
         </span>
+        <span className="text-[11.5px] text-faint">{t('swap.neverSponsored')}</span>
         <span className="ml-auto flex items-center gap-1 flex-wrap justify-end">
           {diet !== 'none' && (
-            <span className="text-[10px] font-medium bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold bg-mint text-deep px-2 py-0.5 rounded-full">
               {t('swap.onlyChip', { label: t(`diet.${diet}`) })}
             </span>
           )}
           {allergens?.length > 0 && (
-            <span className="text-[10px] font-medium bg-red-50 text-red-700 px-1.5 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold bg-blush text-chili-ink px-2 py-0.5 rounded-full">
               {t('swap.allergenChip')}
             </span>
           )}
           {fastingProfile !== 'none' && (
-            <span className="text-[10px] font-medium bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold bg-sand text-ochre px-2 py-0.5 rounded-full">
               {t('swap.fastingChip')}
             </span>
           )}
@@ -110,21 +113,21 @@ export default function SmartSwapCard({ result, onSelectProduct }) {
       </div>
 
       {loading && (
-        <div className="flex items-center gap-2 text-sm text-gray-500 py-4">
-          <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
+        <div className="flex items-center gap-2 text-sm text-moss py-4">
+          <div className="w-4 h-4 border-2 border-brand border-t-transparent rounded-full animate-spin" />
           {t('swap.finding')}
         </div>
       )}
 
       {(loaded || !applicable) && alternatives.length === 0 && (
         <div className="py-2">
-          <p className="text-sm text-gray-600 leading-relaxed">{result.swapSuggestion}</p>
+          <p className="text-sm text-sage leading-relaxed">{result.swapSuggestion}</p>
         </div>
       )}
 
       {!loading && betterAlts.length > 0 && (
         <>
-          <p className="text-xs text-gray-500 mb-3">
+          <p className="text-xs text-moss mb-3">
             {t('swap.scoreHigher')}
           </p>
           <div className="space-y-2 mb-3">
@@ -141,8 +144,8 @@ export default function SmartSwapCard({ result, onSelectProduct }) {
       )}
 
       {!loading && betterAlts.length > 0 && similarAlts.length > 0 && (
-        <div className="border-t border-gray-100 pt-3 mt-2">
-          <p className="text-xs text-gray-400 mb-2">{t('swap.otherInCategory')}</p>
+        <div className="border-t border-hairline pt-3 mt-2">
+          <p className="text-xs text-faint mb-2">{t('swap.otherInCategory')}</p>
           <div className="space-y-2">
             {similarAlts.slice(0, 3).map((alt) => (
               <AlternativeCard
@@ -159,7 +162,7 @@ export default function SmartSwapCard({ result, onSelectProduct }) {
 
       {!loading && betterAlts.length === 0 && similarAlts.length > 0 && (
         <>
-          <p className="text-xs text-gray-500 mb-3">
+          <p className="text-xs text-moss mb-3">
             {t('swap.sameCategoryTap')}
           </p>
           <div className="space-y-2">
@@ -181,47 +184,42 @@ export default function SmartSwapCard({ result, onSelectProduct }) {
 function AlternativeCard({ alt, currentScore, onSelect, compact = false }) {
   const { t } = useT()
   const isBetter = alt.nutriscanScore > currentScore
-  const scoreDiff = (alt.nutriscanScore - currentScore).toFixed(1)
 
   return (
     <button
       onClick={() => onSelect(alt.barcode)}
-      className={`w-full rounded-lg p-3 text-left transition-colors border ${
-        isBetter
-          ? 'bg-green-50 hover:bg-green-100 border-green-200'
-          : 'bg-gray-50 hover:bg-gray-100 border-gray-100'
+      className={`w-full rounded-2xl p-3 text-left transition-all active:scale-[.99] border ${
+        isBetter ? 'bg-mint/50 border-mint' : 'bg-cream/60 border-hairline'
       }`}
     >
       <div className="flex items-center gap-3">
         {alt.image ? (
-          <img src={alt.image} alt="" className={`${compact ? 'w-8 h-8' : 'w-10 h-10'} rounded-lg object-cover shrink-0`} />
+          <img src={alt.image} alt="" className={`${compact ? 'w-8 h-8' : 'w-10 h-10'} rounded-[10px] object-cover shrink-0`} />
         ) : (
-          <div className={`${compact ? 'w-8 h-8' : 'w-10 h-10'} rounded-lg bg-gray-100 flex items-center justify-center shrink-0`}>
-            <span className="text-sm">📦</span>
-          </div>
+          <ImageStripe className={`${compact ? 'w-8 h-8' : 'w-10 h-10'} rounded-[10px]`} />
         )}
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <p className={`${compact ? 'text-xs' : 'text-sm'} font-medium text-gray-900 truncate`}>{alt.name}</p>
+            <p className={`${compact ? 'text-xs' : 'text-sm'} font-semibold text-leaf truncate`}>{alt.name}</p>
             {isBetter && (
-              <span className="shrink-0 text-[10px] font-bold bg-green-600 text-white px-1.5 py-0.5 rounded">
-                +{scoreDiff}
+              <span className="shrink-0 text-[10px] font-bold bg-brand text-white px-1.5 py-0.5 rounded-full">
+                {t('swap.better')}
               </span>
             )}
           </div>
           {alt.brand && !compact && (
-            <p className="text-xs text-gray-500 truncate">{alt.brand}</p>
+            <p className="text-xs text-moss truncate mt-0.5">{alt.brand}</p>
           )}
         </div>
 
-        <ScoreBadge score={alt.nutriscanScore} label={t(`scoreword.${alt.scoreLabel}`)} />
+        <ScoreWordPill score={alt.nutriscanScore} label={t(`scoreword.${alt.scoreLabel}`)} />
       </div>
 
       {/* Improvement badges */}
       {!compact && alt.improvements && alt.improvements.length > 0 && (
-        <div className="mt-2 ml-13">
-          <p className="text-xs text-green-700 font-medium">
+        <div className="mt-2">
+          <p className="text-xs text-deep font-semibold">
             {alt.improvements.slice(0, 3).map(imp =>
               `${imp.pct > 0 ? '+' : ''}${imp.pct}% ${t(`swapn.${imp.key}`)}`
             ).join(' · ')}

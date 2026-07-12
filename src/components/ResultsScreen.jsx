@@ -1,5 +1,9 @@
+// Scan result — src/components/ResultsScreen.jsx (full replacement)
+// Verdict-first shell per the ZOCO doc: the numeric score is never rendered
+// (it still drives the verdict internally). Child cards (SuitabilityChips,
+// NutrientAllowanceCard, FastingCard, CategoryCard, NutritionDetail,
+// IngredientDeepDive, DataConfidenceCard, SmartSwapCard) are kept as-is.
 import { useState, useEffect, useRef } from 'react'
-import ScoreDial from './ScoreDial'
 import CategoryCard from './CategoryCard'
 import SmartSwapCard from './SmartSwapCard'
 import NutritionDetail from './NutritionDetail'
@@ -11,58 +15,74 @@ import FastingCard from './FastingCard'
 import DataConfidenceCard from './DataConfidenceCard'
 import { useProfile } from '../utils/profile'
 import { useT } from '../i18n'
+import { VegMark, ImageStripe } from './ZocoBrand'
 
 const CATEGORY_ORDER = ['calories', 'sugars', 'fats', 'sodium', 'protein', 'fiber', 'processing', 'additives']
 
 // Buy / Limit / Avoid verdict — a presentation of the existing score (§2.1),
-// it does NOT change the general product score (§9).
+// it does NOT change the general product score (§9). Restyled to the ZOCO
+// readout treatment; label copy still comes from i18n (verdict.*).
 function getVerdict(score) {
-  if (score >= 7) return { label: 'Buy', cls: 'bg-green-600 text-white', desc: 'Good everyday choice' }
-  if (score >= 4) return { label: 'Limit', cls: 'bg-amber-500 text-white', desc: 'Okay occasionally' }
-  return { label: 'Avoid', cls: 'bg-red-600 text-white', desc: 'Best kept as a rare treat' }
+  if (score >= 7) {
+    return {
+      label: 'Buy',
+      pill: 'bg-mint text-deep',
+      hero: 'bg-mint border-mint',
+      kicker: 'text-deep/70', title: 'text-deep', desc: 'text-mint-ink',
+      iconBg: 'bg-brand text-white',
+      icon: <path d="M9 12l2 2 4-4M12 21a9 9 0 100-18 9 9 0 000 18z" />,
+    }
+  }
+  if (score >= 4) {
+    return {
+      label: 'Limit',
+      pill: 'bg-sand text-ochre',
+      hero: 'bg-sand border-sand-line',
+      kicker: 'text-ochre-lt', title: 'text-ochre', desc: 'text-[#7C6A45]',
+      iconBg: 'bg-marigold text-spice',
+      icon: <><path d="M12 8v5m0 3.5h.01" /><circle cx="12" cy="12" r="9" /></>,
+    }
+  }
+  return {
+    label: 'Avoid',
+    pill: 'bg-blush text-chili-ink',
+    hero: 'bg-blush border-blush-line',
+    kicker: 'text-chili-ink/70', title: 'text-chili-ink', desc: 'text-chili-ink/80',
+    iconBg: 'bg-chili text-white',
+    icon: <><path d="M12 8v5m0 3.5h.01" /><circle cx="12" cy="12" r="9" /></>,
+  }
 }
 
 // Quick veg/non-veg/vegan badge from OFF ingredient analysis.
 function getDietBadge(result) {
   const tags = result.ingredientsAnalysisTags || []
-  if (tags.includes('en:non-vegetarian')) return { label: 'Non-veg', cls: 'bg-red-100 text-red-700' }
-  if (tags.includes('en:vegan')) return { label: 'Vegan', cls: 'bg-green-100 text-green-700' }
-  if (tags.includes('en:vegetarian')) return { label: 'Veg', cls: 'bg-green-100 text-green-700' }
+  if (tags.includes('en:non-vegetarian')) return { label: 'Non-veg', cls: 'bg-blush text-chili-ink', veg: false }
+  if (tags.includes('en:vegan')) return { label: 'Vegan', cls: 'bg-mint text-deep', veg: true }
+  if (tags.includes('en:vegetarian')) return { label: 'Veg', cls: 'bg-mint text-deep', veg: true }
   return null
 }
 
 const ALLERGEN_LABELS = {
-  gluten: { icon: '\u{1F33E}', label: 'Gluten' },
-  milk: { icon: '\u{1F95B}', label: 'Milk / Dairy' },
-  eggs: { icon: '\u{1F95A}', label: 'Eggs' },
-  nuts: { icon: '\u{1F95C}', label: 'Tree Nuts' },
-  peanuts: { icon: '\u{1F95C}', label: 'Peanuts' },
-  soybeans: { icon: '\u{1FAD8}', label: 'Soy' },
-  fish: { icon: '\u{1F41F}', label: 'Fish' },
-  crustaceans: { icon: '\u{1F990}', label: 'Crustaceans' },
-  molluscs: { icon: '\u{1F41A}', label: 'Molluscs' },
-  celery: { icon: '\u{1F96C}', label: 'Celery' },
-  mustard: { icon: '\u{1F7E1}', label: 'Mustard' },
-  sesame: { icon: '\u{1FAD8}', label: 'Sesame' },
-  sulphites: { icon: '\u{2697}\u{FE0F}', label: 'Sulphites' },
-  lupin: { icon: '\u{1F33F}', label: 'Lupin' },
-  wheat: { icon: '\u{1F33E}', label: 'Wheat' },
+  gluten: 'Gluten', milk: 'Milk / Dairy', eggs: 'Eggs', nuts: 'Tree Nuts',
+  peanuts: 'Peanuts', soybeans: 'Soy', fish: 'Fish', crustaceans: 'Crustaceans',
+  molluscs: 'Molluscs', celery: 'Celery', mustard: 'Mustard', sesame: 'Sesame',
+  sulphites: 'Sulphites', lupin: 'Lupin', wheat: 'Wheat',
+}
+
+function allergenLabel(key) {
+  return ALLERGEN_LABELS[key] || key.charAt(0).toUpperCase() + key.slice(1)
 }
 
 function concernStyle(concern) {
-  if (concern === 'high') return 'bg-red-100 text-red-700'
-  if (concern === 'medium') return 'bg-amber-100 text-amber-700'
-  return 'bg-green-100 text-green-700'
+  if (concern === 'high') return 'bg-blush text-chili-ink'
+  if (concern === 'medium') return 'bg-sand text-ochre'
+  return 'bg-mint text-deep'
 }
 
 function concernLabel(concern) {
   if (concern === 'high') return 'limit'
   if (concern === 'medium') return 'review'
   return 'low concern'
-}
-
-function getAllergenInfo(key) {
-  return ALLERGEN_LABELS[key] || { icon: '\u{26A0}\u{FE0F}', label: key.charAt(0).toUpperCase() + key.slice(1) }
 }
 
 export default function ResultsScreen({ result, onReset, onCompare, onSelectProduct }) {
@@ -80,13 +100,12 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
   // user's profile so their own allergens get a prominent, first-thing alert.
   const personalAllergenHits = (() => {
     if (!profile.allergens?.length) return { contains: [], traces: [] }
-    const inProduct = new Set([...(result.allergens || []), ...(result.traces || [])])
     const contains = (result.allergens || []).filter(a => profile.allergens.includes(a))
     const traces = (result.traces || []).filter(a => profile.allergens.includes(a) && !contains.includes(a))
-    return { contains, traces, any: contains.length > 0 || traces.length > 0, inProduct }
+    return { contains, traces, any: contains.length > 0 || traces.length > 0 }
   })()
 
-  // Sticky compact header (§12.1): appears once the main score scrolls away.
+  // Sticky compact header (§12.1): appears once the readout hero scrolls away.
   useEffect(() => {
     const el = scoreAnchorRef.current
     if (!el) return
@@ -116,124 +135,143 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-6 pb-24">
-      {/* Sticky compact header (§12.1) — appears after scrolling past the score */}
+    <div className="max-w-lg mx-auto px-5 py-5 pb-40 md:pb-28">
+      {/* Sticky compact header (§12.1) — no numeric score, verdict pill only */}
       {showStickyBar && (
-        <div className="fixed top-[52px] left-0 right-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-200 animate-fadeIn">
-          <div className="max-w-lg mx-auto px-4 py-2 flex items-center gap-3">
+        <div className="fixed top-[56px] left-0 right-0 z-30 bg-cream/95 backdrop-blur-sm border-b border-line animate-fadeIn">
+          <div className="max-w-lg mx-auto px-5 py-2 flex items-center gap-3">
             {result.imageUrl && (
-              <img src={result.imageUrl} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
+              <img src={result.imageUrl} alt="" className="w-8 h-8 rounded-lg object-cover shrink-0" />
             )}
-            <span className="text-sm font-semibold text-gray-800 truncate flex-1">{result.productName}</span>
-            <span className="text-sm font-bold text-gray-700 shrink-0">{result.overallScore}/10</span>
-            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${verdict.cls}`}>{t(`verdict.${verdict.label}`)}</span>
+            <span className="text-sm font-semibold text-leaf truncate flex-1">{result.productName}</span>
+            <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0 ${verdict.pill}`}>
+              {t(`verdict.${verdict.label}`)}
+            </span>
           </div>
         </div>
       )}
 
       {/* PERSONAL ALLERGEN ALERT (P1) — your own allergens, shown first */}
       {personalAllergenHits.any && (
-        <div className="bg-red-600 text-white rounded-xl p-4 mb-4 animate-fadeSlideIn shadow-md">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xl">🚨</span>
-            <span className="font-bold">{t('results.containsYourAllergens')}</span>
+        <div className="bg-chili text-white rounded-[18px] p-4 mb-3 animate-fadeSlideIn shadow-md">
+          <div className="flex items-center gap-2.5 mb-1">
+            <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 9v4m0 4h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z" />
+            </svg>
+            <span className="font-display font-bold">{t('results.containsYourAllergens')}</span>
           </div>
           {personalAllergenHits.contains.length > 0 && (
-            <p className="text-sm text-red-50">
+            <p className="text-sm text-white/90">
               This product contains{' '}
               <span className="font-bold">
-                {personalAllergenHits.contains.map(a => getAllergenInfo(a).label).join(', ')}
+                {personalAllergenHits.contains.map(allergenLabel).join(', ')}
               </span>.
             </p>
           )}
           {personalAllergenHits.traces.length > 0 && (
-            <p className="text-sm text-red-100 mt-0.5">
-              May contain traces of {personalAllergenHits.traces.map(a => getAllergenInfo(a).label).join(', ')}.
+            <p className="text-sm text-white/80 mt-0.5">
+              May contain traces of {personalAllergenHits.traces.map(allergenLabel).join(', ')}.
             </p>
           )}
         </div>
       )}
 
-      {/* Product info */}
+      {/* Product summary card */}
       {isBarcode && (
-        <div className="flex items-center gap-4 mb-4 bg-white border border-gray-200 rounded-xl p-4 animate-fadeSlideIn">
-          {result.imageUrl && (
+        <div className="flex items-center gap-3.5 mb-3 bg-white border border-line rounded-[18px] p-4 shadow-sm animate-fadeSlideIn">
+          {result.imageUrl ? (
             <img
               src={result.imageUrl}
               alt={result.productName}
-              className="w-16 h-16 rounded-lg object-cover shrink-0"
+              className="w-16 h-16 rounded-[14px] object-cover shrink-0"
             />
+          ) : (
+            <ImageStripe className="w-16 h-16 rounded-[14px]" />
           )}
           <div className="min-w-0 flex-1">
-            <h2 className="font-bold text-gray-900 text-lg leading-tight truncate">
-              {result.productName}
-            </h2>
-            {result.barcode && (
-              <p className="text-xs text-gray-400 font-mono mt-0.5">{result.barcode}</p>
-            )}
-            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-              {/* Buy / Limit / Avoid verdict */}
-              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${verdict.cls}`}>
-                {verdict.label}
-              </span>
+            <div className="flex items-center gap-1.5">
+              {dietBadge?.veg && <VegMark size={15} />}
+              <h2 className="font-display font-bold text-[17px] leading-tight text-ink truncate">
+                {result.productName}
+              </h2>
+            </div>
+            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
               {dietBadge && (
-                <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${dietBadge.cls}`}>
+                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${dietBadge.cls}`}>
                   {dietBadge.label}
                 </span>
               )}
               {result.novaGroup && (
-                <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
-                  result.novaGroup <= 2 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                  result.novaGroup <= 2 ? 'bg-mint text-deep' : 'bg-blush text-chili-ink'
                 }`}>
                   NOVA {result.novaGroup}
                 </span>
               )}
               {result.servingSize && (
-                <span className="text-xs text-gray-500">Serving: {result.servingSize}</span>
+                <span className="text-[11px] text-moss">Serving: {result.servingSize}</span>
               )}
             </div>
+            {result.barcode && (
+              <p className="text-[11px] text-faint tracking-wider mt-1">CODE {result.barcode}</p>
+            )}
           </div>
         </div>
       )}
 
+      {/* ZOCO READOUT — verdict hero (replaces the numeric score dial) */}
+      <div
+        ref={scoreAnchorRef}
+        className={`border rounded-[18px] p-4.5 mb-3 flex gap-3.5 items-start animate-scaleIn ${verdict.hero}`}
+        style={{ animationDelay: '100ms' }}
+      >
+        <span className={`w-[42px] h-[42px] rounded-full flex items-center justify-center shrink-0 mt-0.5 ${verdict.iconBg}`}>
+          <svg className="w-[21px] h-[21px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            {verdict.icon}
+          </svg>
+        </span>
+        <div className="min-w-0">
+          <p className={`text-[11px] font-bold tracking-[.14em] uppercase ${verdict.kicker}`}>
+            {t('results.readout')}
+          </p>
+          <p className={`font-display font-extrabold text-[25px] leading-[1.1] mt-0.5 ${verdict.title}`}>
+            {t(`verdict.${verdict.label}`)}
+          </p>
+          <p className={`text-[13px] leading-relaxed mt-1 ${verdict.desc}`}>
+            {t(`verdict.${verdict.label}Desc`)}
+          </p>
+        </div>
+      </div>
+
       {/* ALLERGEN WARNING */}
       {(hasAllergens || hasTraces) && (
-        <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4 mb-4 animate-fadeSlideIn" style={{ animationDelay: '50ms' }}>
+        <div className="bg-blush border border-blush-line rounded-[18px] p-4 mb-3 animate-fadeSlideIn" style={{ animationDelay: '50ms' }}>
           {hasAllergens && (
-            <div className="mb-2">
+            <div className={hasTraces ? 'mb-3' : ''}>
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg">{'\u{26A0}\u{FE0F}'}</span>
-                <span className="font-bold text-red-800">{t('results.containsAllergens')}</span>
+                <svg className="w-[18px] h-[18px] text-chili shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 9v4m0 4h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z" />
+                </svg>
+                <span className="font-display font-bold text-chili-ink text-sm">{t('results.containsAllergens')}</span>
               </div>
               <div className="flex flex-wrap gap-2">
-                {result.allergens.map(a => {
-                  const info = getAllergenInfo(a)
-                  return (
-                    <span key={a} className="inline-flex items-center gap-1 bg-red-100 text-red-800 text-sm font-medium px-2.5 py-1 rounded-full">
-                      <span>{info.icon}</span>
-                      {info.label}
-                    </span>
-                  )
-                })}
+                {result.allergens.map(a => (
+                  <span key={a} className="bg-white/70 text-chili-ink text-[12.5px] font-semibold px-2.5 py-1 rounded-full">
+                    {allergenLabel(a)}
+                  </span>
+                ))}
               </div>
             </div>
           )}
           {hasTraces && (
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg">{'\u{26A1}'}</span>
-                <span className="font-semibold text-red-700 text-sm">{t('results.mayContainTracesOf')}</span>
-              </div>
+              <p className="font-semibold text-chili-ink/80 text-[13px] mb-2">{t('results.mayContainTracesOf')}</p>
               <div className="flex flex-wrap gap-2">
-                {result.traces.map(t => {
-                  const info = getAllergenInfo(t)
-                  return (
-                    <span key={t} className="inline-flex items-center gap-1 bg-orange-100 text-orange-800 text-xs font-medium px-2 py-0.5 rounded-full">
-                      <span>{info.icon}</span>
-                      {info.label}
-                    </span>
-                  )
-                })}
+                {result.traces.map(tr => (
+                  <span key={tr} className="bg-white/50 text-chili-ink/80 text-xs font-medium px-2 py-0.5 rounded-full">
+                    {allergenLabel(tr)}
+                  </span>
+                ))}
               </div>
             </div>
           )}
@@ -242,23 +280,25 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
 
       {/* MISLEADING CLAIMS */}
       {misleadingClaims.length > 0 && (
-        <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4 mb-4 animate-fadeSlideIn" style={{ animationDelay: '100ms' }}>
+        <div className="bg-blush border border-blush-line rounded-[18px] p-4 mb-3 animate-fadeSlideIn" style={{ animationDelay: '100ms' }}>
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-lg">{'\u{1F6A9}'}</span>
-            <span className="font-bold text-red-800">
+            <svg className="w-[18px] h-[18px] text-chili shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 21V5a2 2 0 012-2h11l-2 4 2 4H5" />
+            </svg>
+            <span className="font-display font-bold text-chili-ink text-sm">
               {misleadingClaims.length} Misleading Claim{misleadingClaims.length > 1 ? 's' : ''} Detected
             </span>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {misleadingClaims.map((c, i) => (
-              <div key={i} className="bg-white/80 rounded-lg p-3 border border-red-200">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded">
-                    MISLEADING
+              <div key={i} className="bg-white/80 rounded-xl p-3 border border-blush-line">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <span className="bg-chili text-white text-[10px] font-bold tracking-wider px-2 py-0.5 rounded uppercase">
+                    Misleading
                   </span>
-                  <span className="font-semibold text-red-900 text-sm">"{c.claim}"</span>
+                  <span className="font-semibold text-chili-ink text-sm">"{c.claim}"</span>
                 </div>
-                <p className="text-sm text-red-800 leading-snug">{c.explanation}</p>
+                <p className="text-[13px] text-chili-ink/90 leading-snug">{c.explanation}</p>
               </div>
             ))}
           </div>
@@ -267,81 +307,56 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
 
       {/* Verified claims */}
       {verifiedClaims.length > 0 && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-3 mb-4 animate-fadeSlideIn" style={{ animationDelay: '120ms' }}>
+        <div className="bg-mint rounded-[18px] p-3.5 mb-3 animate-fadeSlideIn" style={{ animationDelay: '120ms' }}>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-base">{'\u{2705}'}</span>
-            <span className="font-semibold text-green-800 text-sm">Verified Claims</span>
+            <svg className="w-4 h-4 text-deep shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 13l4 4L19 7" />
+            </svg>
+            <span className="font-display font-bold text-deep text-sm">Verified Claims</span>
           </div>
           <div className="space-y-1.5">
             {verifiedClaims.map((c, i) => (
-              <div key={i} className="text-sm text-green-700">
-                <span className="font-medium">"{c.claim}"</span>
-                <span className="text-green-600"> — {c.explanation}</span>
+              <div key={i} className="text-[13px] text-mint-ink">
+                <span className="font-semibold">"{c.claim}"</span>
+                <span> — {c.explanation}</span>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Source banner */}
-      <div className={`border rounded-xl p-3 mb-6 text-center animate-fadeIn ${
-        isBarcode ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'
-      }`} style={{ animationDelay: '150ms' }}>
-        <p className={`text-sm ${isBarcode ? 'text-green-700' : 'text-amber-700'}`}>
-          {isBarcode
-            ? t('results.dataFromOFF')
-            : 'Results based on local nutrition analysis — accuracy depends on the available product data'
-          }
-        </p>
-      </div>
-
-      {/* Score dial */}
-      <div ref={scoreAnchorRef} className="flex flex-col items-center mb-4 animate-scaleIn" style={{ animationDelay: '200ms' }}>
-        <ScoreDial score={result.overallScore} label={t(`scoreword.${result.scoreLabel}`)} />
-        <div className="mt-2 text-center">
-          <span className={`inline-block text-sm font-bold px-3 py-1 rounded-full ${verdict.cls}`}>
-            {verdict.label}
-          </span>
-          <p className="text-xs text-gray-500 mt-1">{t(`verdict.${verdict.label}Desc`)}</p>
-        </div>
-      </div>
-
-      {/* Why This Score? explainer (top reasons) */}
-      <div className="mb-4">
+      {/* Why This Score? explainer (top findings) */}
+      <div className="mb-3">
         <ScoreExplainer result={result} />
       </div>
 
       {/* === India-first interactive layer === */}
       {isBarcode && (
-        <div className="space-y-4 mb-6">
-          {/* Who is this for? — clickable suitability chips (§7) */}
+        <div className="space-y-3 mb-3">
           <SuitabilityChips result={result} />
-          {/* How much of your daily limit? — demographic allowance (§6) */}
           <NutrientAllowanceCard result={result} />
-          {/* Fasting / Upvas compatibility (§8) */}
           <FastingCard result={result} />
         </div>
       )}
 
       {/* Share + Compare buttons */}
-      <div className="flex gap-2 mb-4 animate-fadeSlideIn" style={{ animationDelay: '300ms' }}>
+      <div className="flex gap-2.5 mb-3 animate-fadeSlideIn" style={{ animationDelay: '300ms' }}>
         <button
           onClick={handleShare}
           disabled={shareStatus === 'generating'}
-          className="flex-1 py-3 px-4 bg-white hover:bg-gray-50 border-2 border-gray-200 text-gray-700 font-medium rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+          className="flex-1 py-3 px-4 bg-white border border-edge text-fern font-semibold rounded-2xl transition-all active:scale-[.98] flex items-center justify-center gap-2 text-[13.5px]"
         >
           {shareStatus === 'generating' ? (
             <>
-              <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-brand border-t-transparent rounded-full animate-spin" />
               Generating...
             </>
           ) : shareStatus ? (
             <>{shareStatus}</>
           ) : (
             <>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
               </svg>
               {t('results.share')}
             </>
@@ -350,11 +365,10 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
         {onCompare && (
           <button
             onClick={() => onCompare(result)}
-            className="flex-1 py-3 px-4 bg-white hover:bg-gray-50 border-2 border-dashed border-gray-300 text-gray-600 font-medium rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+            className="flex-1 py-3 px-4 bg-white border border-dashed border-edge text-sage font-semibold rounded-2xl transition-all active:scale-[.98] flex items-center justify-center gap-2 text-[13.5px]"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
             {t('results.compare')}
           </button>
@@ -362,7 +376,7 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
       </div>
 
       {/* Category scores — staggered */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-3">
         {CATEGORY_ORDER.map((cat, i) => (
           result.categories[cat] && (
             <CategoryCard key={cat} category={cat} data={result.categories[cat]} index={i} />
@@ -375,41 +389,38 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
 
       {/* Ingredient Deep Dive — each ingredient opens a detail sheet (§5) */}
       {result.parsedIngredients && (
-        <div className="mt-4">
+        <div className="mt-3">
           <IngredientDeepDive ingredientText={result.parsedIngredients} barcode={result.barcode} />
         </div>
       )}
 
       {/* Data & trust card (§4) */}
       {isBarcode && (
-        <div className="mt-4">
+        <div className="mt-3">
           <DataConfidenceCard result={result} />
         </div>
       )}
 
       {/* Smart swap suggestions */}
-      <div className="mt-4 animate-fadeSlideIn" style={{ animationDelay: '600ms' }}>
+      <div className="mt-3 animate-fadeSlideIn" style={{ animationDelay: '600ms' }}>
         <SmartSwapCard result={result} onSelectProduct={onSelectProduct || (() => {})} />
       </div>
 
       {/* Flagged ingredients */}
       {result.flaggedItems?.length > 0 && (
-        <div className="mt-4 bg-white border border-gray-200 rounded-xl p-4 animate-fadeSlideIn" style={{ animationDelay: '700ms' }}>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-lg">{'\u{1F9FE}'}</span>
-            <span className="font-semibold text-gray-800">Ingredient Review</span>
-          </div>
+        <div className="mt-3 bg-white border border-line rounded-[18px] p-4 animate-fadeSlideIn" style={{ animationDelay: '700ms' }}>
+          <p className="font-display font-bold text-[15.5px] text-ink mb-2.5">Ingredient Review</p>
           <div className="space-y-2">
             {result.flaggedItems.map((item, i) => (
-              <div key={i} className="rounded-lg border border-gray-100 bg-gray-50 p-2">
+              <div key={i} className="rounded-xl border border-hairline bg-cream/60 p-2.5">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm font-medium text-gray-800 capitalize">{item.name}</span>
-                  <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${concernStyle(item.concern)}`}>
+                  <span className="text-sm font-semibold text-fern capitalize">{item.name}</span>
+                  <span className={`shrink-0 text-[11px] px-2 py-0.5 rounded-full font-bold ${concernStyle(item.concern)}`}>
                     {concernLabel(item.concern)}
                   </span>
                 </div>
                 {item.reason && (
-                  <p className="mt-1 text-xs leading-snug text-gray-600">{item.reason}</p>
+                  <p className="mt-1 text-xs leading-snug text-moss">{item.reason}</p>
                 )}
               </div>
             ))}
@@ -419,16 +430,17 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
 
       {/* Nutri-Score */}
       {result.nutriScore && (
-        <div className="mt-4 bg-gray-50 border border-gray-200 rounded-xl p-3 text-center animate-fadeIn" style={{ animationDelay: '800ms' }}>
-          <p className="text-xs text-gray-500">
-            Open Food Facts Nutri-Score: <span className="font-bold text-gray-700 uppercase">{result.nutriScore}</span>
+        <div className="mt-3 bg-stone/60 rounded-[18px] p-3 text-center animate-fadeIn" style={{ animationDelay: '800ms' }}>
+          <p className="text-xs text-moss">
+            Open Food Facts Nutri-Score: <span className="font-bold text-sage uppercase">{result.nutriScore}</span>
           </p>
         </div>
       )}
 
+      {/* Scan another — floats above the bottom nav on mobile */}
       <button
         onClick={onReset}
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 py-3 px-8 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl shadow-lg transition-colors"
+        className="fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 py-3.5 px-8 bg-gradient-to-br from-brand-hi to-brand-lo text-white font-display font-bold rounded-2xl shadow-lg shadow-brand-lo/35 transition-all active:scale-[.97] whitespace-nowrap z-20"
       >
         {t('results.scanAnother')}
       </button>

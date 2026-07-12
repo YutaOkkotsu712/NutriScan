@@ -1,3 +1,5 @@
+// Nutrition detail — src/components/NutritionDetail.jsx (full replacement)
+// Token restyle; all data logic unchanged.
 import { useState } from 'react'
 import { WHO_DAILY_LIMITS } from '../utils/scoreEngine'
 
@@ -11,22 +13,22 @@ function DailyLimitBar({ nutrientKey, value }) {
 
   let barColor
   if (isPositive) {
-    barColor = pct >= 20 ? 'bg-green-500' : pct >= 10 ? 'bg-amber-400' : 'bg-red-400'
+    barColor = pct >= 20 ? 'bg-brand' : pct >= 10 ? 'bg-amberdot' : 'bg-chili'
   } else {
-    barColor = pct <= 15 ? 'bg-green-500' : pct <= 30 ? 'bg-amber-400' : 'bg-red-500'
+    barColor = pct <= 15 ? 'bg-brand' : pct <= 30 ? 'bg-amberdot' : 'bg-chili'
   }
 
   return (
-    <div className="flex items-center gap-2 py-1.5">
-      <span className="text-xs text-gray-600 w-16 shrink-0 text-right">{info.label}</span>
-      <div className="flex-1 bg-gray-200 rounded-full h-2.5 relative overflow-hidden">
+    <div className="flex items-center gap-2.5 py-1.5">
+      <span className="text-xs text-sage w-16 shrink-0 text-right">{info.label}</span>
+      <div className="flex-1 bg-hairline rounded-full h-[5px] relative overflow-hidden">
         <div
-          className={`h-2.5 rounded-full animate-barGrow ${barColor}`}
+          className={`h-full rounded-full animate-barGrow ${barColor}`}
           style={{ width: `${Math.max(pct, 2)}%` }}
         />
       </div>
-      <span className="text-xs font-mono text-gray-700 w-20 shrink-0">
-        {value}{info.unit} <span className="text-gray-400">({Math.round(pct)}%)</span>
+      <span className="text-xs font-mono text-fern w-20 shrink-0">
+        {value}{info.unit} <span className="text-faint">({Math.round(pct)}%)</span>
       </span>
     </div>
   )
@@ -37,7 +39,6 @@ function MacroDonut({ macroRatio }) {
   if (!macroRatio) return null
 
   const { protein, carbs, fat } = macroRatio
-  // SVG donut chart
   const r = 40
   const circumference = 2 * Math.PI * r
 
@@ -52,34 +53,34 @@ function MacroDonut({ macroRatio }) {
   return (
     <div className="flex items-center gap-4">
       <svg width="100" height="100" viewBox="0 0 100 100" className="shrink-0">
-        {/* Fat (yellow) */}
-        <circle cx="50" cy="50" r={r} fill="none" stroke="#facc15" strokeWidth="14"
+        {/* Fat (marigold) */}
+        <circle cx="50" cy="50" r={r} fill="none" stroke="#F2A93B" strokeWidth="14"
           strokeDasharray={`${fatArc} ${circumference - fatArc}`}
           strokeDashoffset={fatOffset}
           transform="rotate(-90 50 50)" />
-        {/* Carbs (blue) */}
-        <circle cx="50" cy="50" r={r} fill="none" stroke="#60a5fa" strokeWidth="14"
+        {/* Carbs (sage) */}
+        <circle cx="50" cy="50" r={r} fill="none" stroke="#8B917E" strokeWidth="14"
           strokeDasharray={`${carbsArc} ${circumference - carbsArc}`}
           strokeDashoffset={carbsOffset}
           transform="rotate(-90 50 50)" />
-        {/* Protein (green) */}
-        <circle cx="50" cy="50" r={r} fill="none" stroke="#34d399" strokeWidth="14"
+        {/* Protein (brand green) */}
+        <circle cx="50" cy="50" r={r} fill="none" stroke="#1C7A4A" strokeWidth="14"
           strokeDasharray={`${proteinArc} ${circumference - proteinArc}`}
           strokeDashoffset={proteinOffset}
           transform="rotate(-90 50 50)" />
       </svg>
       <div className="space-y-1.5">
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-emerald-400 shrink-0" />
-          <span className="text-sm text-gray-700">Protein <span className="font-bold">{protein}%</span></span>
+          <span className="w-3 h-3 rounded-full bg-brand shrink-0" />
+          <span className="text-sm text-fern">Protein <span className="font-bold text-leaf">{protein}%</span></span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-blue-400 shrink-0" />
-          <span className="text-sm text-gray-700">Carbs <span className="font-bold">{carbs}%</span></span>
+          <span className="w-3 h-3 rounded-full bg-mute shrink-0" />
+          <span className="text-sm text-fern">Carbs <span className="font-bold text-leaf">{carbs}%</span></span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-yellow-400 shrink-0" />
-          <span className="text-sm text-gray-700">Fat <span className="font-bold">{fat}%</span></span>
+          <span className="w-3 h-3 rounded-full bg-marigold shrink-0" />
+          <span className="text-sm text-fern">Fat <span className="font-bold text-leaf">{fat}%</span></span>
         </div>
       </div>
     </div>
@@ -109,13 +110,13 @@ function FlagBadges({ flags }) {
   return (
     <div className="flex flex-wrap gap-1.5">
       {green.map(f => (
-        <span key={f} className="inline-flex items-center gap-1 text-xs font-medium bg-green-100 text-green-700 px-2 py-1 rounded-full">
-          <span>✅</span> {FLAG_LABELS[f] || f}
+        <span key={f} className="inline-flex items-center gap-1.5 text-xs font-semibold bg-mint text-deep px-2.5 py-1 rounded-full">
+          <span className="w-1.5 h-1.5 rounded-full bg-brand" /> {FLAG_LABELS[f] || f}
         </span>
       ))}
       {red.map(f => (
-        <span key={f} className="inline-flex items-center gap-1 text-xs font-medium bg-red-100 text-red-700 px-2 py-1 rounded-full">
-          <span>🔴</span> {FLAG_LABELS[f] || f}
+        <span key={f} className="inline-flex items-center gap-1.5 text-xs font-semibold bg-blush text-chili-ink px-2.5 py-1 rounded-full">
+          <span className="w-1.5 h-1.5 rounded-full bg-chili" /> {FLAG_LABELS[f] || f}
         </span>
       ))}
     </div>
@@ -134,43 +135,37 @@ export default function NutritionDetail({ result }) {
   if (!nutrition || Object.keys(nutrition).length === 0) return null
 
   return (
-    <div className="space-y-4 mt-4">
+    <div className="space-y-3 mt-3">
       {/* Red/Green flags */}
       {result.flags && <div className="animate-fadeSlideIn" style={{ animationDelay: '400ms' }}><FlagBadges flags={result.flags} /></div>}
 
       {/* Macro ratio */}
       {result.macroRatio && (
-        <div className="bg-white border border-gray-200 rounded-xl p-4 animate-fadeSlideIn" style={{ animationDelay: '450ms' }}>
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-base">📊</span>
-            <span className="font-semibold text-gray-800 text-sm">Macro Split (by calories)</span>
-          </div>
+        <div className="bg-white border border-line rounded-[18px] p-4 animate-fadeSlideIn" style={{ animationDelay: '450ms' }}>
+          <p className="font-display font-bold text-[15.5px] text-ink mb-3">Macro Split (by calories)</p>
           <MacroDonut macroRatio={result.macroRatio} />
         </div>
       )}
 
       {/* WHO daily limit bars */}
-      <div className="bg-white border border-gray-200 rounded-xl p-4 animate-fadeSlideIn" style={{ animationDelay: '500ms' }}>
+      <div className="bg-white border border-line rounded-[18px] p-4 animate-fadeSlideIn" style={{ animationDelay: '500ms' }}>
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <span className="text-base">📏</span>
-            <span className="font-semibold text-gray-800 text-sm">% of WHO Daily Limit</span>
-          </div>
+          <p className="font-display font-bold text-[15.5px] text-ink">% of WHO Daily Limit</p>
 
           {hasPer100g && (
-            <div className="flex bg-gray-100 rounded-lg p-0.5">
+            <div className="flex bg-hairline rounded-full p-[3px]">
               <button
                 onClick={() => setView('serving')}
-                className={`text-xs px-2 py-1 rounded-md font-medium transition-colors ${
-                  view === 'serving' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
+                className={`text-[11px] px-2.5 py-1 rounded-full font-bold transition-colors ${
+                  view === 'serving' ? 'bg-ink text-cream' : 'text-moss font-semibold'
                 }`}
               >
                 Per serving
               </button>
               <button
                 onClick={() => setView('per100g')}
-                className={`text-xs px-2 py-1 rounded-md font-medium transition-colors ${
-                  view === 'per100g' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
+                className={`text-[11px] px-2.5 py-1 rounded-full font-bold transition-colors ${
+                  view === 'per100g' ? 'bg-ink text-cream' : 'text-moss font-semibold'
                 }`}
               >
                 Per 100g
@@ -191,7 +186,7 @@ export default function NutritionDetail({ result }) {
           <DailyLimitBar nutrientKey="totalCarbs" value={nutrition.totalCarbs} />
         </div>
 
-        <p className="text-[10px] text-gray-400 mt-2">
+        <p className="text-[10px] text-faint mt-2">
           Based on WHO guidelines for a 2000 kcal/day diet. Green ≤15%, Amber ≤30%, Red &gt;30% of daily limit.
         </p>
       </div>

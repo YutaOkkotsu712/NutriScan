@@ -1,3 +1,8 @@
+// App shell — src/App.jsx (full replacement)
+// All logic (lookup flow, entitlement, auth gating, compare) is unchanged from
+// the original; only the shell is restyled: brand header, desktop top-nav,
+// mobile bottom-nav, token colors. Sign-out moved from the header into
+// AccountScreen.
 import { useState, useCallback, useEffect } from 'react'
 import LandingScreen from './components/LandingScreen'
 import BarcodeScanner from './components/BarcodeScanner'
@@ -11,6 +16,8 @@ import LoginScreen from './components/LoginScreen'
 import WelcomeScreen from './components/WelcomeScreen'
 import PaywallScreen from './components/PaywallScreen'
 import AccountScreen from './components/AccountScreen'
+import BottomNav from './components/BottomNav'
+import { BrandMark, Wordmark, BarcodeIcon } from './components/ZocoBrand'
 import { useProfile, setProfile } from './utils/profile'
 import { useAuth, authHeader } from './utils/useAuth'
 import { startCheckout } from './utils/subscription'
@@ -53,6 +60,18 @@ async function reloadFreshAppBundle() {
   return true
 }
 
+// Full-screen notice shells (not-found / error / compare-pick)
+function NoticeShell({ tone, icon, children }) {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[80vh] px-6 text-center">
+      <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 ${tone}`}>
+        {icon}
+      </div>
+      {children}
+    </div>
+  )
+}
+
 export default function App() {
   const [screen, setScreen] = useState('landing')
   const [loadingStatus, setLoadingStatus] = useState('')
@@ -67,13 +86,10 @@ export default function App() {
   const { user, ready: authReady, authEnabled, signOut } = useAuth()
   const [entitlement, setEntitlement] = useState(null)
   // Logged-out flow: marketing landing first, then the login form.
-  // null = WelcomeScreen; 'signup' | 'signin' = LoginScreen in that mode.
   const [authScreen, setAuthScreen] = useState(null)
   const { t, lang } = useT()
 
-  // Load the membership status once signed in (drives the "N scans left"
-  // badge). The badge is gated on `user`, so a value left over from a previous
-  // session stays hidden while signed out and is overwritten on next sign-in.
+  // Load the membership status once signed in (drives the "N scans left" badge).
   useEffect(() => {
     if (!authEnabled || !user) return
     let cancelled = false
@@ -88,10 +104,6 @@ export default function App() {
 
   // --- Barcode / product lookup ---
   const lookupProduct = useCallback(async (rawBarcode) => {
-    // Product codes are numeric (EAN/UPC/GTIN). Anything else — e.g. a promo
-    // QR code URL — must not reach the API: in prod an unroutable path falls
-    // through to the SPA rewrite and returns HTML, which used to surface as a
-    // bogus "check your internet" error.
     const barcode = extractBarcode(rawBarcode)
     if (!barcode) {
       setError(t('errors.notABarcode', { code: String(rawBarcode).slice(0, 40) }))
@@ -104,20 +116,16 @@ export default function App() {
 
     try {
       const { lookupBarcode } = await import('./utils/barcodeEngine')
-      // Paywall-only product: every lookup goes through the auth-gated,
-      // metered /api/scan endpoint. There is no ungated path.
       const analysisResult = await lookupBarcode(barcode, setLoadingStatus, {
         endpoint: apiUrl('/api/scan'),
         headers: await authHeader(),
       })
 
-      // Paywall: the server refused because the free-scan limit is used up.
       if (analysisResult?.limitReached) {
         if (analysisResult.entitlement) setEntitlement(analysisResult.entitlement)
         setScreen('paywall')
         return
       }
-      // Token expired / not signed in — bounce to login (rare; token auto-refreshes).
       if (analysisResult?.unauthenticated) {
         setAuthScreen('signin')
         await signOut().catch(() => {})
@@ -130,10 +138,8 @@ export default function App() {
         return
       }
 
-      // A successful gated scan reports the remaining allowance — update the badge.
       if (analysisResult.entitlement) setEntitlement(analysisResult.entitlement)
 
-      // If in compare mode (already have product A), set as B and show compare
       if (comparePending && compareA) {
         setComparePending(false)
         setResult(analysisResult)
@@ -166,32 +172,17 @@ export default function App() {
     })
   }, [t])
 
-  // --- Barcode scan flow ---
-  const handleScanBarcode = useCallback(() => {
-    setScreen('barcode')
-  }, [])
+  const handleScanBarcode = useCallback(() => { setScreen('barcode') }, [])
+  const handleBarcodeScanned = useCallback((barcode) => { lookupProduct(barcode) }, [lookupProduct])
+  const handleSearch = useCallback(() => { setScreen('search') }, [])
+  const handleSearchSelect = useCallback((barcode) => { lookupProduct(barcode) }, [lookupProduct])
 
-  const handleBarcodeScanned = useCallback((barcode) => {
-    lookupProduct(barcode)
-  }, [lookupProduct])
-
-  // --- Search flow ---
-  const handleSearch = useCallback(() => {
-    setScreen('search')
-  }, [])
-
-  const handleSearchSelect = useCallback((barcode) => {
-    lookupProduct(barcode)
-  }, [lookupProduct])
-
-  // --- Compare flow ---
   const handleCompare = useCallback((productResult) => {
     setCompareA(productResult)
     setComparePending(true)
     setScreen('compare-pick')
   }, [])
 
-  // --- Navigation ---
   const handleReset = useCallback(() => {
     setScreen('landing')
     setResult(null)
@@ -200,7 +191,6 @@ export default function App() {
     setComparePending(false)
   }, [])
 
-  // Navigate to a product from smart swap or comparison
   const handleSelectProduct = useCallback((barcode) => {
     setComparePending(false)
     setCompareA(null)
@@ -208,24 +198,18 @@ export default function App() {
   }, [lookupProduct])
 
   // --- Membership gate (ZOCO) ---
-  // Paywall-only product: login is required before scan #1, always. If the
-  // Firebase env vars are missing this build is misconfigured — show a plain
-  // notice rather than silently running an ungated app (fail closed, matching
-  // the server-side scanGate).
   if (!authEnabled) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6 text-center">
-        <p className="text-sm text-gray-600 max-w-sm">
+      <div className="min-h-screen bg-cream flex items-center justify-center px-6 text-center">
+        <p className="text-sm text-moss max-w-sm">
           ZOCO is not configured — the Firebase environment variables
           (VITE_FIREBASE_*) are missing from this build. See .env.example.
         </p>
       </div>
     )
   }
-  // Wait for the auth state to resolve to avoid a flash of the login screen
-  // for already-signed-in users.
   if (!authReady) {
-    return <div className="min-h-screen bg-gray-50" />
+    return <div className="min-h-screen bg-cream" />
   }
   if (!user) {
     if (!authScreen) {
@@ -239,31 +223,49 @@ export default function App() {
     return <LoginScreen initialMode={authScreen} onBack={() => setAuthScreen(null)} />
   }
 
+  // Which bottom-nav item is active
+  const navActive = screen === 'search' ? 'search' : screen === 'account' ? 'plan' : profileOpen ? 'profile' : 'scan'
+  const desktopNav = [
+    { key: 'scan', label: t('nav.scan'), go: handleReset, active: !['search', 'account'].includes(screen) },
+    { key: 'search', label: t('nav.search'), go: handleSearch, active: screen === 'search' },
+    { key: 'plan', label: t('nav.membership'), go: () => setScreen('account'), active: screen === 'account' },
+  ]
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-100">
-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-2">
-          <span className="text-xl">🔬</span>
-          <h1 className="text-lg font-bold text-gray-900">{t('common.appName')}</h1>
-          <div className="ml-auto flex items-center gap-3">
-            {screen !== 'landing' && (
+    <div className="min-h-screen bg-cream font-sans">
+      <header className="sticky top-0 z-10 bg-cream/90 backdrop-blur-sm border-b border-line">
+        <div className="max-w-lg md:max-w-5xl mx-auto px-5 py-2.5 flex items-center gap-2.5">
+          <button onClick={handleReset} className="flex items-center gap-2.5" aria-label={t('common.home')}>
+            <BrandMark size={34} />
+            <Wordmark />
+          </button>
+
+          {/* Desktop top-nav */}
+          <nav className="hidden md:flex items-center gap-7 ml-9">
+            {desktopNav.map((item) => (
               <button
-                onClick={handleReset}
-                className="text-sm text-green-600 hover:text-green-700 font-medium"
+                key={item.key}
+                onClick={item.go}
+                className={`text-sm pb-0.5 border-b-2 transition-colors ${
+                  item.active ? 'font-bold text-deep border-brand' : 'font-semibold text-moss border-transparent hover:text-fern'
+                }`}
               >
-                {t('common.home')}
+                {item.label}
               </button>
-            )}
+            ))}
+          </nav>
+
+          <div className="ml-auto flex items-center gap-2">
             {/* Membership badge — tap to open the account screen */}
             {authEnabled && user && entitlement && (
               <button
                 onClick={() => setScreen('account')}
-                className={`text-[11px] font-semibold px-2 py-1 rounded-full transition-colors ${
+                className={`text-[11px] font-bold px-2.5 py-1.5 rounded-full transition-colors ${
                   entitlement.subscribed
-                    ? 'bg-green-600 text-white'
+                    ? 'bg-gradient-to-br from-brand-hi to-brand-lo text-white'
                     : entitlement.remaining <= 10
-                      ? 'bg-amber-100 text-amber-700'
-                      : 'bg-green-50 text-green-700'
+                      ? 'bg-sand text-ochre'
+                      : 'bg-mint text-deep'
                 }`}
               >
                 {entitlement.subscribed
@@ -274,35 +276,22 @@ export default function App() {
             {/* Quick language toggle */}
             <button
               onClick={() => { const next = lang === 'en' ? 'hi' : 'en'; setProfile({ language: next }); track('language_change', { lang: next }) }}
-              className="text-xs font-bold px-2 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors"
+              className="text-xs font-bold px-2.5 py-1.5 rounded-full bg-white border border-edge text-fern transition-colors"
               aria-label="Switch language"
             >
               {lang === 'en' ? 'हिं' : 'EN'}
             </button>
-            {/* Sign out */}
-            {authEnabled && user && (
-              <button
-                onClick={() => signOut()}
-                className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
-                aria-label={t('auth.signOut')}
-                title={t('auth.signOut')}
-              >
-                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-              </button>
-            )}
             {/* Profile button */}
             <button
               onClick={() => setProfileOpen(true)}
-              className="relative flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+              className="relative flex items-center justify-center w-9 h-9 rounded-full bg-white border border-edge transition-colors"
               aria-label="My family profile"
             >
-              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              <svg className="w-[17px] h-[17px] text-fern" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
               {profile.configured && (
-                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white" />
+                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-brand border-2 border-white" />
               )}
             </button>
           </div>
@@ -318,6 +307,8 @@ export default function App() {
           onScanBarcode={handleScanBarcode}
           onBarcodeDetected={handleBarcodeScanned}
           onSearch={handleSearch}
+          entitlement={entitlement}
+          onOpenAccount={() => setScreen('account')}
         /></div>
       )}
 
@@ -358,83 +349,89 @@ export default function App() {
 
       {/* Compare pick — choose how to find the second product */}
       {screen === 'compare-pick' && (
-        <div className="flex flex-col items-center justify-center min-h-[80vh] px-6 text-center">
-          <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-4">
-            <span className="text-3xl">⚖️</span>
-          </div>
-          <p className="text-lg font-medium text-gray-700 mb-2">
-            {t('comparePick.prompt')}
+        <NoticeShell
+          tone="bg-mint"
+          icon={
+            <svg className="w-7 h-7 text-deep" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          }
+        >
+          <p className="font-display font-bold text-lg text-ink mb-1.5">{t('comparePick.prompt')}</p>
+          <p className="text-sm text-moss mb-6">
+            {t('comparePick.comparingAgainst')} <span className="font-semibold text-fern">{compareA?.productName}</span>
           </p>
-          <p className="text-sm text-gray-500 mb-6">
-            {t('comparePick.comparingAgainst')} <span className="font-semibold">{compareA?.productName}</span>
-          </p>
-          <div className="flex flex-col gap-3 w-full max-w-xs">
+          <div className="flex flex-col gap-2.5 w-full max-w-xs">
             <button
               onClick={() => setScreen('barcode')}
-              className="py-3 px-6 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
+              className="py-3.5 px-6 bg-gradient-to-br from-brand-hi to-brand-lo text-white font-display font-bold rounded-2xl shadow-lg shadow-brand-lo/25 transition-all active:scale-[.98] flex items-center justify-center gap-2"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M3 4h3v16H3V4zm5 0h1v16H8V4zm3 0h2v16h-2V4zm4 0h1v16h-1V4zm3 0h3v16h-3V4z" />
-              </svg>
+              <BarcodeIcon className="w-5 h-5" />
               {t('comparePick.scanBarcode')}
             </button>
             <button
               onClick={() => setScreen('search')}
-              className="py-3 px-6 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl border-2 border-gray-200 transition-colors flex items-center justify-center gap-2"
+              className="py-3.5 px-6 bg-white border border-edge text-fern font-semibold rounded-2xl transition-all active:scale-[.98] flex items-center justify-center gap-2"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               {t('comparePick.searchByName')}
             </button>
             <button
               onClick={handleReset}
-              className="py-3 px-4 text-gray-500 hover:text-gray-700 font-medium transition-colors text-sm"
+              className="py-2.5 px-4 text-moss hover:text-fern font-semibold transition-colors text-sm"
             >
               {t('comparePick.cancel')}
             </button>
           </div>
-        </div>
+        </NoticeShell>
       )}
 
       {screen === 'not-found' && (
-        <div className="flex flex-col items-center justify-center min-h-[80vh] px-6 text-center">
-          <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mb-4">
-            <span className="text-3xl">🔍</span>
-          </div>
-          <p className="text-lg font-medium text-gray-700 mb-2">{error}</p>
-          <div className="flex flex-col gap-3 w-full max-w-xs mt-4">
+        <NoticeShell
+          tone="bg-sand"
+          icon={
+            <svg className="w-7 h-7 text-ochre" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          }
+        >
+          <p className="font-display font-bold text-lg text-ink mb-2">{error}</p>
+          <div className="flex flex-col gap-2.5 w-full max-w-xs mt-4">
             <button
               onClick={() => setScreen('search')}
-              className="py-3 px-6 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-colors"
+              className="py-3.5 px-6 bg-gradient-to-br from-brand-hi to-brand-lo text-white font-display font-bold rounded-2xl shadow-lg shadow-brand-lo/25 transition-all active:scale-[.98]"
             >
               {t('notFound.searchByName')}
             </button>
             <button
               onClick={handleReset}
-              className="py-3 px-6 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors"
+              className="py-3.5 px-6 bg-white border border-edge text-fern font-semibold rounded-2xl transition-all active:scale-[.98]"
             >
               {t('notFound.tryAnother')}
             </button>
           </div>
-        </div>
+        </NoticeShell>
       )}
 
       {screen === 'error' && (
-        <div className="flex flex-col items-center justify-center min-h-[80vh] px-6 text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mb-4">
-            <span className="text-3xl">📷</span>
-          </div>
-          <p className="text-lg font-medium text-gray-700 mb-2">{error}</p>
+        <NoticeShell
+          tone="bg-blush"
+          icon={
+            <svg className="w-7 h-7 text-chili" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 9v4m0 4h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z" />
+            </svg>
+          }
+        >
+          <p className="font-display font-bold text-lg text-ink mb-2">{error}</p>
           <button
             onClick={handleReset}
-            className="mt-4 py-3 px-6 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-colors"
+            className="mt-4 py-3.5 px-8 bg-gradient-to-br from-brand-hi to-brand-lo text-white font-display font-bold rounded-2xl shadow-lg shadow-brand-lo/25 transition-all active:scale-[.98]"
           >
             {t('notFound.tryAgain')}
           </button>
-        </div>
+        </NoticeShell>
       )}
 
       {screen === 'paywall' && (
@@ -451,6 +448,17 @@ export default function App() {
           entitlement={entitlement}
           onBack={handleReset}
           onEntitlementChange={setEntitlement}
+        />
+      )}
+
+      {/* Mobile bottom navigation — hidden while the full-screen scanner is up */}
+      {screen !== 'barcode' && (
+        <BottomNav
+          active={navActive}
+          onScan={handleReset}
+          onSearch={handleSearch}
+          onPlan={() => setScreen('account')}
+          onProfile={() => setProfileOpen(true)}
         />
       )}
     </div>

@@ -1,3 +1,5 @@
+// Ingredient deep dive (§5) — src/components/IngredientDeepDive.jsx (full replacement)
+// Classification/parsing logic unchanged; row + legend styling on ZOCO tokens.
 import { useState, useMemo } from 'react'
 import { HIDDEN_SUGARS, INGREDIENT_FLAGS } from '../utils/additiveFlags'
 import IngredientDetailSheet from './IngredientDetailSheet'
@@ -47,9 +49,7 @@ function classifyIngredient(ingredient) {
     }
   }
 
-  // If it passed all the harmful checks above, it's fine.
   // Only things explicitly matched as harmful/hidden-sugar/additive get flagged.
-  // This avoids false positives on non-English ingredient names.
   return {
     name: ingredient.trim(),
     level: 'green',
@@ -60,65 +60,41 @@ function classifyIngredient(ingredient) {
 
 function parseIngredients(text) {
   if (!text) return []
-
-  // Split by commas, semicolons, or periods (common separators)
-  // But preserve parenthetical content as part of the ingredient
   const parts = text
-    .replace(/\.$/, '') // remove trailing period
-    .split(/,(?![^(]*\))/) // split on commas not inside parens
+    .replace(/\.$/, '')
+    .split(/,(?![^(]*\))/)
     .map(s => s.trim())
     .filter(s => s.length > 1)
-
-  // Further split by semicolons
   const flattened = parts.flatMap(p => p.split(/;/).map(s => s.trim()).filter(s => s.length > 1))
-
   return flattened
 }
 
 const LEVEL_STYLES = {
-  red: {
-    bg: 'bg-red-50',
-    border: 'border-red-200',
-    badge: 'bg-red-500 text-white',
-    dot: 'bg-red-500',
-    text: 'text-red-700',
-  },
-  amber: {
-    bg: 'bg-amber-50',
-    border: 'border-amber-200',
-    badge: 'bg-amber-500 text-white',
-    dot: 'bg-amber-500',
-    text: 'text-amber-700',
-  },
-  green: {
-    bg: 'bg-green-50',
-    border: 'border-green-200',
-    badge: 'bg-green-600 text-white',
-    dot: 'bg-green-500',
-    text: 'text-green-700',
-  },
+  red: { badge: 'bg-blush text-chili-ink', dot: 'bg-chili', count: 'text-chili-ink' },
+  amber: { badge: 'bg-sand text-ochre', dot: 'bg-amberdot', count: 'text-ochre' },
+  green: { badge: 'bg-mint text-deep', dot: 'bg-brand', count: 'text-deep' },
 }
 
-function IngredientRow({ item, index, position, onOpen }) {
+function IngredientRow({ item, index, position, onOpen, isLast }) {
   const style = LEVEL_STYLES[item.level]
 
   return (
     <div className="animate-fadeSlideIn" style={{ animationDelay: `${index * 30}ms` }}>
       <button
         onClick={onOpen}
-        className={`w-full text-left rounded-lg p-2.5 border transition-all active:scale-[0.99] ${style.bg} ${style.border}`}
+        className={`w-full text-left py-2.5 transition-all active:scale-[0.99] ${isLast ? '' : 'border-b border-hairline'}`}
         style={{ minHeight: '44px' }}
       >
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-mono text-gray-400 shrink-0 w-4 text-right">{position}</span>
+        <div className="flex items-center gap-2.5">
+          <span className="text-[10px] font-mono text-faint shrink-0 w-4 text-right">{position}</span>
           <span className={`w-2 h-2 rounded-full shrink-0 ${style.dot}`} />
-          <span className="text-sm text-gray-800 flex-1 capitalize leading-tight underline decoration-dotted decoration-gray-300 underline-offset-2">
+          <span className="text-[13.5px] text-fern flex-1 capitalize leading-tight">
             {item.name.toLowerCase()}
           </span>
-          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${style.badge}`}>
+          <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${style.badge}`}>
             {item.tag}
           </span>
-          <svg className="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-3.5 h-3.5 text-faint shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </div>
@@ -144,40 +120,37 @@ export default function IngredientDeepDive({ ingredientText, barcode }) {
   const greenCount = classified.filter(i => i.level === 'green').length
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 animate-fadeSlideIn">
+    <div className="bg-white border border-line rounded-[18px] p-4 animate-fadeSlideIn">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between"
       >
-        <div className="flex items-center gap-2">
-          <span className="text-lg">🧬</span>
-          <span className="font-semibold text-gray-800">{t('ingredients.title')}</span>
-        </div>
+        <span className="font-display font-bold text-[15.5px] text-ink">{t('ingredients.title')}</span>
         <div className="flex items-center gap-2">
           {/* Summary dots */}
           <div className="flex items-center gap-1.5">
             {redCount > 0 && (
-              <span className="flex items-center gap-0.5 text-[10px] font-bold text-red-600">
-                <span className="w-2 h-2 rounded-full bg-red-500" />
+              <span className={`flex items-center gap-1 text-[10px] font-bold ${LEVEL_STYLES.red.count}`}>
+                <span className={`w-2 h-2 rounded-full ${LEVEL_STYLES.red.dot}`} />
                 {redCount}
               </span>
             )}
             {amberCount > 0 && (
-              <span className="flex items-center gap-0.5 text-[10px] font-bold text-amber-600">
-                <span className="w-2 h-2 rounded-full bg-amber-500" />
+              <span className={`flex items-center gap-1 text-[10px] font-bold ${LEVEL_STYLES.amber.count}`}>
+                <span className={`w-2 h-2 rounded-full ${LEVEL_STYLES.amber.dot}`} />
                 {amberCount}
               </span>
             )}
             {greenCount > 0 && (
-              <span className="flex items-center gap-0.5 text-[10px] font-bold text-green-600">
-                <span className="w-2 h-2 rounded-full bg-green-500" />
+              <span className={`flex items-center gap-1 text-[10px] font-bold ${LEVEL_STYLES.green.count}`}>
+                <span className={`w-2 h-2 rounded-full ${LEVEL_STYLES.green.dot}`} />
                 {greenCount}
               </span>
             )}
           </div>
-          <span className="text-xs text-gray-400">{t('ingredients.items', { n: classified.length })}</span>
+          <span className="text-xs text-faint">{t('ingredients.items', { n: classified.length })}</span>
           <svg
-            className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+            className={`w-4 h-4 text-faint transition-transform ${isOpen ? 'rotate-180' : ''}`}
             fill="none" stroke="currentColor" viewBox="0 0 24 24"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -186,17 +159,17 @@ export default function IngredientDeepDive({ ingredientText, barcode }) {
       </button>
 
       {isOpen && (
-        <div className="mt-3 space-y-1.5">
+        <div className="mt-3">
           {/* Legend */}
-          <div className="flex items-center gap-3 mb-2 px-1">
-            <span className="flex items-center gap-1 text-[10px] text-gray-500">
-              <span className="w-2 h-2 rounded-full bg-red-500" /> {t('ingredients.avoid')}
+          <div className="flex items-center gap-3 mb-1 px-1">
+            <span className="flex items-center gap-1 text-[10px] text-moss">
+              <span className="w-2 h-2 rounded-full bg-chili" /> {t('ingredients.avoid')}
             </span>
-            <span className="flex items-center gap-1 text-[10px] text-gray-500">
-              <span className="w-2 h-2 rounded-full bg-amber-500" /> {t('ingredients.review')}
+            <span className="flex items-center gap-1 text-[10px] text-moss">
+              <span className="w-2 h-2 rounded-full bg-amberdot" /> {t('ingredients.review')}
             </span>
-            <span className="flex items-center gap-1 text-[10px] text-gray-500">
-              <span className="w-2 h-2 rounded-full bg-green-500" /> {t('ingredients.ok')}
+            <span className="flex items-center gap-1 text-[10px] text-moss">
+              <span className="w-2 h-2 rounded-full bg-brand" /> {t('ingredients.ok')}
             </span>
           </div>
 
@@ -209,11 +182,12 @@ export default function IngredientDeepDive({ ingredientText, barcode }) {
               item={item}
               index={i}
               position={i + 1}
+              isLast={i === classified.length - 1}
               onOpen={() => setSelected(item)}
             />
           ))}
 
-          <p className="text-[10px] text-gray-400 mt-2 px-1">
+          <p className="text-[10px] text-faint mt-2 px-1">
             {t('ingredients.tapHint')}
           </p>
         </div>

@@ -1,7 +1,19 @@
+// Barcode scanner — src/components/BarcodeScanner.jsx (full replacement)
+// Logic identical to the original (ML Kit native path + html5-qrcode web path);
+// only the shell is restyled: full-screen dark viewfinder with marigold
+// corner brackets and a sweeping beam.
 import { useEffect, useRef, useState } from 'react'
 import { Capacitor } from '@capacitor/core'
 import { extractBarcode } from '../utils/barcodeExtract'
 import { useT } from '../i18n'
+
+function Bracket({ className }) {
+  return (
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" className={`absolute ${className}`}>
+      <path d="M3 15V7a4 4 0 0 1 4-4h8" stroke="#F2A93B" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  )
+}
 
 export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
   const html5QrRef = useRef(null)
@@ -165,87 +177,110 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-6 min-h-[80vh]">
-      <div className="text-center mb-5">
-        <h2 className="text-lg font-bold text-gray-900 mb-1">{t('scan.title')}</h2>
-        <p className="text-sm text-gray-500">
-          {t('scan.subtitle')}
-        </p>
+    <div className="fixed inset-0 z-40 bg-night flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 pt-[max(env(safe-area-inset-top),1rem)] pb-2">
+        <button
+          onClick={onCancel}
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 text-cornsilk"
+          aria-label={t('common.back')}
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        <h2 className="font-display font-bold text-[17px] text-cornsilk">{t('scan.title')}</h2>
+        <span className="w-10 h-10" aria-hidden="true" />
       </div>
 
       {/* Camera viewport — always render the div so html5-qrcode can find it */}
-      <div className={`relative rounded-2xl overflow-hidden bg-black mb-4 ${showManual || isNative ? 'hidden' : ''}`}>
-        <div id="barcode-reader" className="w-full" />
+      <div className="flex-1 flex flex-col items-center justify-center px-8 min-h-0">
+        <div className={`relative w-full max-w-[320px] ${showManual || isNative ? 'hidden' : ''}`}>
+          <div className="relative rounded-2xl overflow-hidden bg-black">
+            <div id="barcode-reader" className="w-full" />
+          </div>
+          {/* Viewfinder chrome */}
+          <div className="pointer-events-none absolute inset-0">
+            <Bracket className="top-0 left-0" />
+            <Bracket className="top-0 right-0 rotate-90" />
+            <Bracket className="bottom-0 right-0 rotate-180" />
+            <Bracket className="bottom-0 left-0 -rotate-90" />
+            <div className="absolute left-4 right-4 top-1/2 flex justify-center">
+              <div
+                className="h-[2.5px] w-full animate-beamSweep"
+                style={{ background: 'linear-gradient(90deg,transparent,#F2A93B,transparent)', boxShadow: '0 0 14px rgba(242,169,59,.9)' }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {!showManual && !isNative && (
+          <p className="text-sm text-cornsilk/85 text-center max-w-[240px] leading-relaxed mt-6">
+            {t('scan.subtitle')}
+          </p>
+        )}
+
+        {error && (
+          <div className="w-full max-w-[320px] bg-blush border border-blush-line rounded-2xl p-3 mt-4">
+            <p className="text-sm text-chili-ink">{t(error)}</p>
+          </div>
+        )}
+        {!error && hint && (
+          <div className="w-full max-w-[320px] bg-sand border border-sand-line rounded-2xl p-3 mt-4">
+            <p className="text-sm text-ochre">{t(hint)}</p>
+          </div>
+        )}
+
+        {/* Manual barcode entry */}
+        {showManual && (
+          <form onSubmit={handleManualSubmit} className="w-full max-w-[320px] mt-4">
+            <label className="block text-sm font-semibold text-cornsilk mb-2">
+              {t('scan.enterBarcode')}
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={manualCode}
+                onChange={(e) => setManualCode(e.target.value.replace(/\D/g, ''))}
+                placeholder="e.g. 8901058851854"
+                className="flex-1 min-w-0 px-4 py-3 bg-white border border-edge rounded-2xl text-lg font-mono text-leaf focus:border-brand focus:outline-none"
+                autoFocus
+              />
+              <button
+                type="submit"
+                disabled={manualCode.trim().length < 8}
+                className={`px-5 py-3 rounded-2xl font-display font-bold transition-colors ${
+                  manualCode.trim().length >= 8
+                    ? 'bg-marigold text-spice'
+                    : 'bg-white/10 text-cornsilk/40 cursor-not-allowed'
+                }`}
+              >
+                {t('scan.go')}
+              </button>
+            </div>
+            <p className="text-xs text-cornsilk/50 mt-2">{t('scan.barcodeHelp')}</p>
+          </form>
+        )}
       </div>
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
-          <p className="text-sm text-red-700">{t(error)}</p>
-        </div>
-      )}
-
-      {!error && hint && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
-          <p className="text-sm text-amber-700">{t(hint)}</p>
-        </div>
-      )}
-
-      {/* Manual entry toggle */}
-      {!showManual && (
-        <button
-          onClick={() => setShowManual(true)}
-          className="w-full text-sm text-green-600 hover:text-green-700 font-medium mb-4"
-        >
-          {t('scan.cantScan')}
-        </button>
-      )}
-
-      {/* Manual barcode entry */}
-      {showManual && (
-        <form onSubmit={handleManualSubmit} className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            {t('scan.enterBarcode')}
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              value={manualCode}
-              onChange={(e) => setManualCode(e.target.value.replace(/\D/g, ''))}
-              placeholder="e.g. 8901058851854"
-              className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl text-lg font-mono focus:border-green-500 focus:outline-none"
-              autoFocus
-            />
-            <button
-              type="submit"
-              disabled={manualCode.trim().length < 8}
-              className={`px-5 py-3 rounded-xl font-semibold transition-colors ${
-                manualCode.trim().length >= 8
-                  ? 'bg-green-600 hover:bg-green-700 text-white'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              }`}
-            >
-              {t('scan.go')}
-            </button>
-          </div>
-          <p className="text-xs text-gray-400 mt-2">
-            {t('scan.barcodeHelp')}
-          </p>
-        </form>
-      )}
-
-      {/* Action buttons */}
-      <div className="flex gap-2">
-        <button
-          onClick={onCancel}
-          className="flex-1 py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors"
-        >
-          {t('common.back')}
-        </button>
+      {/* Bottom actions */}
+      <div className="px-6 pb-[max(env(safe-area-inset-bottom),2.5rem)] flex flex-col items-center gap-3">
+        {!showManual && (
+          <button
+            onClick={() => setShowManual(true)}
+            className="w-full flex items-center justify-center gap-2.5 bg-white/10 border border-white/20 rounded-2xl py-3.5 text-sm font-semibold text-cornsilk backdrop-blur-sm transition-all active:scale-[.98]"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 18h.01M8 18h.01M16 18h.01M8 14h.01M12 14h.01M16 14h.01M4 10h16M5 6h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z" />
+            </svg>
+            {t('scan.cantScan')}
+          </button>
+        )}
         <button
           onClick={onManualEntry}
-          className="flex-1 py-3 px-4 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-xl border-2 border-gray-200 transition-colors text-sm"
+          className="text-[13px] font-semibold text-marigold py-1"
         >
           {t('scan.searchInstead')}
         </button>
@@ -253,24 +288,12 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
 
       {/* Styling for html5-qrcode */}
       <style>{`
-        #barcode-reader {
-          border: none !important;
-        }
-        #barcode-reader video {
-          border-radius: 12px !important;
-        }
-        #barcode-reader__scan_region {
-          min-height: 300px;
-        }
-        #barcode-reader__dashboard {
-          display: none !important;
-        }
-        #barcode-reader img[alt="Info icon"] {
-          display: none !important;
-        }
-        #barcode-reader__header_message {
-          display: none !important;
-        }
+        #barcode-reader { border: none !important; }
+        #barcode-reader video { border-radius: 16px !important; }
+        #barcode-reader__scan_region { min-height: 300px; }
+        #barcode-reader__dashboard { display: none !important; }
+        #barcode-reader img[alt="Info icon"] { display: none !important; }
+        #barcode-reader__header_message { display: none !important; }
       `}</style>
     </div>
   )

@@ -1,13 +1,16 @@
+// Search — src/components/SearchScreen.jsx (full replacement)
 import { useState, useRef, useCallback } from 'react'
 import { useT } from '../i18n'
 import { track } from '../utils/analytics'
+import { ImageStripe } from './ZocoBrand'
 
-const NUTRI_COLORS = {
-  a: 'bg-green-600',
-  b: 'bg-lime-500',
-  c: 'bg-yellow-400',
-  d: 'bg-orange-500',
-  e: 'bg-red-600',
+// Nutri-Score letter → token styling (kept from the old NUTRI_COLORS, restyled).
+const NUTRI_STYLE = {
+  a: 'bg-mint text-deep',
+  b: 'bg-mint text-deep',
+  c: 'bg-sand text-ochre',
+  d: 'bg-blush text-chili-ink',
+  e: 'bg-blush text-chili-ink',
 }
 
 export default function SearchScreen({ onSelectProduct, onCancel }) {
@@ -23,10 +26,8 @@ export default function SearchScreen({ onSelectProduct, onCancel }) {
       setResults(null)
       return
     }
-
     setLoading(true)
     setError(false)
-
     try {
       const { searchProducts } = await import('../utils/searchEngine')
       const data = await searchProducts(q)
@@ -53,106 +54,85 @@ export default function SearchScreen({ onSelectProduct, onCancel }) {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-6 min-h-[80vh]">
-      <div className="text-center mb-5">
-        <h2 className="text-lg font-bold text-gray-900 mb-1">{t('search.title')}</h2>
-        <p className="text-sm text-gray-500">
-          {t('search.subtitle')}
-        </p>
+    <div className="max-w-lg mx-auto px-5 py-5 pb-28 md:pb-10 min-h-[80vh]">
+      {/* Title row with back button */}
+      <div className="flex items-center gap-2.5 mb-4">
+        <button
+          onClick={onCancel}
+          className="flex items-center justify-center w-9 h-9 rounded-full bg-white border border-edge"
+          aria-label={t('common.back')}
+        >
+          <svg className="w-[17px] h-[17px] text-fern" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <h2 className="font-display font-bold text-lg text-ink">{t('search.title')}</h2>
       </div>
 
-      {/* Search bar */}
-      <form onSubmit={handleSubmit} className="mb-4">
-        <div className="relative">
-          <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
-            fill="none" stroke="currentColor" viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      {/* Search field */}
+      <form onSubmit={handleSubmit}>
+        <div className="flex items-center gap-2.5 bg-white border-[1.5px] border-brand rounded-2xl px-3.5 py-3 shadow-sm">
+          <svg className="w-[18px] h-[18px] text-brand shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
             type="text"
             value={query}
             onChange={(e) => handleInput(e.target.value)}
             placeholder={t('search.placeholder')}
-            className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:border-green-500 focus:outline-none"
+            className="flex-1 min-w-0 text-[15px] text-leaf placeholder:text-faint focus:outline-none bg-transparent"
             autoFocus
           />
           {loading && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              <div className="w-5 h-5 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
-            </div>
+            <div className="w-5 h-5 border-2 border-brand border-t-transparent rounded-full animate-spin shrink-0" />
           )}
         </div>
       </form>
+      <p className="text-xs text-faint mt-2.5">{t('search.subtitle')}</p>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
-          <p className="text-sm text-red-700">{t('search.noResults')}</p>
+        <div className="bg-blush border border-blush-line rounded-2xl p-3 mt-4">
+          <p className="text-sm text-chili-ink">{t('search.noResults')}</p>
         </div>
       )}
 
       {/* Results */}
       {results && (
-        <div className="mb-4">
-          <p className="text-xs text-gray-400 mb-3">
+        <div className="mt-4">
+          <p className="text-xs text-moss mb-2">
             {results.totalResults > 0
               ? t('search.productsFound', { count: results.totalResults })
-              : t('search.noResults')
-            }
+              : t('search.noResults')}
           </p>
-
           <div className="space-y-2">
             {results.products.map((product) => (
               <button
                 key={product.barcode}
                 onClick={() => onSelectProduct(product.barcode)}
-                className="w-full flex items-center gap-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-xl p-3 text-left transition-colors"
+                className="w-full flex items-center gap-3 bg-white border border-line rounded-2xl p-3 text-left transition-all active:scale-[.99]"
               >
                 {product.image ? (
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-12 h-12 rounded-lg object-cover shrink-0"
-                  />
+                  <img src={product.image} alt={product.name} className="w-12 h-12 rounded-[11px] object-cover shrink-0" />
                 ) : (
-                  <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
-                    <span className="text-gray-400 text-lg">📦</span>
-                  </div>
+                  <ImageStripe className="w-12 h-12 rounded-[11px]" />
                 )}
-
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium text-gray-900 text-sm truncate">
-                    {product.name}
-                  </p>
-                  {product.brand && (
-                    <p className="text-xs text-gray-500 truncate">{product.brand}</p>
-                  )}
+                  <p className="text-sm font-semibold text-leaf truncate">{product.name}</p>
+                  {product.brand && <p className="text-xs text-moss truncate mt-0.5">{product.brand}</p>}
                 </div>
-
                 {product.nutriScore && (
-                  <span className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold uppercase ${NUTRI_COLORS[product.nutriScore] || 'bg-gray-400'}`}>
+                  <span className={`shrink-0 text-[10.5px] font-bold px-2 py-0.5 rounded-full uppercase ${NUTRI_STYLE[product.nutriScore] || 'bg-stone text-sage'}`}>
                     {product.nutriScore}
                   </span>
                 )}
-
-                <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <svg className="w-[15px] h-[15px] text-faint shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 5l7 7-7 7" />
                 </svg>
               </button>
             ))}
           </div>
         </div>
       )}
-
-      {/* Back button */}
-      <button
-        onClick={onCancel}
-        className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors"
-      >
-        {t('common.back')}
-      </button>
     </div>
   )
 }

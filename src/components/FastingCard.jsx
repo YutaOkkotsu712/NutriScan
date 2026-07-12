@@ -1,3 +1,4 @@
+// Fasting / Upvas card (§8) — src/components/FastingCard.jsx (full replacement)
 import { useMemo, useState } from 'react'
 import { evaluateFasting } from '../utils/fastingEngine'
 import { FASTING_PROFILE_ORDER, FASTING_PROFILES, FASTING_STATUS, FASTING_META } from '../data/fastingProfiles'
@@ -5,10 +6,10 @@ import { useProfile } from '../utils/profile'
 import { useT } from '../i18n'
 
 const STATUS_STYLE = {
-  [FASTING_STATUS.SUITABLE]: { badge: 'bg-green-600 text-white', label: 'Suitable', dot: 'bg-green-500' },
-  [FASTING_STATUS.NOT_SUITABLE]: { badge: 'bg-red-600 text-white', label: 'Not suitable', dot: 'bg-red-500' },
-  [FASTING_STATUS.DEPENDS]: { badge: 'bg-amber-500 text-white', label: 'Depends on family', dot: 'bg-amber-500' },
-  [FASTING_STATUS.UNKNOWN]: { badge: 'bg-gray-500 text-white', label: 'Needs label check', dot: 'bg-gray-400' },
+  [FASTING_STATUS.SUITABLE]: { badge: 'bg-brand text-white', label: 'Suitable' },
+  [FASTING_STATUS.NOT_SUITABLE]: { badge: 'bg-chili text-white', label: 'Not suitable' },
+  [FASTING_STATUS.DEPENDS]: { badge: 'bg-marigold text-spice', label: 'Depends on family' },
+  [FASTING_STATUS.UNKNOWN]: { badge: 'bg-mute text-white', label: 'Needs label check' },
 }
 
 export default function FastingCard({ result }) {
@@ -27,17 +28,14 @@ export default function FastingCard({ result }) {
   const style = STATUS_STYLE[evalResult.status] || STATUS_STYLE[FASTING_STATUS.UNKNOWN]
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 animate-fadeSlideIn" style={{ animationDelay: '400ms' }}>
-      <div className="flex items-center gap-2 mb-1">
-        <span className="text-lg">🕉️</span>
-        <span className="font-semibold text-gray-800">{t('fasting.title')}</span>
-      </div>
+    <div className="bg-white border border-line rounded-[18px] p-4 animate-fadeSlideIn" style={{ animationDelay: '400ms' }}>
+      <p className="font-display font-bold text-[15.5px] text-ink mb-2">{t('fasting.title')}</p>
 
       {/* Profile selector */}
       <select
         value={profileKey}
         onChange={(e) => setProfileKey(e.target.value)}
-        className="w-full my-2 text-sm border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500"
+        className="w-full mb-2 text-sm text-fern border border-edge rounded-xl px-3 py-2.5 bg-white focus:outline-none focus:border-brand"
       >
         {FASTING_PROFILE_ORDER.map(k => (
           <option key={k} value={k}>{FASTING_PROFILES[k].label}</option>
@@ -48,19 +46,17 @@ export default function FastingCard({ result }) {
       </select>
 
       {/* Status badge */}
-      <div className="flex items-center gap-2 mt-2">
-        <span className={`inline-flex items-center gap-1.5 text-sm font-bold px-2.5 py-1 rounded-full ${style.badge}`}>
-          {t(`fasting.${style.label}`)}
-        </span>
-      </div>
+      <span className={`inline-block text-sm font-bold px-3 py-1 rounded-full mt-1 ${style.badge}`}>
+        {t(`fasting.${style.label}`)}
+      </span>
 
-      <p className="text-sm text-gray-700 mt-2 leading-snug">{tProse(evalResult.reason)}</p>
-      {!proseReady && <p className="text-[10px] text-gray-400 italic mt-1">{t('common.translationPending')}</p>}
+      <p className="text-[13.5px] text-fern mt-2 leading-snug">{tProse(evalResult.reason)}</p>
+      {!proseReady && <p className="text-[10px] text-faint italic mt-1">{t('common.translationPending')}</p>}
 
       {/* Expandable explanation */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="text-xs text-green-600 hover:text-green-700 font-medium mt-2 flex items-center gap-1"
+        className="text-xs text-brand font-bold mt-2 flex items-center gap-1"
       >
         {expanded ? t('common.hideDetails') : t('common.showDetails')}
         <svg className={`w-3 h-3 transition-transform ${expanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -72,26 +68,26 @@ export default function FastingCard({ result }) {
         <div className="mt-2 space-y-2">
           {evalResult.restrictedHits.length > 0 && (
             <div className="text-xs">
-              <span className="font-semibold text-red-700">{t('fasting.conflicting')} </span>
-              <span className="text-gray-700">{evalResult.restrictedHits.join(', ')}</span>
+              <span className="font-bold text-chili-ink">{t('fasting.conflicting')} </span>
+              <span className="text-fern">{evalResult.restrictedHits.join(', ')}</span>
             </div>
           )}
           {evalResult.dependsHits.length > 0 && (
             <div className="text-xs">
-              <span className="font-semibold text-amber-700">{t('fasting.dependsOnPractice')} </span>
-              <span className="text-gray-700">{evalResult.dependsHits.join(', ')}</span>
+              <span className="font-bold text-ochre">{t('fasting.dependsOnPractice')} </span>
+              <span className="text-fern">{evalResult.dependsHits.join(', ')}</span>
             </div>
           )}
           {evalResult.note && (
-            <p className="text-xs text-gray-600 leading-relaxed bg-gray-50 rounded-lg p-2.5">{evalResult.note}</p>
+            <p className="text-xs text-sage leading-relaxed bg-cream rounded-xl p-2.5">{evalResult.note}</p>
           )}
         </div>
       )}
 
-      <p className="text-[11px] text-amber-700 bg-amber-50 rounded-lg p-2 mt-3 leading-relaxed">
-        ⚠️ {FASTING_META.globalCaveat}
+      <p className="text-[11px] text-ochre bg-sand rounded-xl p-2.5 mt-3 leading-relaxed">
+        {FASTING_META.globalCaveat}
       </p>
-      <p className="text-[10px] text-gray-400 mt-1.5 leading-relaxed">
+      <p className="text-[10px] text-faint mt-1.5 leading-relaxed">
         {t('fasting.confidenceLabel')}: {evalResult.confidence} · {t('fasting.sourceLabel')}: {(evalResult.sources || [])[0]} · {t('fasting.reviewedLabel')} {evalResult.lastReviewed}
       </p>
     </div>

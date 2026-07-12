@@ -1,3 +1,4 @@
+// "Why this score" / top findings — src/components/ScoreExplainer.jsx (full replacement)
 import { useMemo } from 'react'
 import { generateExplanation } from '../utils/scoreExplainer'
 import { useT } from '../i18n'
@@ -8,28 +9,25 @@ export default function ScoreExplainer({ result }) {
 
   if (!explanation) return null
 
-  const scoreColor =
-    result.overallScore >= 7 ? 'border-green-200 bg-green-50'
-      : result.overallScore >= 4 ? 'border-amber-200 bg-amber-50'
-        : 'border-red-200 bg-red-50'
-
-  const textColor =
-    result.overallScore >= 7 ? 'text-green-800'
-      : result.overallScore >= 4 ? 'text-amber-800'
-        : 'text-red-800'
+  const tone =
+    result.overallScore >= 7 ? { card: 'bg-mint border-mint', text: 'text-mint-ink', icon: 'text-deep' }
+      : result.overallScore >= 4 ? { card: 'bg-sand border-sand-line', text: 'text-[#7C6A45]', icon: 'text-ochre' }
+        : { card: 'bg-blush border-blush-line', text: 'text-chili-ink/90', icon: 'text-chili-ink' }
 
   return (
-    <div className={`rounded-xl border-2 p-4 animate-fadeSlideIn ${scoreColor}`}
+    <div className={`rounded-[18px] border p-4 animate-fadeSlideIn ${tone.card}`}
       style={{ animationDelay: '100ms' }}
     >
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-lg">💡</span>
-        <span className="font-semibold text-gray-800">{t('results.whyThisScore')}</span>
+        <svg className={`w-[17px] h-[17px] shrink-0 ${tone.icon}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9.7 17h4.6M10 20h4M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1.2 2.1h4.6c.2-.9.6-1.6 1.2-2.1A6 6 0 0012 3z" />
+        </svg>
+        <span className="font-display font-bold text-sm text-ink">{t('results.whyThisScore')}</span>
       </div>
-      <p className={`text-sm leading-relaxed ${textColor}`}>
+      <p className={`text-[13.5px] leading-relaxed ${tone.text}`}>
         {explanation}
       </p>
-      {!proseReady && <p className="text-[10px] text-gray-400 mt-2 italic">{t('common.translationPending')}</p>}
+      {!proseReady && <p className="text-[10px] text-faint mt-2 italic">{t('common.translationPending')}</p>}
     </div>
   )
 }

@@ -1,16 +1,62 @@
+/* ZOCO "Bazaar Fresh" — src/index.css (full replacement) */
 @import "tailwindcss";
 
-/* === NutriScan Animations === */
+/* Design tokens — generates utilities like bg-cream, text-ink, border-line,
+   from-brand-hi, font-display, etc. */
+@theme {
+  /* Surfaces */
+  --color-cream: #FAF6ED;
+  --color-line: #E8E2D2;      /* card borders */
+  --color-edge: #E6DEC9;      /* input/pill borders */
+  --color-hairline: #F0EADC;  /* row dividers, track bg */
+  --color-stone: #EDEAE0;     /* neutral chip bg */
+
+  /* Ink */
+  --color-ink: #17301F;       /* headings */
+  --color-leaf: #22301F;      /* body */
+  --color-fern: #3A4634;      /* secondary body */
+  --color-sage: #57604E;
+  --color-moss: #74806B;      /* muted */
+  --color-faint: #A8A490;     /* faintest text */
+  --color-mute: #8B917E;      /* inactive icons */
+
+  /* Brand greens */
+  --color-brand: #1C7A4A;
+  --color-brand-hi: #1F8A54;  /* gradient start */
+  --color-brand-lo: #0F5B34;  /* gradient end */
+  --color-deep: #14532D;      /* dark green text */
+  --color-mint: #E4F0E4;      /* green tint bg */
+  --color-mint-ink: #3F5A44;
+
+  /* Marigold accent + amber status */
+  --color-marigold: #F2A93B;
+  --color-spice: #3A2A08;     /* ink on marigold */
+  --color-ochre: #8A5A06;     /* amber status text */
+  --color-ochre-lt: #A16A0A;
+  --color-sand: #FBF0DC;      /* amber tint bg */
+  --color-sand-line: #F0DCB4;
+  --color-amberdot: #E9A23B;
+
+  /* Red status */
+  --color-chili: #C6452B;
+  --color-chili-ink: #9A3520;
+  --color-blush: #FAE7E1;
+  --color-blush-line: #F0CFC5;
+
+  /* Scanner (dark) */
+  --color-night: #141B15;
+  --color-cornsilk: #F2EFE4;
+
+  /* Type */
+  --font-display: "Bricolage Grotesque", "Instrument Sans", system-ui, sans-serif;
+  --font-sans: "Instrument Sans", system-ui, -apple-system, sans-serif;
+}
+
+/* === Animations (unchanged from NutriScan) === */
 
 @keyframes fadeSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeIn {
@@ -19,50 +65,24 @@
 }
 
 @keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.85);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes barGrow {
   from { width: 0; }
 }
 
-.animate-fadeSlideIn {
-  animation: fadeSlideIn 0.4s ease-out both;
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-out both;
-}
-
-.animate-scaleIn {
-  animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
-
-.animate-slideUp {
-  animation: slideUp 0.5s ease-out both;
-}
-
-.animate-barGrow {
-  animation: barGrow 0.8s ease-out both;
-}
+.animate-fadeSlideIn { animation: fadeSlideIn 0.4s ease-out both; }
+.animate-fadeIn { animation: fadeIn 0.3s ease-out both; }
+.animate-scaleIn { animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.animate-slideUp { animation: slideUp 0.5s ease-out both; }
+.animate-barGrow { animation: barGrow 0.8s ease-out both; }
 
 @keyframes sheetUp {
   from { transform: translateY(100%); }
@@ -74,10 +94,12 @@
   to { transform: translateX(0); }
 }
 
-.animate-sheetUp {
-  animation: sheetUp 0.28s cubic-bezier(0.32, 0.72, 0, 1) both;
-}
+.animate-sheetUp { animation: sheetUp 0.28s cubic-bezier(0.32, 0.72, 0, 1) both; }
+.animate-drawerIn { animation: drawerIn 0.28s cubic-bezier(0.32, 0.72, 0, 1) both; }
 
-.animate-drawerIn {
-  animation: drawerIn 0.28s cubic-bezier(0.32, 0.72, 0, 1) both;
+/* ZOCO: scanner beam sweep */
+@keyframes beamSweep {
+  0%, 100% { transform: translateY(-56px); }
+  50% { transform: translateY(56px); }
 }
+.animate-beamSweep { animation: beamSweep 2.4s ease-in-out infinite; }
