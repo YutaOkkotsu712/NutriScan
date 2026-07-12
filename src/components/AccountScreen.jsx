@@ -69,7 +69,7 @@ export default function AccountScreen({ entitlement, onBack, onEntitlementChange
   }
 
   return (
-    <div className="max-w-lg mx-auto px-5 py-5 pb-28 md:pb-10">
+    <div className="max-w-lg md:max-w-2xl mx-auto px-5 py-5 md:py-10 pb-28 md:pb-10">
       {/* Title row */}
       <div className="flex items-center gap-2.5 mb-4">
         <button

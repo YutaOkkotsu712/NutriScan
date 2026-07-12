@@ -21,13 +21,13 @@ export default function LandingScreen({ onScanBarcode, onBarcodeDetected, onSear
   const remaining = entitlement?.remaining ?? limit
 
   return (
-    <div className="max-w-lg mx-auto px-5 pt-6 pb-28 md:pb-10 flex flex-col min-h-[80vh]">
+    <div className="max-w-lg md:max-w-5xl mx-auto px-5 md:px-10 pt-6 md:pt-14 pb-28 md:pb-14 flex flex-col min-h-[80vh] md:min-h-0 md:grid md:grid-cols-[1fr_400px] md:gap-x-14 md:gap-y-4 md:grid-flow-row-dense md:items-start">
       {/* Headline */}
-      <div className="animate-fadeSlideIn">
-        <h1 className="font-display font-extrabold text-[33px] leading-[1.06] tracking-tight text-ink">
+      <div className="animate-fadeSlideIn md:col-start-1">
+        <h1 className="font-display font-extrabold text-[33px] md:text-5xl leading-[1.06] md:leading-[1.04] tracking-tight text-ink">
           {t('welcome.headline')}
         </h1>
-        <p className="text-[14.5px] leading-relaxed text-moss mt-2.5 max-w-[300px]">
+        <p className="text-[14.5px] md:text-base leading-relaxed text-moss mt-2.5 md:mt-4 max-w-[300px] md:max-w-md">
           {t('common.tagline')}
         </p>
       </div>
@@ -35,7 +35,7 @@ export default function LandingScreen({ onScanBarcode, onBarcodeDetected, onSear
       {/* Primary: Scan Barcode hero tile */}
       <button
         onClick={onScanBarcode}
-        className="relative mt-5 w-full text-left bg-gradient-to-br from-brand-hi to-brand-lo rounded-[22px] p-5 overflow-hidden shadow-lg shadow-brand-lo/30 transition-all active:scale-[.98] animate-fadeSlideIn"
+        className="relative mt-5 md:mt-0 md:col-start-2 md:row-start-1 w-full text-left bg-gradient-to-br from-brand-hi to-brand-lo rounded-[22px] p-5 md:p-7 overflow-hidden shadow-lg shadow-brand-lo/30 transition-all active:scale-[.98] animate-fadeSlideIn"
         style={{ animationDelay: '100ms' }}
       >
         <BarcodeIcon className="absolute -right-3 -top-1 w-36 h-28 text-white opacity-15" strokeWidth={1} />
@@ -55,7 +55,7 @@ export default function LandingScreen({ onScanBarcode, onBarcodeDetected, onSear
       </button>
 
       {/* Secondary actions */}
-      <div className="grid grid-cols-2 gap-2.5 mt-3 animate-fadeSlideIn" style={{ animationDelay: '200ms' }}>
+      <div className="grid grid-cols-2 gap-2.5 mt-3 md:mt-6 md:col-start-1 animate-fadeSlideIn" style={{ animationDelay: '200ms' }}>
         <button
           onClick={onSearch}
           className="bg-white border border-line rounded-2xl p-3.5 flex items-center gap-2.5 transition-all active:scale-[.97] min-h-[44px]"
@@ -83,7 +83,7 @@ export default function LandingScreen({ onScanBarcode, onBarcodeDetected, onSear
 
       {/* Inline manual code entry */}
       {showCode && (
-        <form onSubmit={submitCode} className="mt-2.5 flex gap-2 animate-fadeSlideIn">
+        <form onSubmit={submitCode} className="mt-2.5 md:col-start-1 flex gap-2 animate-fadeSlideIn">
           <input
             type="text"
             inputMode="numeric"
@@ -109,7 +109,7 @@ export default function LandingScreen({ onScanBarcode, onBarcodeDetected, onSear
       )}
 
       {/* Trust badge */}
-      <div className="flex justify-center mt-4 animate-fadeIn" style={{ animationDelay: '300ms' }}>
+      <div className="flex justify-center md:justify-start mt-4 md:col-start-1 animate-fadeIn" style={{ animationDelay: '300ms' }}>
         <TrustBadge />
       </div>
 
@@ -117,7 +117,7 @@ export default function LandingScreen({ onScanBarcode, onBarcodeDetected, onSear
       {free && (
         <button
           onClick={onOpenAccount}
-          className="mt-auto pt-4 text-left animate-fadeSlideIn"
+          className="mt-auto md:mt-0 pt-4 md:pt-0 md:col-start-2 w-full text-left animate-fadeSlideIn"
           style={{ animationDelay: '350ms' }}
         >
           <div className="bg-white border border-line rounded-2xl px-4 py-3.5 flex items-center gap-3">
@@ -138,7 +138,7 @@ export default function LandingScreen({ onScanBarcode, onBarcodeDetected, onSear
         </button>
       )}
 
-      <p className="text-xs text-faint text-center mt-5">{t('landing.footer')}</p>
+      <p className="text-xs text-faint text-center mt-5 md:col-span-2 md:mt-6">{t('landing.footer')}</p>
     </div>
   )
 }

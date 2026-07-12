@@ -135,11 +135,11 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
   }
 
   return (
-    <div className="max-w-lg mx-auto px-5 py-5 pb-40 md:pb-28">
+    <div className="max-w-lg md:max-w-5xl mx-auto px-5 md:px-10 py-5 pb-40 md:pb-16">
       {/* Sticky compact header (§12.1) — no numeric score, verdict pill only */}
       {showStickyBar && (
         <div className="fixed top-[56px] left-0 right-0 z-30 bg-cream/95 backdrop-blur-sm border-b border-line animate-fadeIn">
-          <div className="max-w-lg mx-auto px-5 py-2 flex items-center gap-3">
+          <div className="max-w-lg md:max-w-5xl mx-auto px-5 md:px-10 py-2 flex items-center gap-3">
             {result.imageUrl && (
               <img src={result.imageUrl} alt="" className="w-8 h-8 rounded-lg object-cover shrink-0" />
             )}
@@ -176,9 +176,12 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
         </div>
       )}
 
+      {/* ===== Desktop two-column layout — mobile keeps single DOM order ===== */}
+      <div className="md:grid md:grid-cols-[1fr_360px] md:gap-x-5 md:grid-flow-row-dense md:items-start">
+
       {/* Product summary card */}
       {isBarcode && (
-        <div className="flex items-center gap-3.5 mb-3 bg-white border border-line rounded-[18px] p-4 shadow-sm animate-fadeSlideIn">
+        <div className="md:col-start-1 flex items-center gap-3.5 mb-3 bg-white border border-line rounded-[18px] p-4 shadow-sm animate-fadeSlideIn">
           {result.imageUrl ? (
             <img
               src={result.imageUrl}
@@ -222,7 +225,7 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
       {/* ZOCO READOUT — verdict hero (replaces the numeric score dial) */}
       <div
         ref={scoreAnchorRef}
-        className={`border rounded-[18px] p-4.5 mb-3 flex gap-3.5 items-start animate-scaleIn ${verdict.hero}`}
+        className={`md:col-start-1 border rounded-[18px] p-4.5 mb-3 flex gap-3.5 items-start animate-scaleIn ${verdict.hero}`}
         style={{ animationDelay: '100ms' }}
       >
         <span className={`w-[42px] h-[42px] rounded-full flex items-center justify-center shrink-0 mt-0.5 ${verdict.iconBg}`}>
@@ -245,7 +248,7 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
 
       {/* ALLERGEN WARNING */}
       {(hasAllergens || hasTraces) && (
-        <div className="bg-blush border border-blush-line rounded-[18px] p-4 mb-3 animate-fadeSlideIn" style={{ animationDelay: '50ms' }}>
+        <div className="md:col-start-1 bg-blush border border-blush-line rounded-[18px] p-4 mb-3 animate-fadeSlideIn" style={{ animationDelay: '50ms' }}>
           {hasAllergens && (
             <div className={hasTraces ? 'mb-3' : ''}>
               <div className="flex items-center gap-2 mb-2">
@@ -280,7 +283,7 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
 
       {/* MISLEADING CLAIMS */}
       {misleadingClaims.length > 0 && (
-        <div className="bg-blush border border-blush-line rounded-[18px] p-4 mb-3 animate-fadeSlideIn" style={{ animationDelay: '100ms' }}>
+        <div className="md:col-start-1 bg-blush border border-blush-line rounded-[18px] p-4 mb-3 animate-fadeSlideIn" style={{ animationDelay: '100ms' }}>
           <div className="flex items-center gap-2 mb-3">
             <svg className="w-[18px] h-[18px] text-chili shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 21V5a2 2 0 012-2h11l-2 4 2 4H5" />
@@ -307,7 +310,7 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
 
       {/* Verified claims */}
       {verifiedClaims.length > 0 && (
-        <div className="bg-mint rounded-[18px] p-3.5 mb-3 animate-fadeSlideIn" style={{ animationDelay: '120ms' }}>
+        <div className="md:col-start-1 bg-mint rounded-[18px] p-3.5 mb-3 animate-fadeSlideIn" style={{ animationDelay: '120ms' }}>
           <div className="flex items-center gap-2 mb-2">
             <svg className="w-4 h-4 text-deep shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 13l4 4L19 7" />
@@ -326,13 +329,13 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
       )}
 
       {/* Why This Score? explainer (top findings) */}
-      <div className="mb-3">
+      <div className="mb-3 md:col-start-1">
         <ScoreExplainer result={result} />
       </div>
 
       {/* === India-first interactive layer === */}
       {isBarcode && (
-        <div className="space-y-3 mb-3">
+        <div className="space-y-3 mb-3 md:col-start-1">
           <SuitabilityChips result={result} />
           <NutrientAllowanceCard result={result} />
           <FastingCard result={result} />
@@ -340,7 +343,7 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
       )}
 
       {/* Share + Compare buttons */}
-      <div className="flex gap-2.5 mb-3 animate-fadeSlideIn" style={{ animationDelay: '300ms' }}>
+      <div className="flex gap-2.5 mb-3 md:col-start-1 animate-fadeSlideIn" style={{ animationDelay: '300ms' }}>
         <button
           onClick={handleShare}
           disabled={shareStatus === 'generating'}
@@ -376,7 +379,7 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
       </div>
 
       {/* Category scores — staggered */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-3 md:col-start-1">
         {CATEGORY_ORDER.map((cat, i) => (
           result.categories[cat] && (
             <CategoryCard key={cat} category={cat} data={result.categories[cat]} index={i} />
@@ -385,30 +388,32 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
       </div>
 
       {/* Detailed nutrition breakdown — flags, macros, WHO bars */}
-      <NutritionDetail result={result} />
+      <div className="md:col-start-2 mb-3">
+        <NutritionDetail result={result} />
+      </div>
 
       {/* Ingredient Deep Dive — each ingredient opens a detail sheet (§5) */}
       {result.parsedIngredients && (
-        <div className="mt-3">
+        <div className="mt-3 md:mt-0 md:col-start-2">
           <IngredientDeepDive ingredientText={result.parsedIngredients} barcode={result.barcode} />
         </div>
       )}
 
       {/* Data & trust card (§4) */}
       {isBarcode && (
-        <div className="mt-3">
+        <div className="mt-3 md:col-start-2">
           <DataConfidenceCard result={result} />
         </div>
       )}
 
       {/* Smart swap suggestions */}
-      <div className="mt-3 animate-fadeSlideIn" style={{ animationDelay: '600ms' }}>
+      <div className="mt-3 md:col-start-1 animate-fadeSlideIn" style={{ animationDelay: '600ms' }}>
         <SmartSwapCard result={result} onSelectProduct={onSelectProduct || (() => {})} />
       </div>
 
       {/* Flagged ingredients */}
       {result.flaggedItems?.length > 0 && (
-        <div className="mt-3 bg-white border border-line rounded-[18px] p-4 animate-fadeSlideIn" style={{ animationDelay: '700ms' }}>
+        <div className="mt-3 md:col-start-1 bg-white border border-line rounded-[18px] p-4 animate-fadeSlideIn" style={{ animationDelay: '700ms' }}>
           <p className="font-display font-bold text-[15.5px] text-ink mb-2.5">Ingredient Review</p>
           <div className="space-y-2">
             {result.flaggedItems.map((item, i) => (
@@ -430,12 +435,13 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
 
       {/* Nutri-Score */}
       {result.nutriScore && (
-        <div className="mt-3 bg-stone/60 rounded-[18px] p-3 text-center animate-fadeIn" style={{ animationDelay: '800ms' }}>
+        <div className="mt-3 md:col-start-2 bg-stone/60 rounded-[18px] p-3 text-center animate-fadeIn" style={{ animationDelay: '800ms' }}>
           <p className="text-xs text-moss">
             Open Food Facts Nutri-Score: <span className="font-bold text-sage uppercase">{result.nutriScore}</span>
           </p>
         </div>
       )}
+      </div>{/* end desktop two-column grid */}
 
       {/* Scan another — floats above the bottom nav on mobile */}
       <button
