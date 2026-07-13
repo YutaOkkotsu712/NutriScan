@@ -5,9 +5,14 @@
 export function createFakeKv() {
   const lists = new Map()
   const strings = new Map()
+  const zsets = new Map() // key -> Map(member -> score)
   const list = (key) => {
     if (!lists.has(key)) lists.set(key, [])
     return lists.get(key)
+  }
+  const zset = (key) => {
+    if (!zsets.has(key)) zsets.set(key, new Map())
+    return zsets.get(key)
   }
 
   function fetchImpl(url, opts) {
@@ -23,6 +28,19 @@ export function createFakeKv() {
     // INCR is stored as a plain string so GET sees it, matching real Redis.
     if (cmd === 'INCR') { const n = Number(strings.get(key) || 0) + 1; strings.set(key, String(n)); result = n }
     if (cmd === 'EXPIRE') result = 1
+    // Sorted sets: ZINCRBY key increment member ; ZREVRANGE key start stop [WITHSCORES]
+    if (cmd === 'ZINCRBY') {
+      const z = zset(key); const member = String(args[1])
+      const n = (z.get(member) || 0) + Number(args[0]); z.set(member, n); result = n
+    }
+    if (cmd === 'ZREVRANGE') {
+      const z = zset(key)
+      const sorted = [...z.entries()].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))
+      const start = Number(args[0]); const stop = Number(args[1])
+      const slice = sorted.slice(start, stop === -1 ? undefined : stop + 1)
+      const withScores = args.some((a) => String(a).toUpperCase() === 'WITHSCORES')
+      result = withScores ? slice.flatMap(([m, s]) => [m, String(s)]) : slice.map(([m]) => m)
+    }
     return Promise.resolve(new Response(JSON.stringify({ result }), { status: 200 }))
   }
 
@@ -30,7 +48,8 @@ export function createFakeKv() {
     fetchImpl,
     lists,
     strings,
+    zsets,
     list,
-    reset() { lists.clear(); strings.clear() },
+    reset() { lists.clear(); strings.clear(); zsets.clear() },
   }
 }

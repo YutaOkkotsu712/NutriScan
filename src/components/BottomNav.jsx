@@ -21,7 +21,7 @@ function Item({ active, label, onClick, children }) {
   )
 }
 
-export default function BottomNav({ active, onScan, onSearch, onPlan, onProfile }) {
+export default function BottomNav({ active, onScan, onSearch, onPlan, onProfile, onHelp }) {
   const { t } = useT()
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-line flex px-2 pt-2 pb-[max(env(safe-area-inset-bottom),0.75rem)]">
@@ -41,6 +41,11 @@ export default function BottomNav({ active, onScan, onSearch, onPlan, onProfile 
       <Item active={active === 'profile'} label={t('nav.profile')} onClick={onProfile}>
         <svg className="w-[19px] h-[19px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      </Item>
+      <Item active={active === 'help'} label={t('nav.help')} onClick={onHelp}>
+        <svg className="w-[19px] h-[19px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="9" /><path d="M9.5 9a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 3.5M12 17h.01" />
         </svg>
       </Item>
     </nav>

@@ -126,13 +126,18 @@ const STRINGS = {
       elementMissing: 'Scanner element not found. Enter barcode manually.',
     },
     nav: {
-      scan: 'Scan', search: 'Search', plan: 'Plan', membership: 'Membership', profile: 'Profile',
+      scan: 'Scan', search: 'Search', plan: 'Plan', membership: 'Membership', profile: 'Profile', help: 'Help',
     },
     plan: {
       current: 'Current plan', free: 'Free',
       monthly: 'Monthly', quarterly: 'Quarterly', yearly: 'Yearly',
       perMonth: 'Billed monthly', perQuarter: 'Billed every 3 months', perYear: 'Billed yearly',
       save16: 'Save 16%', bestValue: 'Best value', choosePlan: 'Choose a plan',
+    },
+    help: {
+      title: 'Help & About', how: 'How ZOCO works', readouts: 'What the readouts mean',
+      how1: 'Scan a barcode or search by name.', how2: 'Read the plain-language readout and top findings.', how3: 'Check suitability for your family and see healthier swaps.',
+      trustTitle: 'Independent & ad-free', trustBody: 'ZOCO shows independent, label-based information. No sponsored rankings and no paid placement.',
     },
     legal: {
       disclaimer: 'ZOCO gives label-based educational information — not medical advice, certification, or a guarantee of safety. Formulations and labels can change; always check the physical product.',
@@ -497,13 +502,18 @@ const STRINGS = {
     share: { footer: 'ZOCO से स्कैन किया — WHO-आधारित फ़ूड हेल्थ स्कोर', claimsOne: '⚠️ {n} भ्रामक दावा मिला', claimsMany: '⚠️ {n} भ्रामक दावे मिले' },
     scoreword: { "Avoid": 'टालें', "Poor": 'कमज़ोर', "Below Average": 'औसत से कम', "Average": 'औसत', "Decent": 'ठीक-ठाक', "Good": 'अच्छा', "Excellent": 'बेहतरीन' },
     nav: {
-      scan: 'स्कैन', search: 'खोज', plan: 'प्लान', membership: 'सदस्यता', profile: 'प्रोफ़ाइल',
+      scan: 'स्कैन', search: 'खोज', plan: 'प्लान', membership: 'सदस्यता', profile: 'प्रोफ़ाइल', help: 'मदद',
     },
     plan: {
       current: 'मौजूदा प्लान', free: 'मुफ़्त',
       monthly: 'मासिक', quarterly: 'तिमाही', yearly: 'वार्षिक',
       perMonth: 'हर महीने बिल', perQuarter: 'हर 3 महीने बिल', perYear: 'हर साल बिल',
       save16: '16% बचाएँ', bestValue: 'सबसे बढ़िया', choosePlan: 'प्लान चुनें',
+    },
+    help: {
+      title: 'मदद और परिचय', how: 'ZOCO कैसे काम करता है', readouts: 'रीडआउट का मतलब',
+      how1: 'बारकोड स्कैन करें या नाम से खोजें।', how2: 'आसान भाषा में रीडआउट और मुख्य बातें पढ़ें।', how3: 'अपने परिवार के लिए उपयुक्तता जाँचें और बेहतर विकल्प देखें।',
+      trustTitle: 'स्वतंत्र और विज्ञापन-रहित', trustBody: 'ZOCO स्वतंत्र, लेबल-आधारित जानकारी दिखाता है। कोई प्रायोजित रैंकिंग या पेड प्लेसमेंट नहीं।',
     },
     legal: {
       disclaimer: 'ZOCO लेबल-आधारित शैक्षिक जानकारी देता है — चिकित्सा सलाह, प्रमाणन या सुरक्षा की गारंटी नहीं। फ़ॉर्मूला और लेबल बदल सकते हैं; हमेशा असली उत्पाद जाँचें।',
@@ -978,13 +988,18 @@ const STRINGS = {
     share: { footer: 'ZOCO se scan kiya — WHO-based food health scores', claimsOne: '⚠️ {n} misleading claim mila', claimsMany: '⚠️ {n} misleading claims mile' },
     scoreword: { "Avoid": 'Avoid', "Poor": 'Kamzor', "Below Average": 'Average se kam', "Average": 'Average', "Decent": 'Theek-thaak', "Good": 'Achha', "Excellent": 'Behtareen' },
     nav: {
-      scan: 'Scan', search: 'Search', plan: 'Plan', membership: 'Membership', profile: 'Profile',
+      scan: 'Scan', search: 'Search', plan: 'Plan', membership: 'Membership', profile: 'Profile', help: 'Help',
     },
     plan: {
       current: 'Current plan', free: 'Free',
       monthly: 'Monthly', quarterly: 'Quarterly', yearly: 'Yearly',
       perMonth: 'Har month bill', perQuarter: 'Har 3 month bill', perYear: 'Har saal bill',
       save16: '16% bachayein', bestValue: 'Best value', choosePlan: 'Plan chunein',
+    },
+    help: {
+      title: 'Help & About', how: 'ZOCO kaise kaam karta hai', readouts: 'Readout ka matlab',
+      how1: 'Barcode scan karein ya naam se search karein.', how2: 'Aasan bhasha mein readout aur main points padhein.', how3: 'Apne family ke liye suitability check karein aur behtar options dekhein.',
+      trustTitle: 'Independent aur ad-free', trustBody: 'ZOCO independent, label-based jankari dikhata hai. Koi sponsored ranking ya paid placement nahi.',
     },
     legal: {
       disclaimer: 'ZOCO label-based educational jankari deta hai — medical advice, certification ya safety guarantee nahi. Formula aur label badal sakte hain; hamesha asli product check karein.',
@@ -1214,13 +1229,18 @@ const STRINGS = {
     share: { footer: 'ZOCO ने स्कॅन केले — WHO-आधारित फूड हेल्थ स्कोअर', claimsOne: '⚠️ {n} दिशाभूल करणारा दावा आढळला', claimsMany: '⚠️ {n} दिशाभूल करणारे दावे आढळले' },
     scoreword: { "Avoid": 'टाळा', "Poor": 'कमकुवत', "Below Average": 'सरासरीपेक्षा कमी', "Average": 'सरासरी', "Decent": 'बरे', "Good": 'चांगले', "Excellent": 'उत्कृष्ट' },
     nav: {
-      scan: 'स्कॅन', search: 'शोध', plan: 'प्लॅन', membership: 'सदस्यता', profile: 'प्रोफाइल',
+      scan: 'स्कॅन', search: 'शोध', plan: 'प्लॅन', membership: 'सदस्यता', profile: 'प्रोफाइल', help: 'मदत',
     },
     plan: {
       current: 'सध्याचा प्लॅन', free: 'मोफत',
       monthly: 'मासिक', quarterly: 'त्रैमासिक', yearly: 'वार्षिक',
       perMonth: 'दरमहा बिल', perQuarter: 'दर 3 महिन्यांनी बिल', perYear: 'दरवर्षी बिल',
       save16: '16% वाचवा', bestValue: 'सर्वोत्तम', choosePlan: 'प्लॅन निवडा',
+    },
+    help: {
+      title: 'मदत आणि माहिती', how: 'ZOCO कसे कार्य करते', readouts: 'रीडआउटचा अर्थ',
+      how1: 'बारकोड स्कॅन करा किंवा नावाने शोधा.', how2: 'सोप्या भाषेत रीडआउट व मुख्य मुद्दे वाचा.', how3: 'तुमच्या कुटुंबासाठी योग्यता तपासा आणि चांगले पर्याय पाहा.',
+      trustTitle: 'स्वतंत्र आणि जाहिरात-मुक्त', trustBody: 'ZOCO स्वतंत्र, लेबल-आधारित माहिती दाखवते. कोणतीही प्रायोजित रँकिंग किंवा पेड प्लेसमेंट नाही.',
     },
     legal: {
       disclaimer: 'ZOCO लेबल-आधारित शैक्षणिक माहिती देते — वैद्यकीय सल्ला, प्रमाणपत्र किंवा सुरक्षिततेची हमी नाही. फॉर्म्युला आणि लेबल बदलू शकतात; नेहमी प्रत्यक्ष उत्पादन तपासा.',
@@ -1450,13 +1470,18 @@ const STRINGS = {
     share: { footer: 'ZOCO થી સ્કેન કર્યું — WHO-આધારિત ફૂડ હેલ્થ સ્કોર', claimsOne: '⚠️ {n} ભ્રામક દાવો મળ્યો', claimsMany: '⚠️ {n} ભ્રામક દાવા મળ્યા' },
     scoreword: { "Avoid": 'ટાળો', "Poor": 'નબળું', "Below Average": 'સરેરાશથી ઓછું', "Average": 'સરેરાશ', "Decent": 'ઠીક', "Good": 'સારું', "Excellent": 'ઉત્તમ' },
     nav: {
-      scan: 'સ્કેન', search: 'શોધ', plan: 'પ્લાન', membership: 'સભ્યપદ', profile: 'પ્રોફાઇલ',
+      scan: 'સ્કેન', search: 'શોધ', plan: 'પ્લાન', membership: 'સભ્યપદ', profile: 'પ્રોફાઇલ', help: 'મદદ',
     },
     plan: {
       current: 'વર્તમાન પ્લાન', free: 'મફત',
       monthly: 'માસિક', quarterly: 'ત્રિમાસિક', yearly: 'વાર્ષિક',
       perMonth: 'દર મહિને બિલ', perQuarter: 'દર 3 મહિને બિલ', perYear: 'દર વર્ષે બિલ',
       save16: '16% બચાવો', bestValue: 'શ્રેષ્ઠ મૂલ્ય', choosePlan: 'પ્લાન પસંદ કરો',
+    },
+    help: {
+      title: 'મદદ અને પરિચય', how: 'ZOCO કેવી રીતે કામ કરે છે', readouts: 'રીડઆઉટનો અર્થ',
+      how1: 'બારકોડ સ્કેન કરો અથવા નામથી શોધો.', how2: 'સરળ ભાષામાં રીડઆઉટ અને મુખ્ય મુદ્દા વાંચો.', how3: 'તમારા પરિવાર માટે યોગ્યતા તપાસો અને સારા વિકલ્પો જુઓ.',
+      trustTitle: 'સ્વતંત્ર અને જાહેરાત-મુક્ત', trustBody: 'ZOCO સ્વતંત્ર, લેબલ-આધારિત માહિતી બતાવે છે. કોઈ સ્પોન્સર્ડ રેન્કિંગ કે પેઇડ પ્લેસમેન્ટ નથી.',
     },
     legal: {
       disclaimer: 'ZOCO લેબલ-આધારિત શૈક્ષણિક માહિતી આપે છે — તબીબી સલાહ, પ્રમાણપત્ર કે સલામતીની ગેરંટી નહીં. ફોર્મ્યુલા અને લેબલ બદલાઈ શકે; હંમેશા વાસ્તવિક ઉત્પાદન તપાસો.',
@@ -1686,13 +1711,18 @@ const STRINGS = {
     share: { footer: 'ZOCO দিয়ে স্ক্যান — WHO-ভিত্তিক ফুড হেলথ স্কোর', claimsOne: '⚠️ {n}টি বিভ্রান্তিকর দাবি পাওয়া গেছে', claimsMany: '⚠️ {n}টি বিভ্রান্তিকর দাবি পাওয়া গেছে' },
     scoreword: { "Avoid": 'এড়িয়ে চলুন', "Poor": 'দুর্বল', "Below Average": 'গড়ের নিচে', "Average": 'গড়', "Decent": 'মোটামুটি', "Good": 'ভালো', "Excellent": 'চমৎকার' },
     nav: {
-      scan: 'স্ক্যান', search: 'খোঁজ', plan: 'প্ল্যান', membership: 'সদস্যপদ', profile: 'প্রোফাইল',
+      scan: 'স্ক্যান', search: 'খোঁজ', plan: 'প্ল্যান', membership: 'সদস্যপদ', profile: 'প্রোফাইল', help: 'সাহায্য',
     },
     plan: {
       current: 'বর্তমান প্ল্যান', free: 'ফ্রি',
       monthly: 'মাসিক', quarterly: 'ত্রৈমাসিক', yearly: 'বার্ষিক',
       perMonth: 'প্রতি মাসে বিল', perQuarter: 'প্রতি ৩ মাসে বিল', perYear: 'প্রতি বছরে বিল',
       save16: '16% সাশ্রয়', bestValue: 'সেরা মূল্য', choosePlan: 'একটি প্ল্যান বাছুন',
+    },
+    help: {
+      title: 'সাহায্য ও পরিচিতি', how: 'ZOCO কীভাবে কাজ করে', readouts: 'রিডআউটের মানে',
+      how1: 'বারকোড স্ক্যান করুন বা নাম দিয়ে খুঁজুন।', how2: 'সহজ ভাষায় রিডআউট ও মূল বিষয়গুলি পড়ুন।', how3: 'আপনার পরিবারের জন্য উপযুক্ততা যাচাই করুন এবং ভালো বিকল্প দেখুন।',
+      trustTitle: 'স্বাধীন ও বিজ্ঞাপন-মুক্ত', trustBody: 'ZOCO স্বাধীন, লেবেল-ভিত্তিক তথ্য দেখায়। কোনো স্পনসর্ড র‍্যাঙ্কিং বা পেইড প্লেসমেন্ট নেই।',
     },
     legal: {
       disclaimer: 'ZOCO লেবেল-ভিত্তিক শিক্ষামূলক তথ্য দেয় — চিকিৎসা পরামর্শ, সার্টিফিকেশন বা নিরাপত্তার নিশ্চয়তা নয়। ফর্মুলা ও লেবেল বদলাতে পারে; সর্বদা আসল পণ্য যাচাই করুন।',
@@ -1922,13 +1952,18 @@ const STRINGS = {
     share: { footer: 'ZOCO மூலம் ஸ்கேன் — WHO-அடிப்படை உணவு ஹெல்த் ஸ்கோர்', claimsOne: '⚠️ {n} தவறாக வழிநடத்தும் கூற்று கண்டறியப்பட்டது', claimsMany: '⚠️ {n} தவறாக வழிநடத்தும் கூற்றுகள் கண்டறியப்பட்டன' },
     scoreword: { "Avoid": 'தவிர்க்கவும்', "Poor": 'மோசம்', "Below Average": 'சராசரிக்கு கீழ்', "Average": 'சராசரி', "Decent": 'பரவாயில்லை', "Good": 'நல்லது', "Excellent": 'சிறப்பு' },
     nav: {
-      scan: 'ஸ்கேன்', search: 'தேடு', plan: 'திட்டம்', membership: 'சந்தா', profile: 'சுயவிவரம்',
+      scan: 'ஸ்கேன்', search: 'தேடு', plan: 'திட்டம்', membership: 'சந்தா', profile: 'சுயவிவரம்', help: 'உதவி',
     },
     plan: {
       current: 'தற்போதைய திட்டம்', free: 'இலவசம்',
       monthly: 'மாதாந்திர', quarterly: 'காலாண்டு', yearly: 'வருடாந்திர',
       perMonth: 'மாதந்தோறும் கட்டணம்', perQuarter: 'ஒவ்வொரு 3 மாதங்களுக்கும்', perYear: 'ஆண்டுதோறும் கட்டணம்',
       save16: '16% சேமியுங்கள்', bestValue: 'சிறந்த மதிப்பு', choosePlan: 'ஒரு திட்டத்தைத் தேர்வுசெய்க',
+    },
+    help: {
+      title: 'உதவி & பற்றி', how: 'ZOCO எப்படி வேலை செய்கிறது', readouts: 'ரீடவுட் அர்த்தம்',
+      how1: 'பார்கோடை ஸ்கேன் செய்யவும் அல்லது பெயரால் தேடவும்.', how2: 'எளிய மொழியில் ரீடவுட் மற்றும் முக்கிய கண்டுபிடிப்புகளைப் படியுங்கள்.', how3: 'உங்கள் குடும்பத்திற்கு ஏற்புடைமையைச் சரிபார்த்து சிறந்த மாற்றுகளைப் பாருங்கள்.',
+      trustTitle: 'சுதந்திரமான & விளம்பரமற்ற', trustBody: 'ZOCO சுதந்திரமான, லேபிள் அடிப்படையிலான தகவலைக் காட்டுகிறது. ஸ்பான்சர் ரேங்கிங் அல்லது கட்டண இடம் இல்லை.',
     },
     legal: {
       disclaimer: 'ZOCO லேபிள் அடிப்படையிலான கல்வித் தகவலை வழங்குகிறது — மருத்துவ ஆலோசனை, சான்றிதழ் அல்லது பாதுகாப்பு உத்தரவாதம் அல்ல. சூத்திரமும் லேபிளும் மாறலாம்; எப்போதும் நேரடித் தயாரிப்பைச் சரிபார்க்கவும்.',
@@ -2158,13 +2193,18 @@ const STRINGS = {
     share: { footer: 'ZOCO తో స్కాన్ — WHO-ఆధారిత ఫుడ్ హెల్త్ స్కోర్లు', claimsOne: '⚠️ {n} తప్పుదోవ పట్టించే వాదన కనబడింది', claimsMany: '⚠️ {n} తప్పుదోవ పట్టించే వాదనలు కనబడ్డాయి' },
     scoreword: { "Avoid": 'నివారించండి', "Poor": 'బలహీనం', "Below Average": 'సగటు కంటే తక్కువ', "Average": 'సగటు', "Decent": 'ఫర్వాలేదు', "Good": 'మంచిది', "Excellent": 'అద్భుతం' },
     nav: {
-      scan: 'స్కాన్', search: 'వెతుకు', plan: 'ప్లాన్', membership: 'సభ్యత్వం', profile: 'ప్రొఫైల్',
+      scan: 'స్కాన్', search: 'వెతుకు', plan: 'ప్లాన్', membership: 'సభ్యత్వం', profile: 'ప్రొఫైల్', help: 'సహాయం',
     },
     plan: {
       current: 'ప్రస్తుత ప్లాన్', free: 'ఉచితం',
       monthly: 'నెలవారీ', quarterly: 'త్రైమాసిక', yearly: 'వార్షిక',
       perMonth: 'నెలకోసారి బిల్లు', perQuarter: 'ప్రతి 3 నెలలకు బిల్లు', perYear: 'సంవత్సరానికి బిల్లు',
       save16: '16% ఆదా', bestValue: 'ఉత్తమ విలువ', choosePlan: 'ప్లాన్ ఎంచుకోండి',
+    },
+    help: {
+      title: 'సహాయం & గురించి', how: 'ZOCO ఎలా పనిచేస్తుంది', readouts: 'రీడౌట్ అర్థం',
+      how1: 'బార్‌కోడ్ స్కాన్ చేయండి లేదా పేరుతో వెతకండి.', how2: 'సరళ భాషలో రీడౌట్, ముఖ్య అంశాలను చదవండి.', how3: 'మీ కుటుంబానికి అనుకూలతను తనిఖీ చేసి మంచి ప్రత్యామ్నాయాలను చూడండి.',
+      trustTitle: 'స్వతంత్ర & ప్రకటన-రహిత', trustBody: 'ZOCO స్వతంత్ర, లేబుల్ ఆధారిత సమాచారాన్ని చూపుతుంది. స్పాన్సర్డ్ ర్యాంకింగ్ లేదా చెల్లింపు స్థానం లేదు.',
     },
     legal: {
       disclaimer: 'ZOCO లేబుల్ ఆధారిత విద్యా సమాచారాన్ని ఇస్తుంది — వైద్య సలహా, ధృవీకరణ లేదా భద్రతా హామీ కాదు. ఫార్ములా, లేబుళ్లు మారవచ్చు; ఎల్లప్పుడూ అసలు ఉత్పత్తిని తనిఖీ చేయండి.',
@@ -2394,13 +2434,18 @@ const STRINGS = {
     share: { footer: 'ZOCO ನಿಂದ ಸ್ಕ್ಯಾನ್ — WHO-ಆಧಾರಿತ ಫುಡ್ ಹೆಲ್ತ್ ಸ್ಕೋರ್', claimsOne: '⚠️ {n} ದಾರಿತಪ್ಪಿಸುವ ಹೇಳಿಕೆ ಕಂಡುಬಂದಿದೆ', claimsMany: '⚠️ {n} ದಾರಿತಪ್ಪಿಸುವ ಹೇಳಿಕೆಗಳು ಕಂಡುಬಂದಿವೆ' },
     scoreword: { "Avoid": 'ತಪ್ಪಿಸಿ', "Poor": 'ದುರ್ಬಲ', "Below Average": 'ಸರಾಸರಿಗಿಂತ ಕಡಿಮೆ', "Average": 'ಸರಾಸರಿ', "Decent": 'ಪರವಾಗಿಲ್ಲ', "Good": 'ಉತ್ತಮ', "Excellent": 'ಅತ್ಯುತ್ತಮ' },
     nav: {
-      scan: 'ಸ್ಕ್ಯಾನ್', search: 'ಹುಡುಕು', plan: 'ಪ್ಲಾನ್', membership: 'ಸದಸ್ಯತ್ವ', profile: 'ಪ್ರೊಫೈಲ್',
+      scan: 'ಸ್ಕ್ಯಾನ್', search: 'ಹುಡುಕು', plan: 'ಪ್ಲಾನ್', membership: 'ಸದಸ್ಯತ್ವ', profile: 'ಪ್ರೊಫೈಲ್', help: 'ಸಹಾಯ',
     },
     plan: {
       current: 'ಪ್ರಸ್ತುತ ಪ್ಲಾನ್', free: 'ಉಚಿತ',
       monthly: 'ಮಾಸಿಕ', quarterly: 'ತ್ರೈಮಾಸಿಕ', yearly: 'ವಾರ್ಷಿಕ',
       perMonth: 'ಪ್ರತಿ ತಿಂಗಳು ಬಿಲ್', perQuarter: 'ಪ್ರತಿ 3 ತಿಂಗಳಿಗೆ ಬಿಲ್', perYear: 'ಪ್ರತಿ ವರ್ಷ ಬಿಲ್',
       save16: '16% ಉಳಿಸಿ', bestValue: 'ಅತ್ಯುತ್ತಮ ಮೌಲ್ಯ', choosePlan: 'ಪ್ಲಾನ್ ಆಯ್ಕೆಮಾಡಿ',
+    },
+    help: {
+      title: 'ಸಹಾಯ & ಬಗ್ಗೆ', how: 'ZOCO ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ', readouts: 'ರೀಡೌಟ್ ಅರ್ಥ',
+      how1: 'ಬಾರ್‌ಕೋಡ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ ಅಥವಾ ಹೆಸರಿನಿಂದ ಹುಡುಕಿ.', how2: 'ಸರಳ ಭಾಷೆಯಲ್ಲಿ ರೀಡೌಟ್ ಮತ್ತು ಮುಖ್ಯ ಅಂಶಗಳನ್ನು ಓದಿ.', how3: 'ನಿಮ್ಮ ಕುಟುಂಬಕ್ಕೆ ಸೂಕ್ತತೆಯನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಉತ್ತಮ ಪರ್ಯಾಯಗಳನ್ನು ನೋಡಿ.',
+      trustTitle: 'ಸ್ವತಂತ್ರ & ಜಾಹೀರಾತು-ರಹಿತ', trustBody: 'ZOCO ಸ್ವತಂತ್ರ, ಲೇಬಲ್ ಆಧಾರಿತ ಮಾಹಿತಿಯನ್ನು ತೋರಿಸುತ್ತದೆ. ಯಾವುದೇ ಪ್ರಾಯೋಜಿತ ಶ್ರೇಣೀಕರಣ ಅಥವಾ ಪಾವತಿ ಸ್ಥಾನವಿಲ್ಲ.',
     },
     legal: {
       disclaimer: 'ZOCO ಲೇಬಲ್ ಆಧಾರಿತ ಶೈಕ್ಷಣಿಕ ಮಾಹಿತಿಯನ್ನು ನೀಡುತ್ತದೆ — ವೈದ್ಯಕೀಯ ಸಲಹೆ, ಪ್ರಮಾಣೀಕರಣ ಅಥವಾ ಸುರಕ್ಷತೆಯ ಖಾತರಿ ಅಲ್ಲ. ಫಾರ್ಮುಲಾ ಮತ್ತು ಲೇಬಲ್‌ಗಳು ಬದಲಾಗಬಹುದು; ಯಾವಾಗಲೂ ನಿಜವಾದ ಉತ್ಪನ್ನವನ್ನು ಪರಿಶೀಲಿಸಿ.',

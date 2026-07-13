@@ -12,6 +12,7 @@
 import { verifyWebhook } from '../_lib/razorpay.js'
 import { setSubscription, clearSubscription } from '../_lib/entitlement.js'
 import { planKeyFor } from '../_lib/plans.js'
+import { bumpConversion } from '../_lib/reports.js'
 import { kvConfigured } from '../_lib/auth.js'
 
 export const config = { runtime: 'edge' }
@@ -60,6 +61,8 @@ export default async function handler(request) {
         status: 'active', until, plan: entity.plan_id || null,
         planKey: planKeyFor(env, entity.plan_id), subscriptionId: entity.id || null,
       })
+      // Report §18: count a conversion once, on first activation.
+      if (type === 'subscription.activated') await bumpConversion(env, entity.id)
     } else {
       // Only clear if this event is for the subscription we currently track —
       // a stale cancel of a replaced/old subscription must not revoke a newer one.

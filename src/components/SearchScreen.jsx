@@ -30,6 +30,9 @@ export default function SearchScreen({ onSelectProduct, onCancel }) {
     setError(false)
     try {
       const { searchProducts } = await import('../utils/searchEngine')
+      // Report §18 "most searched products": the term is aggregated into a
+      // bounded leaderboard server-side, never stored per-user.
+      track('product_search', { term: q })
       const data = await searchProducts(q)
       setResults(data)
       if (!data.products?.length) track('search_fail', { queryLen: q.length })

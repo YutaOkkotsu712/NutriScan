@@ -9,6 +9,7 @@
 // test
 import { clientIp } from './_lib/auth.js'
 import { corsHeadersFor } from './_lib/cors.js'
+import { bumpReport, bumpSearchTerm } from './_lib/reports.js'
 
 export const config = { runtime: 'edge' }
 
@@ -17,6 +18,7 @@ const EVENTS_CAP = 19999
 
 const ALLOWED_EVENTS = new Set([
   'chip_click', 'search_fail', 'language_change', 'correction_submit', 'scan',
+  'lookup_fail', 'product_search',
 ])
 
 // Only these prop keys are kept, and values are coerced to safe primitives.
@@ -98,6 +100,13 @@ export default async function handler(request) {
     event: body.event,
     props: sanitizeProps(body.props),
   }
+
+  // Aggregate into the admin report (§18). Search TERMS are counted into a
+  // bounded leaderboard only — never stored in the event record above (which
+  // stays free-text-free). Fire-and-forget; helpers swallow their own errors.
+  if (body.event === 'scan') await bumpReport(env, 'scans')
+  else if (body.event === 'lookup_fail') await bumpReport(env, 'lookupFail')
+  else if (body.event === 'product_search') await bumpSearchTerm(env, body.props?.term)
 
   try {
     if (env.KV_REST_API_URL && env.KV_REST_API_TOKEN) {

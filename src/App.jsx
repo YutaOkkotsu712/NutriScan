@@ -16,6 +16,7 @@ import LoginScreen from './components/LoginScreen'
 import WelcomeScreen from './components/WelcomeScreen'
 import PaywallScreen from './components/PaywallScreen'
 import AccountScreen from './components/AccountScreen'
+import HelpScreen from './components/HelpScreen'
 import BottomNav from './components/BottomNav'
 import { BrandMark, Wordmark, BarcodeIcon } from './components/ZocoBrand'
 import { useProfile, setProfile } from './utils/profile'
@@ -133,11 +134,13 @@ export default function App() {
       }
 
       if (!analysisResult) {
+        track('lookup_fail')
         setError(t('errors.notFound', { barcode }))
         setScreen('not-found')
         return
       }
 
+      track('scan')
       if (analysisResult.entitlement) setEntitlement(analysisResult.entitlement)
 
       if (comparePending && compareA) {
@@ -225,11 +228,12 @@ export default function App() {
   }
 
   // Which bottom-nav item is active
-  const navActive = screen === 'search' ? 'search' : screen === 'account' ? 'plan' : profileOpen ? 'profile' : 'scan'
+  const navActive = screen === 'search' ? 'search' : screen === 'account' ? 'plan' : screen === 'help' ? 'help' : profileOpen ? 'profile' : 'scan'
   const desktopNav = [
     { key: 'scan', label: t('nav.scan'), go: handleReset, active: !['search', 'account'].includes(screen) },
     { key: 'search', label: t('nav.search'), go: handleSearch, active: screen === 'search' },
     { key: 'plan', label: t('nav.membership'), go: () => setScreen('account'), active: screen === 'account' },
+    { key: 'help', label: t('nav.help'), go: () => setScreen('help'), active: screen === 'help' },
   ]
 
   return (
@@ -452,6 +456,8 @@ export default function App() {
         />
       )}
 
+      {screen === 'help' && <HelpScreen onBack={handleReset} />}
+
       {/* Mobile bottom navigation — hidden while the full-screen scanner is up */}
       {screen !== 'barcode' && (
         <BottomNav
@@ -460,6 +466,7 @@ export default function App() {
           onSearch={handleSearch}
           onPlan={() => setScreen('account')}
           onProfile={() => setProfileOpen(true)}
+          onHelp={() => setScreen('help')}
         />
       )}
     </div>

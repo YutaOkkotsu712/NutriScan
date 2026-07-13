@@ -3,6 +3,7 @@
   var USERS = '/api/admin/users'
   var REFERENCE = '/api/admin/reference'
   var MEMBERSHIP = '/api/admin/membership'
+  var REPORTS = '/api/admin/reports'
   var view = 'queue'
   var token = sessionStorage.getItem('nutriscan_admin_token') || ''
   var me = null
@@ -45,6 +46,7 @@
       if (view === 'users') return renderUsers(await api(USERS))
       if (view === 'ingredients') return renderIngredients(await api(REFERENCE))
       if (view === 'membership') return renderMembership(await api(MEMBERSHIP))
+      if (view === 'reports') return renderReports((await api(REPORTS)).report)
       var body = await api(CORRECTIONS + '?view=' + view)
       me = body.me || me
       sessionStorage.setItem('nutriscan_admin_token', token)
@@ -204,8 +206,49 @@
       if (!confirm('Reset free scans for this user? They get a fresh allowance.')) return
       try { var rr = await api(MEMBERSHIP, { method: 'POST', body: JSON.stringify({ action: 'resetScans', uid: muid }) }); renderMemberUser(muid, rr.entitlement) }
       catch (err) { alert('Failed: ' + err.message) }
+    } else if (b.id === 'rep-csv') {
+      // CSV download needs the Bearer token, so fetch as a blob rather than a link.
+      b.disabled = true
+      try {
+        var res = await fetch(REPORTS + '?format=csv', { headers: headers() })
+        if (!res.ok) throw new Error('Download failed (' + res.status + ')')
+        var blob = await res.blob()
+        var url = URL.createObjectURL(blob)
+        var a = document.createElement('a')
+        a.href = url; a.download = 'zoco-report-' + new Date().toISOString().slice(0, 10) + '.csv'
+        document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url)
+      } catch (err) { alert('Failed: ' + err.message) }
+      b.disabled = false
     }
   })
+
+  // ---------- Reports tab ----------
+  function renderReports(r) {
+    r = r || {}
+    var stat = function (label, val) {
+      return '<div class="card" style="flex:1;min-width:120px;text-align:center">' +
+        '<div style="font-size:26px;font-weight:700;color:#111827">' + esc(val || 0) + '</div>' +
+        '<div class="meta" style="margin-top:2px">' + esc(label) + '</div></div>'
+    }
+    var searches = (r.topSearches || [])
+    var rows = searches.length
+      ? searches.map(function (s, i) {
+        return '<tr><td>' + (i + 1) + '</td><td><strong>' + esc(s.term) + '</strong></td><td>' + esc(s.count) + '</td></tr>'
+      }).join('')
+      : ''
+    $('list').innerHTML =
+      '<div class="row" style="gap:8px;align-items:stretch">' +
+        stat('Scans', r.scans) + stat('Lookup failures', r.lookupFail) +
+        stat('Conversions', r.conversions) + stat('Searches', r.searchTotal) +
+      '</div>' +
+      '<div class="card"><div class="row"><strong style="font-size:14px">Most searched products</strong>' +
+        '<button class="small" id="rep-csv" style="margin-left:auto">⬇ Download CSV</button></div>' +
+        (rows
+          ? '<table style="width:100%;margin-top:8px"><tr><th>#</th><th>Search term</th><th>Count</th></tr>' + rows + '</table>'
+          : '<div class="empty">No searches recorded yet.</div>') +
+        '<p class="meta">Aggregate counts only — no per-user data. Numbers accrue as the app is used.</p>' +
+      '</div>'
+  }
 
   // ---------- Membership tab ----------
   function renderMembership(body) {

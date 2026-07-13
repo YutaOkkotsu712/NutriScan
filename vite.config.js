@@ -28,6 +28,7 @@ const EDGE_ROUTES = [
   ['/api/admin/users', 'api/admin/users.js'],
   ['/api/admin/reference', 'api/admin/reference.js'],
   ['/api/admin/membership', 'api/admin/membership.js'],
+  ['/api/admin/reports', 'api/admin/reports.js'],
   ['/api/corrections', 'api/corrections.js'],
   ['/api/analytics', 'api/analytics.js'],
 ]
@@ -38,7 +39,9 @@ const EDGE_ROUTES = [
 function devKvMiddleware() {
   const lists = new Map()
   const strings = new Map()
+  const zsets = new Map()
   const list = (k) => { if (!lists.has(k)) lists.set(k, []); return lists.get(k) }
+  const zset = (k) => { if (!zsets.has(k)) zsets.set(k, new Map()); return zsets.get(k) }
   return async (req, res) => {
     const chunks = []
     for await (const c of req) chunks.push(c)
@@ -46,12 +49,19 @@ function devKvMiddleware() {
     let result = null
     if (cmd === 'SET') { strings.set(key, String(args[0])); result = 'OK' }
     if (cmd === 'GET') result = strings.has(key) ? strings.get(key) : null
+    if (cmd === 'DEL') { result = strings.delete(key) ? 1 : 0 }
     if (cmd === 'LPUSH') { list(key).unshift(String(args[0])); result = list(key).length }
     if (cmd === 'LRANGE') result = list(key).slice(Number(args[0]), Number(args[1]) + 1)
     if (cmd === 'LREM') { const i = list(key).indexOf(args[1]); if (i >= 0) list(key).splice(i, 1); result = i >= 0 ? 1 : 0 }
     if (cmd === 'LTRIM') { lists.set(key, list(key).slice(Number(args[0]), Number(args[1]) + 1)); result = 'OK' }
     if (cmd === 'INCR') { const n = Number(strings.get(key) || 0) + 1; strings.set(key, String(n)); result = n }
     if (cmd === 'EXPIRE') result = 1
+    if (cmd === 'ZINCRBY') { const z = zset(key); const n = (z.get(String(args[1])) || 0) + Number(args[0]); z.set(String(args[1]), n); result = n }
+    if (cmd === 'ZREVRANGE') {
+      const sorted = [...zset(key).entries()].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))
+      const slice = sorted.slice(Number(args[0]), Number(args[1]) === -1 ? undefined : Number(args[1]) + 1)
+      result = args.some((a) => String(a).toUpperCase() === 'WITHSCORES') ? slice.flatMap(([m, s]) => [m, String(s)]) : slice.map(([m]) => m)
+    }
     res.setHeader('content-type', 'application/json')
     res.end(JSON.stringify({ result }))
   }
