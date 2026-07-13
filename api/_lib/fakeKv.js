@@ -41,6 +41,18 @@ export function createFakeKv() {
       const withScores = args.some((a) => String(a).toUpperCase() === 'WITHSCORES')
       result = withScores ? slice.flatMap(([m, s]) => [m, String(s)]) : slice.map(([m]) => m)
     }
+    // ZREMRANGEBYRANK key start stop — rank 0 = lowest score; negatives count from end.
+    if (cmd === 'ZREMRANGEBYRANK') {
+      const z = zset(key)
+      const asc = [...z.entries()].sort((a, b) => a[1] - b[1] || (a[0] < b[0] ? -1 : 1))
+      const n = asc.length
+      let start = Number(args[0]); let stop = Number(args[1])
+      if (start < 0) start = Math.max(0, n + start)
+      if (stop < 0) stop = n + stop
+      let removed = 0
+      for (let i = start; i <= stop && i < n; i++) { z.delete(asc[i][0]); removed++ }
+      result = removed
+    }
     return Promise.resolve(new Response(JSON.stringify({ result }), { status: 200 }))
   }
 

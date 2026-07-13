@@ -48,6 +48,14 @@ describe('most-searched leaderboard', () => {
     await bumpSearchTerm(env, '')
     expect((await readReports(env)).topSearches).toHaveLength(0)
   })
+
+  it('caps the leaderboard so the sorted set cannot grow without bound', async () => {
+    // Push far more distinct terms than the 500 cap; the highest-scored survive.
+    for (let i = 0; i < 550; i++) await bumpSearchTerm(env, 'term' + i)
+    await bumpSearchTerm(env, 'popular') // score 1, but so are the rest — a late unique term
+    const stored = kv.zsets.get('report:searches')
+    expect(stored.size).toBeLessThanOrEqual(500)
+  })
 })
 
 describe('CSV export', () => {

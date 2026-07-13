@@ -62,6 +62,16 @@ function devKvMiddleware() {
       const slice = sorted.slice(Number(args[0]), Number(args[1]) === -1 ? undefined : Number(args[1]) + 1)
       result = args.some((a) => String(a).toUpperCase() === 'WITHSCORES') ? slice.flatMap(([m, s]) => [m, String(s)]) : slice.map(([m]) => m)
     }
+    if (cmd === 'ZREMRANGEBYRANK') {
+      const asc = [...zset(key).entries()].sort((a, b) => a[1] - b[1] || (a[0] < b[0] ? -1 : 1))
+      const n = asc.length
+      let start = Number(args[0]); let stop = Number(args[1])
+      if (start < 0) start = Math.max(0, n + start)
+      if (stop < 0) stop = n + stop
+      let removed = 0
+      for (let i = start; i <= stop && i < n; i++) { zset(key).delete(asc[i][0]); removed++ }
+      result = removed
+    }
     res.setHeader('content-type', 'application/json')
     res.end(JSON.stringify({ result }))
   }

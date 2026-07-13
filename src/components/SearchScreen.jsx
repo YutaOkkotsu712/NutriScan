@@ -1,7 +1,7 @@
 // Search — src/components/SearchScreen.jsx (full replacement)
 import { useState, useRef, useCallback } from 'react'
 import { useT } from '../i18n'
-import { track } from '../utils/analytics'
+import { track, trackAuthed } from '../utils/analytics'
 import { ImageStripe } from './ZocoBrand'
 
 // Nutri-Score letter → token styling (kept from the old NUTRI_COLORS, restyled).
@@ -32,7 +32,7 @@ export default function SearchScreen({ onSelectProduct, onCancel }) {
       const { searchProducts } = await import('../utils/searchEngine')
       // Report §18 "most searched products": the term is aggregated into a
       // bounded leaderboard server-side, never stored per-user.
-      track('product_search', { term: q })
+      trackAuthed('product_search', { term: q })
       const data = await searchProducts(q)
       setResults(data)
       if (!data.products?.length) track('search_fail', { queryLen: q.length })

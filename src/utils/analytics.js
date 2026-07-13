@@ -20,3 +20,17 @@ export function track(event, props = {}) {
     // never throw from analytics
   }
 }
+
+// Authenticated variant for events that feed the admin report (scan,
+// lookup_fail, product_search). sendBeacon can't set an Authorization header,
+// so we use keepalive fetch with the Firebase token — the server only counts
+// these when the token verifies, so the metrics can't be gamed anonymously.
+export async function trackAuthed(event, props = {}) {
+  try {
+    const { authHeader } = await import('./useAuth')
+    const headers = { 'content-type': 'application/json', ...(await authHeader()) }
+    fetch(ENDPOINT, { method: 'POST', headers, body: JSON.stringify({ event, props }), keepalive: true }).catch(() => {})
+  } catch {
+    // never throw from analytics
+  }
+}

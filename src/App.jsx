@@ -25,7 +25,7 @@ import { startCheckout } from './utils/subscription'
 import { apiUrl } from './utils/apiBase'
 import { extractBarcode } from './utils/barcodeExtract'
 import { useT } from './i18n'
-import { track } from './utils/analytics'
+import { track, trackAuthed } from './utils/analytics'
 
 const STALE_ASSET_RELOAD_KEY = 'zoco:stale-asset-reload-at'
 
@@ -134,13 +134,13 @@ export default function App() {
       }
 
       if (!analysisResult) {
-        track('lookup_fail')
+        trackAuthed('lookup_fail')
         setError(t('errors.notFound', { barcode }))
         setScreen('not-found')
         return
       }
 
-      track('scan')
+      trackAuthed('scan')
       if (analysisResult.entitlement) setEntitlement(analysisResult.entitlement)
 
       if (comparePending && compareA) {

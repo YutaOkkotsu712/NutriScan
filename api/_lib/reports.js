@@ -33,12 +33,19 @@ export async function bumpConversion(env, subscriptionId) {
 
 // Add a product search term to the leaderboard. Lowercased and stripped to a
 // safe, bounded token; empty terms are ignored.
+// Keep at most this many distinct terms in the leaderboard so the sorted set
+// can't grow without bound (organic drift or a spam run of unique terms).
+const SEARCH_CAP = 500
+
 export async function bumpSearchTerm(env, term) {
   if (!kvConfigured(env)) return
   const t = String(term || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40)
   if (!t) return
   try {
     await kvCmd(env, ['ZINCRBY', 'report:searches', '1', t])
+    // Drop everything below the top SEARCH_CAP (rank 0 = lowest score), so the
+    // set stays bounded regardless of how many distinct terms come in.
+    await kvCmd(env, ['ZREMRANGEBYRANK', 'report:searches', '0', String(-(SEARCH_CAP + 1))])
     await kvCmd(env, ['INCR', 'report:searchTotal'])
   } catch { /* ignore */ }
 }

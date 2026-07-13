@@ -10,6 +10,7 @@
 import { clientIp } from './_lib/auth.js'
 import { corsHeadersFor } from './_lib/cors.js'
 import { bumpReport, bumpSearchTerm } from './_lib/reports.js'
+import { authenticateUser, authConfigured } from './_lib/firebaseAuth.js'
 
 export const config = { runtime: 'edge' }
 
@@ -20,6 +21,13 @@ const ALLOWED_EVENTS = new Set([
   'chip_click', 'search_fail', 'language_change', 'correction_submit', 'scan',
   'lookup_fail', 'product_search',
 ])
+
+// Events that feed the admin report (§18). These are only counted for a
+// VERIFIED signed-in user, so anonymous requests can't inflate the metrics or
+// seed junk into the most-searched leaderboard. All fire while the user is
+// already authenticated (scanning/searching require a token), so the client
+// sends the Firebase token with them (see trackAuthed).
+const REPORT_EVENTS = new Set(['scan', 'lookup_fail', 'product_search'])
 
 // Only these prop keys are kept, and values are coerced to safe primitives.
 const ALLOWED_PROPS = {
@@ -101,12 +109,18 @@ export default async function handler(request) {
     props: sanitizeProps(body.props),
   }
 
-  // Aggregate into the admin report (§18). Search TERMS are counted into a
-  // bounded leaderboard only — never stored in the event record above (which
+  // Aggregate into the admin report (§18) — ONLY for a verified user, so the
+  // metrics can't be gamed by anonymous requests. Search TERMS are counted into
+  // a bounded leaderboard only, never stored in the event record above (which
   // stays free-text-free). Fire-and-forget; helpers swallow their own errors.
-  if (body.event === 'scan') await bumpReport(env, 'scans')
-  else if (body.event === 'lookup_fail') await bumpReport(env, 'lookupFail')
-  else if (body.event === 'product_search') await bumpSearchTerm(env, body.props?.term)
+  if (REPORT_EVENTS.has(body.event) && authConfigured(env)) {
+    const user = await authenticateUser(request, env)
+    if (user) {
+      if (body.event === 'scan') await bumpReport(env, 'scans')
+      else if (body.event === 'lookup_fail') await bumpReport(env, 'lookupFail')
+      else if (body.event === 'product_search') await bumpSearchTerm(env, body.props?.term)
+    }
+  }
 
   try {
     if (env.KV_REST_API_URL && env.KV_REST_API_TOKEN) {
