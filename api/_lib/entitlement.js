@@ -7,12 +7,13 @@
 // storage, new device ids, or spoofed headers cannot grant extra scans because
 // the counter lives in KV under the authenticated uid.
 //
-// Model: 100 free scans are LIFETIME (no monthly reset); after that the user
-// must hold an active subscription. Admin can change the limit or comp a user.
+// Model: a small LIFETIME free-scan allowance (no monthly reset); after that
+// the user must hold an active subscription. Admin can change the limit or
+// comp a user.
 
 import { kvCmd, kvConfigured } from './auth.js'
 
-export const DEFAULT_FREE_LIMIT = 100
+export const DEFAULT_FREE_LIMIT = 10
 const LIMIT_KEY = 'config:freeScanLimit'
 const scansKey = (uid) => `scans:${uid}`
 const subKey = (uid) => `sub:${uid}`
@@ -104,8 +105,8 @@ export async function consumeScan(uid, env) {
 
 // --- Subscription state (written by the Razorpay webhook, read on lookups) ---
 
-export async function setSubscription(env, uid, { status = 'active', until = null, plan = null, subscriptionId = null }) {
-  const record = { status, until, plan, subscriptionId, updatedAt: new Date().toISOString() }
+export async function setSubscription(env, uid, { status = 'active', until = null, plan = null, planKey = null, subscriptionId = null }) {
+  const record = { status, until, plan, planKey, subscriptionId, updatedAt: new Date().toISOString() }
   await kvCmd(env, ['SET', subKey(uid), JSON.stringify(record)])
   return record
 }

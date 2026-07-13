@@ -11,6 +11,7 @@
 
 import { verifyWebhook } from '../_lib/razorpay.js'
 import { setSubscription, clearSubscription } from '../_lib/entitlement.js'
+import { planKeyFor } from '../_lib/plans.js'
 import { kvConfigured } from '../_lib/auth.js'
 
 export const config = { runtime: 'edge' }
@@ -56,7 +57,8 @@ export default async function handler(request) {
       // current_end is a unix timestamp (seconds) for the paid-through date.
       const until = entity.current_end ? new Date(entity.current_end * 1000).toISOString() : null
       await setSubscription(env, uid, {
-        status: 'active', until, plan: entity.plan_id || null, subscriptionId: entity.id || null,
+        status: 'active', until, plan: entity.plan_id || null,
+        planKey: planKeyFor(env, entity.plan_id), subscriptionId: entity.id || null,
       })
     } else {
       // Only clear if this event is for the subscription we currently track —

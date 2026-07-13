@@ -133,12 +133,16 @@ vars). `npm test` runs the full suite (170 tests).
 - **Token rotation**: delete the console user and create a new one (old token
   dies immediately); env tokens rotate in Vercel project settings.
 
-## 7. ZOCO membership (login + 100 free scans + subscription)
+## 7. ZOCO membership (login + 10 free scans + subscription)
 
-The ZOCO build adds consumer accounts, a **100 free scans (lifetime)** meter,
+The ZOCO build adds consumer accounts, a **10 free scans (lifetime)** meter,
 and paid membership. The scan count is enforced **server-side per user** — it
 cannot be bypassed by clearing app storage. This is separate from the admin
 console auth above (that's for you; this is for shoppers).
+
+**Plans (launch):** Monthly ₹99, Quarterly ₹249, Yearly ₹799 — the shopper
+picks a tier on the paywall/account screen. Prices are set on the Razorpay
+plans themselves; the app just displays them.
 
 ### One-time setup
 
@@ -155,9 +159,12 @@ console auth above (that's for you; this is for shoppers).
 
 **Razorpay (payments):**
 1. Create a Razorpay account. Use **Test mode** until launch.
-2. Subscriptions → Plans → create a monthly plan → copy its `plan_...` id.
+2. Subscriptions → Plans → create **three** plans (in the SAME mode as your
+   keys): Monthly ₹99, Quarterly ₹249, Yearly ₹799 → copy each `plan_...` id.
 3. Env vars: `VITE_RAZORPAY_KEY_ID` (public), `RAZORPAY_KEY_SECRET` (secret),
-   `RAZORPAY_PLAN_ID`.
+   and one id per tier: `RAZORPAY_PLAN_ID_MONTHLY`, `RAZORPAY_PLAN_ID_QUARTERLY`,
+   `RAZORPAY_PLAN_ID_YEARLY`. (A single legacy `RAZORPAY_PLAN_ID` still works as
+   a fallback for any tier you leave unset — handy in dev.)
 4. Settings → Webhooks → add `https://<your-domain>/api/subscription/webhook`,
    subscribe to the **`subscription.*`** events, set a signing secret → put it
    in `RAZORPAY_WEBHOOK_SECRET`. The webhook is the ONLY thing that grants
@@ -174,7 +181,7 @@ reach localhost). After deploy + env + webhook: sign in, use up the free scans
 
 ### The Membership tab (admin console)
 Admins get a **Membership** tab to:
-- Change the **free-scan limit** (default 100, lifetime) for all users.
+- Change the **free-scan limit** (default 10, lifetime) for all users.
 - **Look up** a user by their Firebase UID to see scans used / membership.
 - **Comp** a user — reset their free-scan count to zero.
 Every change — and every lookup — is recorded in the audit log.
@@ -190,7 +197,8 @@ webhooks. Everything must be redone in Live Mode, in the SAME Razorpay
 account the live keys come from (a webhook in any other account/mode watches
 an empty stream and its event counter never moves — this burned us in test):
 1. Live keys (`rzp_live_…`) → Vercel `VITE_RAZORPAY_KEY_ID` + `RAZORPAY_KEY_SECRET`.
-2. Create the plan again in Live Mode → `RAZORPAY_PLAN_ID`.
+2. Create the three plans again in Live Mode → `RAZORPAY_PLAN_ID_MONTHLY`,
+   `RAZORPAY_PLAN_ID_QUARTERLY`, `RAZORPAY_PLAN_ID_YEARLY`.
 3. Create the webhook again in Live Mode (same URL + a secret →
    `RAZORPAY_WEBHOOK_SECRET`), tick all `subscription.*` events.
 4. Redeploy (env changes never apply to the existing deployment; the key id

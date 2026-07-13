@@ -47,10 +47,14 @@ async function waitForActivation(tries = 12, delayMs = 1500) {
  * @param onError     called with an Error (load/create/checkout failure)
  * @param onDismiss   called if the user closes the checkout without paying
  */
-export async function startCheckout({ onActivated, onError, onDismiss } = {}) {
+export async function startCheckout({ plan, onActivated, onError, onDismiss } = {}) {
   try {
     await loadRazorpay()
-    const res = await fetch(apiUrl('/api/subscription/create'), { method: 'POST', headers: await authHeader() })
+    const res = await fetch(apiUrl('/api/subscription/create'), {
+      method: 'POST',
+      headers: { ...(await authHeader()), 'content-type': 'application/json' },
+      body: JSON.stringify(plan ? { plan } : {}),
+    })
     const data = await res.json().catch(() => ({}))
     if (!res.ok) throw new Error(data.error || 'Could not start subscription')
 

@@ -9,6 +9,7 @@
 import { authenticateUser, authConfigured } from '../_lib/firebaseAuth.js'
 import { kvConfigured, kvCmd } from '../_lib/auth.js'
 import { razorpayConfigured, createSubscription, fetchSubscription } from '../_lib/razorpay.js'
+import { PLAN_KEYS, planIdFor } from '../_lib/plans.js'
 import { corsHeadersFor, handlePreflight } from '../_lib/cors.js'
 import { asNodeHandler } from '../_lib/nodeAdapter.js'
 
@@ -31,7 +32,10 @@ const env = (typeof process !== 'undefined' && process.env) || {}
 const PENDING_TTL_SEC = 1800 // reuse window; Checkout links stay valid well beyond this
 const CREATE_LIMIT = 8 // new subscriptions per uid per window
 const CREATE_WINDOW_SEC = 3600
-const pendingKey = (uid) => `rzpsub:pending:${uid}`
+const DEFAULT_PLAN = 'yearly'
+// Pending pointer is per (uid, plan): picking a different tier must mint a new
+// subscription, not reuse a pending one for the other plan.
+const pendingKey = (uid, plan) => `rzpsub:pending:${uid}:${plan}`
 const rateKey = (uid) => `rl:subcreate:${uid}`
 
 function json(body, status = 200, extraHeaders = {}) {
@@ -52,17 +56,23 @@ export default asNodeHandler(async function handler(request) {
   const user = await authenticateUser(request, env)
   if (!user) return jsonC({ error: 'Sign in required.', code: 'unauthenticated' }, 401)
 
+  // Which plan tier? Validate against the known keys; unknown/missing → default.
+  const body = await request.json().catch(() => ({}))
+  const plan = PLAN_KEYS.includes(body?.plan) ? body.plan : DEFAULT_PLAN
+  const planId = planIdFor(env, plan)
+  if (!planId) return jsonC({ error: 'That plan is not available.', code: 'plan_unavailable' }, 503)
+
   const kv = kvConfigured(env)
 
-  // 1. Reuse: if this uid already has a recent subscription that is still
-  // awaiting payment ("created"), hand that back instead of minting another.
+  // 1. Reuse: if this uid already has a recent subscription for THIS plan that
+  // is still awaiting payment ("created"), hand that back instead of minting another.
   if (kv) {
     try {
-      const pendingId = await kvCmd(env, ['GET', pendingKey(user.uid)])
+      const pendingId = await kvCmd(env, ['GET', pendingKey(user.uid, plan)])
       if (pendingId) {
         const existing = await fetchSubscription(env, pendingId)
         if (existing?.status === 'created') {
-          return jsonC({ subscriptionId: existing.id, keyId: env.VITE_RAZORPAY_KEY_ID })
+          return jsonC({ subscriptionId: existing.id, keyId: env.VITE_RAZORPAY_KEY_ID, plan })
         }
       }
     } catch { /* fall through to a fresh create */ }
@@ -80,14 +90,14 @@ export default asNodeHandler(async function handler(request) {
   }
 
   try {
-    const sub = await createSubscription(env, { uid: user.uid })
+    const sub = await createSubscription(env, { uid: user.uid, planId })
     if (kv && sub.id) {
       // Map subscription → uid as a fallback in case a webhook arrives without
       // notes (belt and braces; the webhook prefers notes.uid).
       await kvCmd(env, ['SET', `rzpsub:${sub.id}`, user.uid]).catch(() => {})
-      await kvCmd(env, ['SET', pendingKey(user.uid), sub.id, 'EX', PENDING_TTL_SEC]).catch(() => {})
+      await kvCmd(env, ['SET', pendingKey(user.uid, plan), sub.id, 'EX', PENDING_TTL_SEC]).catch(() => {})
     }
-    return jsonC({ subscriptionId: sub.id, keyId: env.VITE_RAZORPAY_KEY_ID })
+    return jsonC({ subscriptionId: sub.id, keyId: env.VITE_RAZORPAY_KEY_ID, plan })
   } catch (err) {
     console.error('[ZOCO subscription/create]', err)
     // Surface Razorpay's own error text: it is generic and safe

@@ -18,14 +18,14 @@ afterAll(() => { globalThis.fetch = realFetch })
 const UID = 'user-1'
 
 describe('free-scan meter', () => {
-  it('defaults to a 100-scan lifetime allowance', async () => {
+  it('defaults to a 10-scan lifetime allowance', async () => {
     expect(await getFreeScanLimit(env)).toBe(DEFAULT_FREE_LIMIT)
-    expect(DEFAULT_FREE_LIMIT).toBe(100)
+    expect(DEFAULT_FREE_LIMIT).toBe(10)
   })
 
-  it('counts down: first scan leaves 99, tracks used', async () => {
+  it('counts down: first scan leaves 9, tracks used', async () => {
     const r = await consumeScan(UID, env)
-    expect(r).toMatchObject({ allowed: true, subscribed: false, used: 1, remaining: 99 })
+    expect(r).toMatchObject({ allowed: true, subscribed: false, used: 1, remaining: 9 })
   })
 
   it('allows exactly 100 then blocks the 101st (paywall)', async () => {
@@ -74,7 +74,7 @@ describe('getEntitlement (read-only, no consume)', () => {
     await consumeScan(UID, env) // used 1
     const before = kv.strings.get('scans:user-1')
     const e = await getEntitlement(UID, env)
-    expect(e).toMatchObject({ subscribed: false, used: 1, limit: 100, remaining: 99 })
+    expect(e).toMatchObject({ subscribed: false, used: 1, limit: 10, remaining: 9 })
     expect(kv.strings.get('scans:user-1')).toBe(before) // unchanged
   })
 

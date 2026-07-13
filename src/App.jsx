@@ -164,9 +164,10 @@ export default function App() {
     }
   }, [comparePending, compareA, signOut, t])
 
-  // --- Subscribe (Razorpay checkout) ---
-  const handleSubscribe = useCallback(() => {
+  // --- Subscribe (Razorpay checkout) — plan is 'monthly' | 'quarterly' | 'yearly' ---
+  const handleSubscribe = useCallback((plan) => {
     startCheckout({
+      plan,
       onActivated: (ent) => { if (ent) setEntitlement(ent); setScreen('landing') },
       onError: () => { setError(t('auth.checkoutFailed')); setScreen('error') },
     })

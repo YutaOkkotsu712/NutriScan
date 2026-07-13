@@ -18,6 +18,7 @@ let privateKey, jwkPublic
 let createCalls = 0
 let subStatus = 'created' // status Razorpay reports for fetched subscriptions
 let createFailsWith = null // Razorpay error description → POST /subscriptions fails
+let lastCreateBody = null // body sent to Razorpay POST /subscriptions
 
 beforeAll(async () => {
   const { publicKey, privateKey: pk } = await generateKeyPair('RS256')
@@ -39,11 +40,16 @@ beforeEach(() => {
   process.env.RAZORPAY_KEY_SECRET = 'secret'
   process.env.VITE_RAZORPAY_KEY_ID = 'rzp_test_key'
   process.env.RAZORPAY_PLAN_ID = 'plan_x'
+  process.env.RAZORPAY_PLAN_ID_MONTHLY = 'plan_m'
+  process.env.RAZORPAY_PLAN_ID_QUARTERLY = 'plan_q'
+  process.env.RAZORPAY_PLAN_ID_YEARLY = 'plan_y'
+  lastCreateBody = null
   globalThis.fetch = (url, opts) => {
     const u = typeof url === 'string' ? url : url.url
     if (u.startsWith(KV_URL)) return kv.fetchImpl(u, opts)
     if (u === JWKS_URL) return Promise.resolve(new Response(JSON.stringify({ keys: [jwkPublic] }), { status: 200, headers: { 'content-type': 'application/json' } }))
     if (u === RZP && opts?.method === 'POST') {
+      lastCreateBody = JSON.parse(opts.body)
       if (createFailsWith) {
         return Promise.resolve(new Response(JSON.stringify({ error: { description: createFailsWith } }), { status: 401 }))
       }
@@ -59,7 +65,7 @@ beforeEach(() => {
 })
 afterAll(() => {
   globalThis.fetch = realFetch
-  for (const k of ['FIREBASE_PROJECT_ID', 'KV_REST_API_URL', 'KV_REST_API_TOKEN', 'RAZORPAY_KEY_SECRET', 'VITE_RAZORPAY_KEY_ID', 'RAZORPAY_PLAN_ID']) delete process.env[k]
+  for (const k of ['FIREBASE_PROJECT_ID', 'KV_REST_API_URL', 'KV_REST_API_TOKEN', 'RAZORPAY_KEY_SECRET', 'VITE_RAZORPAY_KEY_ID', 'RAZORPAY_PLAN_ID', 'RAZORPAY_PLAN_ID_MONTHLY', 'RAZORPAY_PLAN_ID_QUARTERLY', 'RAZORPAY_PLAN_ID_YEARLY']) delete process.env[k]
 })
 
 async function token(sub = 'payer-1') {
@@ -73,9 +79,10 @@ async function token(sub = 'payer-1') {
     .sign(privateKey)
 }
 
-const req = (auth) => handler(new Request('https://zoco.app/api/subscription/create', {
+const req = (auth, plan) => handler(new Request('https://zoco.app/api/subscription/create', {
   method: 'POST',
-  headers: auth ? { authorization: `Bearer ${auth}` } : {},
+  headers: { ...(auth ? { authorization: `Bearer ${auth}` } : {}), 'content-type': 'application/json' },
+  body: JSON.stringify(plan ? { plan } : {}),
 }))
 
 describe('subscription create guardrails', () => {
@@ -85,13 +92,35 @@ describe('subscription create guardrails', () => {
     expect(createCalls).toBe(0)
   })
 
+  it('maps the chosen plan tier to the right Razorpay plan id', async () => {
+    await req(await token('p-monthly'), 'monthly')
+    expect(lastCreateBody.plan_id).toBe('plan_m')
+    await req(await token('p-quarter'), 'quarterly')
+    expect(lastCreateBody.plan_id).toBe('plan_q')
+    await req(await token('p-yearly'), 'yearly')
+    expect(lastCreateBody.plan_id).toBe('plan_y')
+  })
+
+  it('defaults to the yearly plan when none/invalid is given', async () => {
+    await req(await token('p-default'), 'bogus')
+    expect(lastCreateBody.plan_id).toBe('plan_y')
+  })
+
+  it('keeps the pending pointer per plan (different tiers do not collide)', async () => {
+    await req(await token('multi'), 'monthly')
+    await req(await token('multi'), 'yearly')
+    expect(createCalls).toBe(2) // two different tiers → two subscriptions
+    expect(kv.strings.get('rzpsub:pending:multi:monthly')).toBeTruthy()
+    expect(kv.strings.get('rzpsub:pending:multi:yearly')).toBeTruthy()
+  })
+
   it('creates a subscription and stores the uid mapping + pending pointer', async () => {
     const r = await req(await token())
     expect(r.status).toBe(200)
     const body = await r.json()
     expect(body.subscriptionId).toBe('sub_1')
     expect(kv.strings.get('rzpsub:sub_1')).toBe('payer-1')
-    expect(kv.strings.get('rzpsub:pending:payer-1')).toBe('sub_1')
+    expect(kv.strings.get('rzpsub:pending:payer-1:yearly')).toBe('sub_1')
   })
 
   it('reuses the pending subscription instead of creating another', async () => {

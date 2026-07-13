@@ -37,9 +37,9 @@ describe('/api/admin/membership auth', () => {
 })
 
 describe('free-scan limit control', () => {
-  it('GET returns the current limit (default 100)', async () => {
+  it('GET returns the current limit (default 10)', async () => {
     const j = await (await handler(req('GET'))).json()
-    expect(j.freeScanLimit).toBe(100)
+    expect(j.freeScanLimit).toBe(10)
   })
 
   it('setLimit changes it and it takes effect on the meter', async () => {
@@ -71,7 +71,7 @@ describe('comp a user', () => {
   it('lookupUser reports a user status without consuming', async () => {
     await consumeScan('u3', env)
     const j = await (await handler(req('POST', { body: { action: 'lookupUser', uid: 'u3' } }))).json()
-    expect(j.entitlement).toMatchObject({ used: 1, remaining: 99 })
+    expect(j.entitlement).toMatchObject({ used: 1, remaining: 9 })
     expect((await getEntitlement('u3', env)).used).toBe(1) // unchanged
   })
 

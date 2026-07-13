@@ -91,7 +91,7 @@ describe('product-info paywall timing', () => {
     expect(r.status).toBe(200)
     const body = await r.json()
     expect(body.product.name).toBe('Parle-G (Parle)')
-    expect(body.entitlement).toMatchObject({ used: 1, remaining: 99 })
+    expect(body.entitlement).toMatchObject({ used: 1, remaining: 9 })
     expect(kv.strings.get('scans:composed-user')).toBe('1')
   })
 

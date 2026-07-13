@@ -1,6 +1,7 @@
 // Paywall — src/components/PaywallScreen.jsx (full replacement)
 import { useT } from '../i18n'
 import { isNativeApp } from '../utils/platform'
+import PlanPicker from './PlanPicker'
 import LegalNote from './LegalNote'
 
 // Shown when a free user hits the scan limit (server returned 402). The server
@@ -11,7 +12,7 @@ import LegalNote from './LegalNote'
 // unlimited scans here automatically via the same account.
 export default function PaywallScreen({ entitlement, onSubscribe, onHome, onSignOut }) {
   const { t } = useT()
-  const limit = entitlement?.limit ?? 100
+  const limit = entitlement?.limit ?? 10
   const native = isNativeApp()
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] px-7 text-center bg-cream">
@@ -35,19 +36,13 @@ export default function PaywallScreen({ entitlement, onSubscribe, onHome, onSign
       </p>
 
       <div className="flex flex-col gap-2.5 w-full max-w-xs">
-        {native ? (
-          <p className="text-sm text-moss leading-relaxed">{t('auth.webOnlyPurchase')}</p>
-        ) : (
-          <button
-            onClick={onSubscribe}
-            className="py-4 px-6 bg-gradient-to-br from-brand-hi to-brand-lo text-white font-display font-bold text-base rounded-2xl shadow-lg shadow-brand-lo/30 transition-all active:scale-[.98]"
-          >
-            {t('auth.subscribeCta')}
-          </button>
+        {!native && (
+          <p className="text-[12.5px] font-semibold text-fern">{t('plan.choosePlan')}</p>
         )}
+        <PlanPicker onPick={onSubscribe} />
         <button
           onClick={onHome}
-          className="py-3.5 px-6 bg-white border border-edge text-fern text-sm font-semibold rounded-2xl transition-all active:scale-[.98]"
+          className="mt-1 py-3.5 px-6 bg-white border border-edge text-fern text-sm font-semibold rounded-2xl transition-all active:scale-[.98]"
         >
           {t('auth.backHome')}
         </button>

@@ -128,6 +128,9 @@ const STRINGS = {
     },
     plan: {
       current: 'Current plan', free: 'Free',
+      monthly: 'Monthly', quarterly: 'Quarterly', yearly: 'Yearly',
+      perMonth: 'Billed monthly', perQuarter: 'Billed every 3 months', perYear: 'Billed yearly',
+      save16: 'Save 16%', bestValue: 'Best value', choosePlan: 'Choose a plan',
     },
     legal: {
       disclaimer: 'ZOCO gives label-based educational information — not medical advice, certification, or a guarantee of safety. Formulations and labels can change; always check the physical product.',
@@ -494,6 +497,9 @@ const STRINGS = {
     },
     plan: {
       current: 'मौजूदा प्लान', free: 'मुफ़्त',
+      monthly: 'मासिक', quarterly: 'तिमाही', yearly: 'वार्षिक',
+      perMonth: 'हर महीने बिल', perQuarter: 'हर 3 महीने बिल', perYear: 'हर साल बिल',
+      save16: '16% बचाएँ', bestValue: 'सबसे बढ़िया', choosePlan: 'प्लान चुनें',
     },
     legal: {
       disclaimer: 'ZOCO लेबल-आधारित शैक्षिक जानकारी देता है — चिकित्सा सलाह, प्रमाणन या सुरक्षा की गारंटी नहीं। फ़ॉर्मूला और लेबल बदल सकते हैं; हमेशा असली उत्पाद जाँचें।',
@@ -965,6 +971,9 @@ const STRINGS = {
     },
     plan: {
       current: 'Current plan', free: 'Free',
+      monthly: 'Monthly', quarterly: 'Quarterly', yearly: 'Yearly',
+      perMonth: 'Har month bill', perQuarter: 'Har 3 month bill', perYear: 'Har saal bill',
+      save16: '16% bachayein', bestValue: 'Best value', choosePlan: 'Plan chunein',
     },
     legal: {
       disclaimer: 'ZOCO label-based educational jankari deta hai — medical advice, certification ya safety guarantee nahi. Formula aur label badal sakte hain; hamesha asli product check karein.',
@@ -1191,6 +1200,9 @@ const STRINGS = {
     },
     plan: {
       current: 'सध्याचा प्लॅन', free: 'मोफत',
+      monthly: 'मासिक', quarterly: 'त्रैमासिक', yearly: 'वार्षिक',
+      perMonth: 'दरमहा बिल', perQuarter: 'दर 3 महिन्यांनी बिल', perYear: 'दरवर्षी बिल',
+      save16: '16% वाचवा', bestValue: 'सर्वोत्तम', choosePlan: 'प्लॅन निवडा',
     },
     legal: {
       disclaimer: 'ZOCO लेबल-आधारित शैक्षणिक माहिती देते — वैद्यकीय सल्ला, प्रमाणपत्र किंवा सुरक्षिततेची हमी नाही. फॉर्म्युला आणि लेबल बदलू शकतात; नेहमी प्रत्यक्ष उत्पादन तपासा.',
@@ -1417,6 +1429,9 @@ const STRINGS = {
     },
     plan: {
       current: 'વર્તમાન પ્લાન', free: 'મફત',
+      monthly: 'માસિક', quarterly: 'ત્રિમાસિક', yearly: 'વાર્ષિક',
+      perMonth: 'દર મહિને બિલ', perQuarter: 'દર 3 મહિને બિલ', perYear: 'દર વર્ષે બિલ',
+      save16: '16% બચાવો', bestValue: 'શ્રેષ્ઠ મૂલ્ય', choosePlan: 'પ્લાન પસંદ કરો',
     },
     legal: {
       disclaimer: 'ZOCO લેબલ-આધારિત શૈક્ષણિક માહિતી આપે છે — તબીબી સલાહ, પ્રમાણપત્ર કે સલામતીની ગેરંટી નહીં. ફોર્મ્યુલા અને લેબલ બદલાઈ શકે; હંમેશા વાસ્તવિક ઉત્પાદન તપાસો.',
@@ -1643,6 +1658,9 @@ const STRINGS = {
     },
     plan: {
       current: 'বর্তমান প্ল্যান', free: 'ফ্রি',
+      monthly: 'মাসিক', quarterly: 'ত্রৈমাসিক', yearly: 'বার্ষিক',
+      perMonth: 'প্রতি মাসে বিল', perQuarter: 'প্রতি ৩ মাসে বিল', perYear: 'প্রতি বছরে বিল',
+      save16: '16% সাশ্রয়', bestValue: 'সেরা মূল্য', choosePlan: 'একটি প্ল্যান বাছুন',
     },
     legal: {
       disclaimer: 'ZOCO লেবেল-ভিত্তিক শিক্ষামূলক তথ্য দেয় — চিকিৎসা পরামর্শ, সার্টিফিকেশন বা নিরাপত্তার নিশ্চয়তা নয়। ফর্মুলা ও লেবেল বদলাতে পারে; সর্বদা আসল পণ্য যাচাই করুন।',
@@ -1869,6 +1887,9 @@ const STRINGS = {
     },
     plan: {
       current: 'தற்போதைய திட்டம்', free: 'இலவசம்',
+      monthly: 'மாதாந்திர', quarterly: 'காலாண்டு', yearly: 'வருடாந்திர',
+      perMonth: 'மாதந்தோறும் கட்டணம்', perQuarter: 'ஒவ்வொரு 3 மாதங்களுக்கும்', perYear: 'ஆண்டுதோறும் கட்டணம்',
+      save16: '16% சேமியுங்கள்', bestValue: 'சிறந்த மதிப்பு', choosePlan: 'ஒரு திட்டத்தைத் தேர்வுசெய்க',
     },
     legal: {
       disclaimer: 'ZOCO லேபிள் அடிப்படையிலான கல்வித் தகவலை வழங்குகிறது — மருத்துவ ஆலோசனை, சான்றிதழ் அல்லது பாதுகாப்பு உத்தரவாதம் அல்ல. சூத்திரமும் லேபிளும் மாறலாம்; எப்போதும் நேரடித் தயாரிப்பைச் சரிபார்க்கவும்.',
@@ -2095,6 +2116,9 @@ const STRINGS = {
     },
     plan: {
       current: 'ప్రస్తుత ప్లాన్', free: 'ఉచితం',
+      monthly: 'నెలవారీ', quarterly: 'త్రైమాసిక', yearly: 'వార్షిక',
+      perMonth: 'నెలకోసారి బిల్లు', perQuarter: 'ప్రతి 3 నెలలకు బిల్లు', perYear: 'సంవత్సరానికి బిల్లు',
+      save16: '16% ఆదా', bestValue: 'ఉత్తమ విలువ', choosePlan: 'ప్లాన్ ఎంచుకోండి',
     },
     legal: {
       disclaimer: 'ZOCO లేబుల్ ఆధారిత విద్యా సమాచారాన్ని ఇస్తుంది — వైద్య సలహా, ధృవీకరణ లేదా భద్రతా హామీ కాదు. ఫార్ములా, లేబుళ్లు మారవచ్చు; ఎల్లప్పుడూ అసలు ఉత్పత్తిని తనిఖీ చేయండి.',
@@ -2321,6 +2345,9 @@ const STRINGS = {
     },
     plan: {
       current: 'ಪ್ರಸ್ತುತ ಪ್ಲಾನ್', free: 'ಉಚಿತ',
+      monthly: 'ಮಾಸಿಕ', quarterly: 'ತ್ರೈಮಾಸಿಕ', yearly: 'ವಾರ್ಷಿಕ',
+      perMonth: 'ಪ್ರತಿ ತಿಂಗಳು ಬಿಲ್', perQuarter: 'ಪ್ರತಿ 3 ತಿಂಗಳಿಗೆ ಬಿಲ್', perYear: 'ಪ್ರತಿ ವರ್ಷ ಬಿಲ್',
+      save16: '16% ಉಳಿಸಿ', bestValue: 'ಅತ್ಯುತ್ತಮ ಮೌಲ್ಯ', choosePlan: 'ಪ್ಲಾನ್ ಆಯ್ಕೆಮಾಡಿ',
     },
     legal: {
       disclaimer: 'ZOCO ಲೇಬಲ್ ಆಧಾರಿತ ಶೈಕ್ಷಣಿಕ ಮಾಹಿತಿಯನ್ನು ನೀಡುತ್ತದೆ — ವೈದ್ಯಕೀಯ ಸಲಹೆ, ಪ್ರಮಾಣೀಕರಣ ಅಥವಾ ಸುರಕ್ಷತೆಯ ಖಾತರಿ ಅಲ್ಲ. ಫಾರ್ಮುಲಾ ಮತ್ತು ಲೇಬಲ್‌ಗಳು ಬದಲಾಗಬಹುದು; ಯಾವಾಗಲೂ ನಿಜವಾದ ಉತ್ಪನ್ನವನ್ನು ಪರಿಶೀಲಿಸಿ.',

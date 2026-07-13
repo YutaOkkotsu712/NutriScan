@@ -56,7 +56,7 @@ describe('gateProductRequest (fail-closed paywall)', () => {
   it('consumes a scan for a valid token', async () => {
     const g = await gateProductRequest(req(await token()), env)
     expect(g.blocked).toBeUndefined()
-    expect(g.entitlement).toMatchObject({ allowed: true, used: 1, remaining: 99 })
+    expect(g.entitlement).toMatchObject({ allowed: true, used: 1, remaining: 9 })
   })
 
   it('blocks 402 at the limit', async () => {

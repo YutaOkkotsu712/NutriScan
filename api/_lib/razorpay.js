@@ -7,11 +7,12 @@
 // recomputes HMAC-SHA256(rawBody, webhook_secret) and constant-time compares.
 
 import { timingSafeEqual } from './auth.js'
+import { anyPlanConfigured } from './plans.js'
 
 const RZP_API = 'https://api.razorpay.com/v1'
 
 export function razorpayConfigured(env) {
-  return Boolean(env.RAZORPAY_KEY_SECRET && env.VITE_RAZORPAY_KEY_ID && env.RAZORPAY_PLAN_ID)
+  return Boolean(env.RAZORPAY_KEY_SECRET && env.VITE_RAZORPAY_KEY_ID && anyPlanConfigured(env))
 }
 
 function basicAuth(env) {
@@ -44,12 +45,12 @@ async function rzpError(res, action) {
   return new Error(description || `Razorpay ${action} failed (${res.status}): ${text.slice(0, 160)}`)
 }
 
-export async function createSubscription(env, { uid }) {
+export async function createSubscription(env, { uid, planId }) {
   const res = await fetch(`${RZP_API}/subscriptions`, {
     method: 'POST',
     headers: rzpHeaders(env),
     body: JSON.stringify({
-      plan_id: env.RAZORPAY_PLAN_ID,
+      plan_id: planId || env.RAZORPAY_PLAN_ID,
       total_count: Number(env.RAZORPAY_TOTAL_COUNT) || 120,
       customer_notify: 1,
       notes: { uid },

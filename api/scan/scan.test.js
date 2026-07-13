@@ -89,7 +89,7 @@ describe('gated scan endpoint', () => {
     expect(r.status).toBe(200)
     const body = await r.json()
     expect(body.product.product_name).toBe('Parle-G')
-    expect(body.entitlement).toMatchObject({ subscribed: false, used: 1, limit: 100, remaining: 99 })
+    expect(body.entitlement).toMatchObject({ subscribed: false, used: 1, limit: 10, remaining: 9 })
   })
 
   it('does not consume a scan when OFF returns a genuine product miss', async () => {
