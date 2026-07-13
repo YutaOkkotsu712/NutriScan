@@ -101,36 +101,54 @@ async function fetchWithRetry(url, options = {}, retries = 2) {
   throw new Error('Search API unavailable')
 }
 
+function isIndian(p) {
+  return (p.countries_tags || []).some(c => c === 'en:india' || c === 'india' || c.endsWith(':india'))
+}
+
+function mapSearchProduct(p) {
+  return {
+    barcode: p.code,
+    name: p.product_name || 'Unknown',
+    brand: p.brands || '',
+    image: p.image_front_small_url || null,
+    nutriScore: p.nutriscore_grade || null,
+    categories: p.categories_tags || [],
+    servingSize: p.serving_size || null,
+    nutriments: p.nutriments || {},
+    ingredients: p.ingredients_text || '',
+    novaGroup: p.nova_group || null,
+    inIndia: isIndian(p),
+  }
+}
+
 /**
- * Search Open Food Facts by product name.
+ * Search Open Food Facts by product name — INDIA-FIRST.
+ *
+ * OFF's server-side country filter is unreliable with free-text search (it
+ * returns 0 hits for many valid terms), so instead we over-fetch a single
+ * global search and re-rank client-side: products sold in India float to the
+ * top, keeping OFF's relevance order within each group. One API call, no
+ * dependence on the flaky filter, and a valid search never comes back empty.
  * Uses the v2 API which has proper CORS headers (unlike /cgi/search.pl).
  */
 export async function searchProducts(query, page = 1, pageSize = 20) {
+  const fetchSize = Math.min(50, pageSize * 2) // over-fetch so more Indian products surface
   const params = new URLSearchParams({
     search_terms: query,
     page: String(page),
-    page_size: String(pageSize),
+    page_size: String(fetchSize),
   })
 
   const res = await fetchWithRetry(`${SEARCH_API}?${params}`, { headers: await authHeader() })
-
   if (!res.ok) throw new Error('Search failed')
-
   const data = await res.json()
 
+  const mapped = (data.products || []).map(mapSearchProduct)
+  const indian = mapped.filter(p => p.inIndia)
+  const rest = mapped.filter(p => !p.inIndia)
+
   return {
-    products: (data.products || []).map(p => ({
-      barcode: p.code,
-      name: p.product_name || 'Unknown',
-      brand: p.brands || '',
-      image: p.image_front_small_url || null,
-      nutriScore: p.nutriscore_grade || null,
-      categories: p.categories_tags || [],
-      servingSize: p.serving_size || null,
-      nutriments: p.nutriments || {},
-      ingredients: p.ingredients_text || '',
-      novaGroup: p.nova_group || null,
-    })),
+    products: [...indian, ...rest].slice(0, pageSize),
     totalResults: data.count || 0,
     page,
     pageSize,

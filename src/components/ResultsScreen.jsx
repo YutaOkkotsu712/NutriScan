@@ -20,13 +20,34 @@ import { VegMark, ImageStripe } from './ZocoBrand'
 
 const CATEGORY_ORDER = ['calories', 'sugars', 'fats', 'sodium', 'protein', 'fiber', 'processing', 'additives']
 
-// Buy / Limit / Avoid verdict — a presentation of the existing score (§2.1),
-// it does NOT change the general product score (§9). Restyled to the ZOCO
-// readout treatment; label copy still comes from i18n (verdict.*).
-function getVerdict(score) {
+// ZOCO readout verdict (spec §8.1): Looks Clear / Review Before Buying /
+// Limit Frequent Use / Not Enough Label Information. A presentation of the
+// existing score (§9, the score itself is unchanged). Label copy comes from
+// i18n (verdict.*).
+//
+// When the label barely carries nutrition data we say "Not Enough Label
+// Information" instead of guessing a verdict from a defaulted score.
+function hasEnoughData(result) {
+  const n = result.nutrition100g || {}
+  const core = ['calories', 'sugars', 'sodium', 'totalFat', 'protein']
+  return core.filter((k) => typeof n[k] === 'number').length >= 2
+}
+
+function getVerdict(result) {
+  if (!hasEnoughData(result)) {
+    return {
+      label: 'NotEnough',
+      pill: 'bg-stone text-sage',
+      hero: 'bg-stone/60 border-edge',
+      kicker: 'text-sage', title: 'text-fern', desc: 'text-moss',
+      iconBg: 'bg-sage text-white',
+      icon: <><path d="M12 16v-4m0-4h.01" /><circle cx="12" cy="12" r="9" /></>,
+    }
+  }
+  const score = result.overallScore
   if (score >= 7) {
     return {
-      label: 'Buy',
+      label: 'LooksClear',
       pill: 'bg-mint text-deep',
       hero: 'bg-mint border-mint',
       kicker: 'text-deep/70', title: 'text-deep', desc: 'text-mint-ink',
@@ -36,7 +57,7 @@ function getVerdict(score) {
   }
   if (score >= 4) {
     return {
-      label: 'Limit',
+      label: 'ReviewBeforeBuying',
       pill: 'bg-sand text-ochre',
       hero: 'bg-sand border-sand-line',
       kicker: 'text-ochre-lt', title: 'text-ochre', desc: 'text-[#7C6A45]',
@@ -45,7 +66,7 @@ function getVerdict(score) {
     }
   }
   return {
-    label: 'Avoid',
+    label: 'LimitFrequentUse',
     pill: 'bg-blush text-chili-ink',
     hero: 'bg-blush border-blush-line',
     kicker: 'text-chili-ink/70', title: 'text-chili-ink', desc: 'text-chili-ink/80',
@@ -94,7 +115,7 @@ export default function ResultsScreen({ result, onReset, onCompare, onSelectProd
 
   const profile = useProfile()
   const { t, lang } = useT()
-  const verdict = getVerdict(result.overallScore)
+  const verdict = getVerdict(result)
   const dietBadge = getDietBadge(result)
 
   // Personal allergen match (P1): intersect product allergens/traces with the

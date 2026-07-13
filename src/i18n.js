@@ -44,10 +44,11 @@ const STRINGS = {
       footer: 'Barcode & search use Open Food Facts. All analysis happens instantly.',
     },
     verdict: {
-      Buy: 'Buy', Limit: 'Limit', Avoid: 'Avoid',
-      BuyDesc: 'Good everyday choice',
-      LimitDesc: 'Okay occasionally',
-      AvoidDesc: 'Best kept as a rare treat',
+      LooksClear: 'Looks Clear', ReviewBeforeBuying: 'Review Before Buying', LimitFrequentUse: 'Limit Frequent Use', NotEnough: 'Not Enough Label Information',
+      LooksClearDesc: 'No major concern in the visible label data.',
+      ReviewBeforeBuyingDesc: 'Some ingredients, nutrition or claims are worth a look.',
+      LimitFrequentUseDesc: 'Fine occasionally, not ideal for regular use.',
+      NotEnoughDesc: 'The label data is incomplete — check the physical pack.',
     },
     results: {
       containsYourAllergens: 'Contains your allergens',
@@ -368,10 +369,11 @@ const STRINGS = {
       footer: 'बारकोड और खोज Open Food Facts का उपयोग करते हैं। सारा विश्लेषण तुरंत होता है।',
     },
     verdict: {
-      Buy: 'खरीदें', Limit: 'सीमित करें', Avoid: 'टालें',
-      BuyDesc: 'रोज़ के लिए अच्छा विकल्प',
-      LimitDesc: 'कभी-कभी ठीक है',
-      AvoidDesc: 'कभी-कभार ही लें',
+      LooksClear: 'ठीक लग रहा है', ReviewBeforeBuying: 'खरीदने से पहले देखें', LimitFrequentUse: 'बार-बार न लें', NotEnough: 'लेबल जानकारी अधूरी',
+      LooksClearDesc: 'दिख रही लेबल जानकारी में कोई बड़ी चिंता नहीं।',
+      ReviewBeforeBuyingDesc: 'कुछ सामग्री, पोषण या दावे देखने लायक हैं।',
+      LimitFrequentUseDesc: 'कभी-कभी ठीक, रोज़ के लिए सही नहीं।',
+      NotEnoughDesc: 'लेबल डेटा अधूरा है — असली पैक देखें।',
     },
     results: {
       containsYourAllergens: 'आपके एलर्जन मौजूद हैं',
@@ -751,7 +753,13 @@ const STRINGS = {
   'hi-en': {
     common: { appName: 'ZOCO', tagline: 'Jaaniye aapke khaane mein actually kya hai. WHO-based health scores, poori detail ke saath.', home: 'Home', done: 'Done', reset: 'Reset', back: 'Back', showDetails: 'Details dekhein', hideDetails: 'Details chhupayein', translationPending: 'English mein dikhaya gaya.', outOf10: '10 mein se', offline: 'Aap offline hain — jahan available hai wahan saved data dikha rahe hain.' },
     landing: { scanBarcode: 'Barcode Scan Karein', searchByName: 'Naam se Search Karein', uploadPhoto: 'Barcode Photo Upload Karein', readingBarcode: 'Barcode padh rahe hain...', footer: 'Barcode aur search Open Food Facts use karte hain. Analysis turant hota hai.' },
-    verdict: { Buy: 'Khareedein', Limit: 'Limit Karein', Avoid: 'Avoid Karein', BuyDesc: 'Rozana ke liye achha', LimitDesc: 'Kabhi-kabhi theek', AvoidDesc: 'Kabhi-kabhaar hi' },
+    verdict: {
+      LooksClear: 'Theek lag raha hai', ReviewBeforeBuying: 'Khareedne se pehle dekhein', LimitFrequentUse: 'Baar-baar na lein', NotEnough: 'Label jankari adhoori',
+      LooksClearDesc: 'Dikhti label jankari mein koi badi chinta nahi.',
+      ReviewBeforeBuyingDesc: 'Kuch ingredients, nutrition ya claims dekhne layak hain.',
+      LimitFrequentUseDesc: 'Kabhi-kabhi theek, roz ke liye sahi nahi.',
+      NotEnoughDesc: 'Label data adhoora hai — asli pack dekhein.',
+    },
     results: { containsYourAllergens: 'Aapke allergens maujood hain', mayContainTraces: 'Inke ansh ho sakte hain', whyThisScore: 'Yeh score kyun?', share: 'Share', compare: 'Compare', scanAnother: 'Doosra Scan Karein', dataFromOFF: 'Data Open Food Facts se — verified nutrition database', containsAllergens: 'Allergens maujood hain', mayContainTracesOf: 'Inke ansh ho sakte hain' },
     suitability: { title: 'Yeh kiske liye hai?', subtitle: 'Verdict, quantity aur frequency dekhne ke liye group par tap karein.', why: 'Kyun', howMuch: 'Kitna theek hai?', howOften: 'Kitni baar?', pairWith: 'Iske saath lein', guidanceNote: 'Yeh is group ke liye extra guidance hai, general score change nahi karta.', suffix: 'suitability' },
     group: { kids: 'Bachche', jain: 'Jain', adultMen: 'Vayask Purush', adultWomen: 'Vayask Mahila', elderly: 'Buzurg', 'bp-sodium': 'BP / Sodium', diabetes: 'Diabetes savdhani', 'weight-loss': 'Weight loss' },
@@ -1054,7 +1062,13 @@ const STRINGS = {
   mr: {
     common: { appName: 'ZOCO', tagline: 'तुमच्या अन्नात नेमकं काय आहे ते जाणून घ्या. WHO-आधारित आरोग्य स्कोअर, संपूर्ण माहितीसह.', home: 'होम', done: 'झाले', reset: 'रीसेट', back: 'मागे', showDetails: 'तपशील पाहा', hideDetails: 'तपशील लपवा', translationPending: 'इंग्रजीत दाखवले — मराठी अनुवाद लवकरच.', outOf10: '10 पैकी', offline: 'तुम्ही ऑफलाइन आहात — उपलब्ध असेल तिथे साठवलेला डेटा दाखवत आहोत.' },
     landing: { scanBarcode: 'बारकोड स्कॅन करा', searchByName: 'नावाने शोधा', uploadPhoto: 'बारकोड फोटो अपलोड करा', readingBarcode: 'बारकोड वाचत आहे...', footer: 'बारकोड आणि शोध Open Food Facts वापरतात. विश्लेषण त्वरित होते.' },
-    verdict: { Buy: 'घ्या', Limit: 'मर्यादित करा', Avoid: 'टाळा', BuyDesc: 'रोजच्यासाठी चांगला पर्याय', LimitDesc: 'कधीकधी ठीक', AvoidDesc: 'क्वचितच घ्या' },
+    verdict: {
+      LooksClear: 'ठीक वाटतंय', ReviewBeforeBuying: 'खरेदीपूर्वी पाहा', LimitFrequentUse: 'वारंवार नको', NotEnough: 'लेबल माहिती अपुरी',
+      LooksClearDesc: 'दिसणाऱ्या लेबल माहितीत मोठी चिंता नाही.',
+      ReviewBeforeBuyingDesc: 'काही घटक, पोषण किंवा दावे पाहण्यासारखे आहेत.',
+      LimitFrequentUseDesc: 'कधीतरी ठीक, रोजसाठी योग्य नाही.',
+      NotEnoughDesc: 'लेबल डेटा अपुरा आहे — प्रत्यक्ष पॅक पाहा.',
+    },
     results: { containsYourAllergens: 'तुमचे अ‍ॅलर्जन आहेत', whyThisScore: 'हा स्कोअर का?', share: 'शेअर करा', compare: 'तुलना करा', scanAnother: 'दुसरे स्कॅन करा', dataFromOFF: 'डेटा Open Food Facts कडून — पडताळलेला पोषण डेटाबेस', containsAllergens: 'अ‍ॅलर्जन आहेत', mayContainTracesOf: 'यांचे अंश असू शकतात' },
     suitability: { title: 'हे कोणासाठी आहे?', subtitle: 'निर्णय, प्रमाण आणि वारंवारता पाहण्यासाठी गटावर टॅप करा.', why: 'का', howMuch: 'किती योग्य आहे?', howOften: 'किती वेळा?', pairWith: 'यासोबत घ्या', guidanceNote: 'हे या गटासाठी अतिरिक्त मार्गदर्शन आहे, सामान्य स्कोअर बदलत नाही.', suffix: 'उपयुक्तता' },
     group: { kids: 'मुले', jain: 'जैन', adultMen: 'प्रौढ पुरुष', adultWomen: 'प्रौढ स्त्री', elderly: 'वृद्ध', 'bp-sodium': 'BP / सोडियम', diabetes: 'मधुमेह काळजी', 'weight-loss': 'वजन कमी' },
@@ -1283,7 +1297,13 @@ const STRINGS = {
   gu: {
     common: { appName: 'ZOCO', tagline: 'તમારા ખોરાકમાં ખરેખર શું છે તે જાણો. WHO-આધારિત આરોગ્ય સ્કોર, સંપૂર્ણ વિગત સાથે.', home: 'હોમ', done: 'થઈ ગયું', reset: 'રીસેટ', back: 'પાછળ', showDetails: 'વિગત જુઓ', hideDetails: 'વિગત છુપાવો', translationPending: 'અંગ્રેજીમાં બતાવ્યું — ગુજરાતી અનુવાદ ટૂંક સમયમાં.', outOf10: '10 માંથી', offline: 'તમે ઑફલાઇન છો — જ્યાં ઉપલબ્ધ હોય ત્યાં સાચવેલ ડેટા બતાવીએ છીએ.' },
     landing: { scanBarcode: 'બારકોડ સ્કૅન કરો', searchByName: 'નામથી શોધો', uploadPhoto: 'બારકોડ ફોટો અપલોડ કરો', readingBarcode: 'બારકોડ વાંચી રહ્યા છીએ...', footer: 'બારકોડ અને શોધ Open Food Facts વાપરે છે. વિશ્લેષણ તરત થાય છે.' },
-    verdict: { Buy: 'ખરીદો', Limit: 'મર્યાદિત કરો', Avoid: 'ટાળો', BuyDesc: 'રોજ માટે સારો વિકલ્પ', LimitDesc: 'ક્યારેક ઠીક', AvoidDesc: 'ભાગ્યે જ લો' },
+    verdict: {
+      LooksClear: 'બરાબર લાગે છે', ReviewBeforeBuying: 'ખરીદતા પહેલાં જુઓ', LimitFrequentUse: 'વારંવાર ન લો', NotEnough: 'લેબલ માહિતી અધૂરી',
+      LooksClearDesc: 'દેખાતી લેબલ માહિતીમાં મોટી ચિંતા નથી.',
+      ReviewBeforeBuyingDesc: 'કેટલાક ઘટકો, પોષણ કે દાવા જોવા જેવા છે.',
+      LimitFrequentUseDesc: 'ક્યારેક ઠીક, રોજ માટે યોગ્ય નથી.',
+      NotEnoughDesc: 'લેબલ ડેટા અધૂરો છે — વાસ્તવિક પેક જુઓ.',
+    },
     results: { containsYourAllergens: 'તમારા એલર્જન છે', whyThisScore: 'આ સ્કોર કેમ?', share: 'શેર કરો', compare: 'સરખાવો', scanAnother: 'બીજું સ્કૅન કરો', dataFromOFF: 'ડેટા Open Food Facts તરફથી — ચકાસાયેલ પોષણ ડેટાબેઝ', containsAllergens: 'એલર્જન છે', mayContainTracesOf: 'આના અંશ હોઈ શકે' },
     suitability: { title: 'આ કોના માટે છે?', subtitle: 'ચુકાદો, જથ્થો અને આવર્તન જોવા માટે જૂથ પર ટૅપ કરો.', why: 'કેમ', howMuch: 'કેટલું યોગ્ય છે?', howOften: 'કેટલી વાર?', pairWith: 'આ સાથે લો', guidanceNote: 'આ આ જૂથ માટે વધારાનું માર્ગદર્શન છે, સામાન્ય સ્કોર બદલતું નથી.', suffix: 'યોગ્યતા' },
     group: { kids: 'બાળકો', jain: 'જૈન', adultMen: 'પુખ્ત પુરુષ', adultWomen: 'પુખ્ત સ્ત્રી', elderly: 'વૃદ્ધ', 'bp-sodium': 'BP / સોડિયમ', diabetes: 'ડાયાબિટીસ સાવધાની', 'weight-loss': 'વજન ઘટાડો' },
@@ -1512,7 +1532,13 @@ const STRINGS = {
   bn: {
     common: { appName: 'ZOCO', tagline: 'আপনার খাবারে আসলে কী আছে জানুন। WHO-ভিত্তিক স্বাস্থ্য স্কোর, বিস্তারিত সহ।', home: 'হোম', done: 'সম্পন্ন', reset: 'রিসেট', back: 'পিছনে', showDetails: 'বিস্তারিত দেখুন', hideDetails: 'বিস্তারিত লুকান', translationPending: 'ইংরেজিতে দেখানো হয়েছে — বাংলা অনুবাদ শীঘ্রই।', outOf10: '10 এর মধ্যে', offline: 'আপনি অফলাইন — যেখানে সম্ভব সংরক্ষিত ডেটা দেখানো হচ্ছে।' },
     landing: { scanBarcode: 'বারকোড স্ক্যান করুন', searchByName: 'নাম দিয়ে খুঁজুন', uploadPhoto: 'বারকোড ছবি আপলোড করুন', readingBarcode: 'বারকোড পড়া হচ্ছে...', footer: 'বারকোড ও অনুসন্ধান Open Food Facts ব্যবহার করে। বিশ্লেষণ তৎক্ষণাৎ হয়।' },
-    verdict: { Buy: 'কিনুন', Limit: 'সীমিত করুন', Avoid: 'এড়িয়ে চলুন', BuyDesc: 'প্রতিদিনের জন্য ভালো', LimitDesc: 'মাঝে মাঝে ঠিক', AvoidDesc: 'কদাচিৎ নিন' },
+    verdict: {
+      LooksClear: 'ঠিক আছে মনে হচ্ছে', ReviewBeforeBuying: 'কেনার আগে দেখুন', LimitFrequentUse: 'ঘন ঘন নয়', NotEnough: 'লেবেল তথ্য অসম্পূর্ণ',
+      LooksClearDesc: 'দৃশ্যমান লেবেল তথ্যে বড় উদ্বেগ নেই।',
+      ReviewBeforeBuyingDesc: 'কিছু উপাদান, পুষ্টি বা দাবি দেখার মতো।',
+      LimitFrequentUseDesc: 'মাঝে মাঝে ঠিক, নিয়মিত জন্য নয়।',
+      NotEnoughDesc: 'লেবেল ডেটা অসম্পূর্ণ — আসল প্যাক দেখুন।',
+    },
     results: { containsYourAllergens: 'আপনার অ্যালার্জেন আছে', whyThisScore: 'এই স্কোর কেন?', share: 'শেয়ার', compare: 'তুলনা', scanAnother: 'আরেকটি স্ক্যান করুন', dataFromOFF: 'ডেটা Open Food Facts থেকে — যাচাইকৃত পুষ্টি ডেটাবেস', containsAllergens: 'অ্যালার্জেন আছে', mayContainTracesOf: 'এগুলির অংশ থাকতে পারে' },
     suitability: { title: 'এটি কার জন্য?', subtitle: 'রায়, পরিমাণ ও কতবার দেখতে গ্রুপে ট্যাপ করুন।', why: 'কেন', howMuch: 'কতটা ঠিক?', howOften: 'কতবার?', pairWith: 'এর সাথে নিন', guidanceNote: 'এটি এই গ্রুপের জন্য অতিরিক্ত নির্দেশনা, সাধারণ স্কোর বদলায় না।', suffix: 'উপযুক্ততা' },
     group: { kids: 'শিশু', jain: 'জৈন', adultMen: 'প্রাপ্তবয়স্ক পুরুষ', adultWomen: 'প্রাপ্তবয়স্ক নারী', elderly: 'বয়স্ক', 'bp-sodium': 'BP / সোডিয়াম', diabetes: 'ডায়াবেটিস সতর্কতা', 'weight-loss': 'ওজন কমানো' },
@@ -1741,7 +1767,13 @@ const STRINGS = {
   ta: {
     common: { appName: 'ZOCO', tagline: 'உங்கள் உணவில் உண்மையில் என்ன இருக்கிறது என்பதை அறியுங்கள். WHO அடிப்படையிலான சுகாதார மதிப்பெண்கள், முழு விவரங்களுடன்.', home: 'முகப்பு', done: 'முடிந்தது', reset: 'மீட்டமை', back: 'பின்', showDetails: 'விவரங்களைக் காட்டு', hideDetails: 'விவரங்களை மறை', translationPending: 'ஆங்கிலத்தில் காட்டப்பட்டது — தமிழ் மொழிபெயர்ப்பு விரைவில்.', outOf10: '10 இல்', offline: 'நீங்கள் ஆஃப்லைனில் உள்ளீர்கள் — கிடைக்கும் இடத்தில் சேமித்த தரவைக் காட்டுகிறோம்.' },
     landing: { scanBarcode: 'பார்கோடு ஸ்கேன்', searchByName: 'பெயரால் தேடு', uploadPhoto: 'பார்கோடு படத்தை பதிவேற்று', readingBarcode: 'பார்கோடு படிக்கிறது...', footer: 'பார்கோடு மற்றும் தேடல் Open Food Facts பயன்படுத்துகிறது. பகுப்பாய்வு உடனடியாக நடக்கிறது.' },
-    verdict: { Buy: 'வாங்கு', Limit: 'கட்டுப்படுத்து', Avoid: 'தவிர்', BuyDesc: 'தினசரிக்கு நல்லது', LimitDesc: 'எப்போதாவது சரி', AvoidDesc: 'அரிதாகவே எடு' },
+    verdict: {
+      LooksClear: 'சரியாக உள்ளது', ReviewBeforeBuying: 'வாங்கும் முன் பாருங்கள்', LimitFrequentUse: 'அடிக்கடி வேண்டாம்', NotEnough: 'லேபிள் தகவல் போதவில்லை',
+      LooksClearDesc: 'தெரியும் லேபிள் தகவலில் பெரிய கவலை இல்லை.',
+      ReviewBeforeBuyingDesc: 'சில பொருட்கள், ஊட்டச்சத்து அல்லது கூற்றுகள் கவனிக்கத்தக்கவை.',
+      LimitFrequentUseDesc: 'எப்போதாவது சரி, தினசரிக்கு ஏற்றதல்ல.',
+      NotEnoughDesc: 'லேபிள் தரவு முழுமையற்றது — நேரடிப் பொதியைப் பாருங்கள்.',
+    },
     results: { containsYourAllergens: 'உங்கள் ஒவ்வாமைப் பொருட்கள் உள்ளன', whyThisScore: 'இந்த மதிப்பெண் ஏன்?', share: 'பகிர்', compare: 'ஒப்பிடு', scanAnother: 'மற்றொன்றை ஸ்கேன் செய்', dataFromOFF: 'தரவு Open Food Facts இலிருந்து — சரிபார்க்கப்பட்ட ஊட்டச்சத்து தரவுத்தளம்', containsAllergens: 'ஒவ்வாமைப் பொருட்கள் உள்ளன', mayContainTracesOf: 'இவற்றின் தடயங்கள் இருக்கலாம்' },
     suitability: { title: 'இது யாருக்கானது?', subtitle: 'தீர்ப்பு, அளவு மற்றும் அடிக்கடி பார்க்க குழுவைத் தட்டவும்.', why: 'ஏன்', howMuch: 'எவ்வளவு சரி?', howOften: 'எத்தனை முறை?', pairWith: 'இதனுடன் எடு', guidanceNote: 'இது இந்தக் குழுவிற்கான கூடுதல் வழிகாட்டுதல், பொது மதிப்பெண்ணை மாற்றாது.', suffix: 'பொருத்தம்' },
     group: { kids: 'குழந்தைகள்', jain: 'ஜைன்', adultMen: 'வயது வந்த ஆண்', adultWomen: 'வயது வந்த பெண்', elderly: 'முதியோர்', 'bp-sodium': 'BP / சோடியம்', diabetes: 'நீரிழிவு எச்சரிக்கை', 'weight-loss': 'எடை குறைப்பு' },
@@ -1970,7 +2002,13 @@ const STRINGS = {
   te: {
     common: { appName: 'ZOCO', tagline: 'మీ ఆహారంలో నిజంగా ఏముందో తెలుసుకోండి. WHO ఆధారిత ఆరోగ్య స్కోర్‌లు, పూర్తి వివరాలతో.', home: 'హోమ్', done: 'పూర్తయింది', reset: 'రీసెట్', back: 'వెనుకకు', showDetails: 'వివరాలు చూపు', hideDetails: 'వివరాలు దాచు', translationPending: 'ఆంగ్లంలో చూపబడింది — తెలుగు అనువాదం త్వరలో.', outOf10: '10 లో', offline: 'మీరు ఆఫ్‌లైన్‌లో ఉన్నారు — అందుబాటులో ఉన్న చోట సేవ్ చేసిన డేటాను చూపుతున్నాము.' },
     landing: { scanBarcode: 'బార్‌కోడ్ స్కాన్', searchByName: 'పేరుతో వెతుకు', uploadPhoto: 'బార్‌కోడ్ ఫోటో అప్‌లోడ్', readingBarcode: 'బార్‌కోడ్ చదువుతోంది...', footer: 'బార్‌కోడ్ మరియు శోధన Open Food Facts ఉపయోగిస్తాయి. విశ్లేషణ వెంటనే జరుగుతుంది.' },
-    verdict: { Buy: 'కొను', Limit: 'పరిమితం చేయి', Avoid: 'తప్పించు', BuyDesc: 'రోజువారీకి మంచిది', LimitDesc: 'అప్పుడప్పుడు సరే', AvoidDesc: 'అరుదుగా తీసుకో' },
+    verdict: {
+      LooksClear: 'బాగానే ఉంది', ReviewBeforeBuying: 'కొనే ముందు చూడండి', LimitFrequentUse: 'తరచుగా వద్దు', NotEnough: 'లేబుల్ సమాచారం అసంపూర్ణం',
+      LooksClearDesc: 'కనిపించే లేబుల్ సమాచారంలో పెద్ద ఆందోళన లేదు.',
+      ReviewBeforeBuyingDesc: 'కొన్ని పదార్థాలు, పోషణ లేదా క్లెయిమ్‌లు చూడదగినవి.',
+      LimitFrequentUseDesc: 'అప్పుడప్పుడు సరే, రోజువారీకి తగినది కాదు.',
+      NotEnoughDesc: 'లేబుల్ డేటా అసంపూర్ణం — అసలు ప్యాక్ చూడండి.',
+    },
     results: { containsYourAllergens: 'మీ అలర్జీ పదార్థాలు ఉన్నాయి', whyThisScore: 'ఈ స్కోర్ ఎందుకు?', share: 'షేర్', compare: 'పోల్చు', scanAnother: 'మరొకటి స్కాన్ చేయి', dataFromOFF: 'డేటా Open Food Facts నుండి — ధృవీకరించిన పోషకాహార డేటాబేస్', containsAllergens: 'అలర్జీ పదార్థాలు ఉన్నాయి', mayContainTracesOf: 'వీటి అంశాలు ఉండవచ్చు' },
     suitability: { title: 'ఇది ఎవరి కోసం?', subtitle: 'తీర్పు, పరిమాణం మరియు తరచుదనం చూడటానికి గ్రూప్‌పై నొక్కండి.', why: 'ఎందుకు', howMuch: 'ఎంత సరైనది?', howOften: 'ఎన్నిసార్లు?', pairWith: 'దీనితో తీసుకో', guidanceNote: 'ఇది ఈ గ్రూప్ కోసం అదనపు మార్గదర్శకం, సాధారణ స్కోర్‌ను మార్చదు.', suffix: 'అనుకూలత' },
     group: { kids: 'పిల్లలు', jain: 'జైన్', adultMen: 'వయోజన పురుషుడు', adultWomen: 'వయోజన స్త్రీ', elderly: 'వృద్ధులు', 'bp-sodium': 'BP / సోడియం', diabetes: 'మధుమేహ జాగ్రత్త', 'weight-loss': 'బరువు తగ్గింపు' },
@@ -2199,7 +2237,13 @@ const STRINGS = {
   kn: {
     common: { appName: 'ZOCO', tagline: 'ನಿಮ್ಮ ಆಹಾರದಲ್ಲಿ ನಿಜವಾಗಿ ಏನಿದೆ ಎಂದು ತಿಳಿಯಿರಿ. WHO ಆಧಾರಿತ ಆರೋಗ್ಯ ಸ್ಕೋರ್‌ಗಳು, ಪೂರ್ಣ ವಿವರಗಳೊಂದಿಗೆ.', home: 'ಹೋಮ್', done: 'ಮುಗಿಯಿತು', reset: 'ರೀಸೆಟ್', back: 'ಹಿಂದೆ', showDetails: 'ವಿವರ ತೋರಿಸು', hideDetails: 'ವಿವರ ಮರೆಮಾಡು', translationPending: 'ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ತೋರಿಸಲಾಗಿದೆ — ಕನ್ನಡ ಅನುವಾದ ಶೀಘ್ರದಲ್ಲೇ.', outOf10: '10 ರಲ್ಲಿ', offline: 'ನೀವು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿದ್ದೀರಿ — ಲಭ್ಯವಿರುವಲ್ಲಿ ಉಳಿಸಿದ ಡೇಟಾವನ್ನು ತೋರಿಸುತ್ತಿದ್ದೇವೆ.' },
     landing: { scanBarcode: 'ಬಾರ್‌ಕೋಡ್ ಸ್ಕ್ಯಾನ್', searchByName: 'ಹೆಸರಿನಿಂದ ಹುಡುಕಿ', uploadPhoto: 'ಬಾರ್‌ಕೋಡ್ ಫೋಟೋ ಅಪ್‌ಲೋಡ್', readingBarcode: 'ಬಾರ್‌ಕೋಡ್ ಓದುತ್ತಿದೆ...', footer: 'ಬಾರ್‌ಕೋಡ್ ಮತ್ತು ಹುಡುಕಾಟ Open Food Facts ಬಳಸುತ್ತವೆ. ವಿಶ್ಲೇಷಣೆ ತಕ್ಷಣ ನಡೆಯುತ್ತದೆ.' },
-    verdict: { Buy: 'ಖರೀದಿಸಿ', Limit: 'ಮಿತಿಗೊಳಿಸಿ', Avoid: 'ತಪ್ಪಿಸಿ', BuyDesc: 'ದೈನಂದಿನಕ್ಕೆ ಒಳ್ಳೆಯದು', LimitDesc: 'ಕೆಲವೊಮ್ಮೆ ಸರಿ', AvoidDesc: 'ಅಪರೂಪವಾಗಿ ತೆಗೆದುಕೊಳ್ಳಿ' },
+    verdict: {
+      LooksClear: 'ಸರಿ ಇದೆ', ReviewBeforeBuying: 'ಖರೀದಿಸುವ ಮೊದಲು ನೋಡಿ', LimitFrequentUse: 'ಪದೇಪದೇ ಬೇಡ', NotEnough: 'ಲೇಬಲ್ ಮಾಹಿತಿ ಅಪೂರ್ಣ',
+      LooksClearDesc: 'ಕಾಣುವ ಲೇಬಲ್ ಮಾಹಿತಿಯಲ್ಲಿ ದೊಡ್ಡ ಕಳವಳವಿಲ್ಲ.',
+      ReviewBeforeBuyingDesc: 'ಕೆಲವು ಪದಾರ್ಥಗಳು, ಪೋಷಣೆ ಅಥವಾ ಕ್ಲೈಮ್‌ಗಳು ನೋಡಬೇಕಾದವು.',
+      LimitFrequentUseDesc: 'ಕೆಲವೊಮ್ಮೆ ಸರಿ, ದಿನನಿತ್ಯಕ್ಕೆ ಸೂಕ್ತವಲ್ಲ.',
+      NotEnoughDesc: 'ಲೇಬಲ್ ಡೇಟಾ ಅಪೂರ್ಣ — ನಿಜವಾದ ಪ್ಯಾಕ್ ನೋಡಿ.',
+    },
     results: { containsYourAllergens: 'ನಿಮ್ಮ ಅಲರ್ಜಿ ಪದಾರ್ಥಗಳಿವೆ', whyThisScore: 'ಈ ಸ್ಕೋರ್ ಏಕೆ?', share: 'ಹಂಚಿಕೊಳ್ಳಿ', compare: 'ಹೋಲಿಸಿ', scanAnother: 'ಇನ್ನೊಂದು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ', dataFromOFF: 'ಡೇಟಾ Open Food Facts ನಿಂದ — ಪರಿಶೀಲಿಸಿದ ಪೋಷಣೆ ಡೇಟಾಬೇಸ್', containsAllergens: 'ಅಲರ್ಜಿ ಪದಾರ್ಥಗಳಿವೆ', mayContainTracesOf: 'ಇವುಗಳ ಅಂಶಗಳಿರಬಹುದು' },
     suitability: { title: 'ಇದು ಯಾರಿಗಾಗಿ?', subtitle: 'ತೀರ್ಪು, ಪ್ರಮಾಣ ಮತ್ತು ಆವರ್ತನ ನೋಡಲು ಗುಂಪಿನ ಮೇಲೆ ಟ್ಯಾಪ್ ಮಾಡಿ.', why: 'ಏಕೆ', howMuch: 'ಎಷ್ಟು ಸರಿ?', howOften: 'ಎಷ್ಟು ಬಾರಿ?', pairWith: 'ಇದರೊಂದಿಗೆ ತೆಗೆದುಕೊಳ್ಳಿ', guidanceNote: 'ಇದು ಈ ಗುಂಪಿಗೆ ಹೆಚ್ಚುವರಿ ಮಾರ್ಗದರ್ಶನ, ಸಾಮಾನ್ಯ ಸ್ಕೋರ್ ಬದಲಾಯಿಸುವುದಿಲ್ಲ.', suffix: 'ಸೂಕ್ತತೆ' },
     group: { kids: 'ಮಕ್ಕಳು', jain: 'ಜೈನ್', adultMen: 'ವಯಸ್ಕ ಪುರುಷ', adultWomen: 'ವಯಸ್ಕ ಮಹಿಳೆ', elderly: 'ಹಿರಿಯರು', 'bp-sodium': 'BP / ಸೋಡಿಯಂ', diabetes: 'ಮಧುಮೇಹ ಎಚ್ಚರಿಕೆ', 'weight-loss': 'ತೂಕ ಇಳಿಕೆ' },

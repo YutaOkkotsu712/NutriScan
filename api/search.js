@@ -27,7 +27,7 @@ const OFF_SEARCH = 'https://world.openfoodfacts.org/api/v2/search'
 
 // The one set of fields the app needs (see src/utils/searchEngine.js). The
 // client's `fields` param is ignored — this constant is what OFF receives.
-const SEARCH_FIELDS = 'code,product_name,brands,image_front_small_url,nutriscore_grade,nutriments,categories_tags,serving_size,ingredients_text,nova_group,ingredients_analysis_tags,allergens_tags,traces_tags'
+const SEARCH_FIELDS = 'code,product_name,brands,image_front_small_url,nutriscore_grade,nutriments,categories_tags,countries_tags,serving_size,ingredients_text,nova_group,ingredients_analysis_tags,allergens_tags,traces_tags'
 
 const MAX_QUERY_LEN = 150
 const MAX_PAGE = 50
