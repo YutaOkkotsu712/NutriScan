@@ -51,6 +51,7 @@ const STRINGS = {
       NotEnoughDesc: 'The label data is incomplete — check the physical pack.',
     },
     results: {
+      readout: "ZOCO Readout",
       containsYourAllergens: 'Contains your allergens',
       mayContainTraces: 'May contain traces of',
       whyThisScore: 'Why This Score?',
@@ -376,6 +377,7 @@ const STRINGS = {
       NotEnoughDesc: 'लेबल डेटा अधूरा है — असली पैक देखें।',
     },
     results: {
+      readout: "ZOCO रीडआउट",
       containsYourAllergens: 'आपके एलर्जन मौजूद हैं',
       mayContainTraces: 'इनके अंश हो सकते हैं',
       whyThisScore: 'यह स्कोर क्यों?',
@@ -760,7 +762,8 @@ const STRINGS = {
       LimitFrequentUseDesc: 'Kabhi-kabhi theek, roz ke liye sahi nahi.',
       NotEnoughDesc: 'Label data adhoora hai — asli pack dekhein.',
     },
-    results: { containsYourAllergens: 'Aapke allergens maujood hain', mayContainTraces: 'Inke ansh ho sakte hain', whyThisScore: 'Yeh score kyun?', share: 'Share', compare: 'Compare', scanAnother: 'Doosra Scan Karein', dataFromOFF: 'Data Open Food Facts se — verified nutrition database', containsAllergens: 'Allergens maujood hain', mayContainTracesOf: 'Inke ansh ho sakte hain' },
+    results: {
+      readout: "ZOCO Readout", containsYourAllergens: 'Aapke allergens maujood hain', mayContainTraces: 'Inke ansh ho sakte hain', whyThisScore: 'Yeh score kyun?', share: 'Share', compare: 'Compare', scanAnother: 'Doosra Scan Karein', dataFromOFF: 'Data Open Food Facts se — verified nutrition database', containsAllergens: 'Allergens maujood hain', mayContainTracesOf: 'Inke ansh ho sakte hain' },
     suitability: { title: 'Yeh kiske liye hai?', subtitle: 'Verdict, quantity aur frequency dekhne ke liye group par tap karein.', why: 'Kyun', howMuch: 'Kitna theek hai?', howOften: 'Kitni baar?', pairWith: 'Iske saath lein', guidanceNote: 'Yeh is group ke liye extra guidance hai, general score change nahi karta.', suffix: 'suitability' },
     group: { kids: 'Bachche', jain: 'Jain', adultMen: 'Vayask Purush', adultWomen: 'Vayask Mahila', elderly: 'Buzurg', 'bp-sodium': 'BP / Sodium', diabetes: 'Diabetes savdhani', 'weight-loss': 'Weight loss' },
     sverdict: { Suitable: 'Suitable', 'Good choice': 'Achha choice', Occasional: 'Kabhi-kabhi', Limit: 'Limit', Avoid: 'Avoid', Depends: 'Depend karta hai', Unknown: 'Unknown' },
@@ -1069,7 +1072,8 @@ const STRINGS = {
       LimitFrequentUseDesc: 'कधीतरी ठीक, रोजसाठी योग्य नाही.',
       NotEnoughDesc: 'लेबल डेटा अपुरा आहे — प्रत्यक्ष पॅक पाहा.',
     },
-    results: { containsYourAllergens: 'तुमचे अ‍ॅलर्जन आहेत', whyThisScore: 'हा स्कोअर का?', share: 'शेअर करा', compare: 'तुलना करा', scanAnother: 'दुसरे स्कॅन करा', dataFromOFF: 'डेटा Open Food Facts कडून — पडताळलेला पोषण डेटाबेस', containsAllergens: 'अ‍ॅलर्जन आहेत', mayContainTracesOf: 'यांचे अंश असू शकतात' },
+    results: {
+      readout: "ZOCO रीडआउट", containsYourAllergens: 'तुमचे अ‍ॅलर्जन आहेत', whyThisScore: 'हा स्कोअर का?', share: 'शेअर करा', compare: 'तुलना करा', scanAnother: 'दुसरे स्कॅन करा', dataFromOFF: 'डेटा Open Food Facts कडून — पडताळलेला पोषण डेटाबेस', containsAllergens: 'अ‍ॅलर्जन आहेत', mayContainTracesOf: 'यांचे अंश असू शकतात' },
     suitability: { title: 'हे कोणासाठी आहे?', subtitle: 'निर्णय, प्रमाण आणि वारंवारता पाहण्यासाठी गटावर टॅप करा.', why: 'का', howMuch: 'किती योग्य आहे?', howOften: 'किती वेळा?', pairWith: 'यासोबत घ्या', guidanceNote: 'हे या गटासाठी अतिरिक्त मार्गदर्शन आहे, सामान्य स्कोअर बदलत नाही.', suffix: 'उपयुक्तता' },
     group: { kids: 'मुले', jain: 'जैन', adultMen: 'प्रौढ पुरुष', adultWomen: 'प्रौढ स्त्री', elderly: 'वृद्ध', 'bp-sodium': 'BP / सोडियम', diabetes: 'मधुमेह काळजी', 'weight-loss': 'वजन कमी' },
     sverdict: { Suitable: 'योग्य', 'Good choice': 'चांगला पर्याय', Occasional: 'कधीकधी', Limit: 'मर्यादित करा', Avoid: 'टाळा', Depends: 'अवलंबून', Unknown: 'अज्ञात' },
@@ -1304,7 +1308,8 @@ const STRINGS = {
       LimitFrequentUseDesc: 'ક્યારેક ઠીક, રોજ માટે યોગ્ય નથી.',
       NotEnoughDesc: 'લેબલ ડેટા અધૂરો છે — વાસ્તવિક પેક જુઓ.',
     },
-    results: { containsYourAllergens: 'તમારા એલર્જન છે', whyThisScore: 'આ સ્કોર કેમ?', share: 'શેર કરો', compare: 'સરખાવો', scanAnother: 'બીજું સ્કૅન કરો', dataFromOFF: 'ડેટા Open Food Facts તરફથી — ચકાસાયેલ પોષણ ડેટાબેઝ', containsAllergens: 'એલર્જન છે', mayContainTracesOf: 'આના અંશ હોઈ શકે' },
+    results: {
+      readout: "ZOCO રીડઆઉટ", containsYourAllergens: 'તમારા એલર્જન છે', whyThisScore: 'આ સ્કોર કેમ?', share: 'શેર કરો', compare: 'સરખાવો', scanAnother: 'બીજું સ્કૅન કરો', dataFromOFF: 'ડેટા Open Food Facts તરફથી — ચકાસાયેલ પોષણ ડેટાબેઝ', containsAllergens: 'એલર્જન છે', mayContainTracesOf: 'આના અંશ હોઈ શકે' },
     suitability: { title: 'આ કોના માટે છે?', subtitle: 'ચુકાદો, જથ્થો અને આવર્તન જોવા માટે જૂથ પર ટૅપ કરો.', why: 'કેમ', howMuch: 'કેટલું યોગ્ય છે?', howOften: 'કેટલી વાર?', pairWith: 'આ સાથે લો', guidanceNote: 'આ આ જૂથ માટે વધારાનું માર્ગદર્શન છે, સામાન્ય સ્કોર બદલતું નથી.', suffix: 'યોગ્યતા' },
     group: { kids: 'બાળકો', jain: 'જૈન', adultMen: 'પુખ્ત પુરુષ', adultWomen: 'પુખ્ત સ્ત્રી', elderly: 'વૃદ્ધ', 'bp-sodium': 'BP / સોડિયમ', diabetes: 'ડાયાબિટીસ સાવધાની', 'weight-loss': 'વજન ઘટાડો' },
     sverdict: { Suitable: 'યોગ્ય', 'Good choice': 'સારો વિકલ્પ', Occasional: 'ક્યારેક', Limit: 'મર્યાદિત કરો', Avoid: 'ટાળો', Depends: 'આધાર રાખે', Unknown: 'અજ્ઞાત' },
@@ -1539,7 +1544,8 @@ const STRINGS = {
       LimitFrequentUseDesc: 'মাঝে মাঝে ঠিক, নিয়মিত জন্য নয়।',
       NotEnoughDesc: 'লেবেল ডেটা অসম্পূর্ণ — আসল প্যাক দেখুন।',
     },
-    results: { containsYourAllergens: 'আপনার অ্যালার্জেন আছে', whyThisScore: 'এই স্কোর কেন?', share: 'শেয়ার', compare: 'তুলনা', scanAnother: 'আরেকটি স্ক্যান করুন', dataFromOFF: 'ডেটা Open Food Facts থেকে — যাচাইকৃত পুষ্টি ডেটাবেস', containsAllergens: 'অ্যালার্জেন আছে', mayContainTracesOf: 'এগুলির অংশ থাকতে পারে' },
+    results: {
+      readout: "ZOCO রিডআউট", containsYourAllergens: 'আপনার অ্যালার্জেন আছে', whyThisScore: 'এই স্কোর কেন?', share: 'শেয়ার', compare: 'তুলনা', scanAnother: 'আরেকটি স্ক্যান করুন', dataFromOFF: 'ডেটা Open Food Facts থেকে — যাচাইকৃত পুষ্টি ডেটাবেস', containsAllergens: 'অ্যালার্জেন আছে', mayContainTracesOf: 'এগুলির অংশ থাকতে পারে' },
     suitability: { title: 'এটি কার জন্য?', subtitle: 'রায়, পরিমাণ ও কতবার দেখতে গ্রুপে ট্যাপ করুন।', why: 'কেন', howMuch: 'কতটা ঠিক?', howOften: 'কতবার?', pairWith: 'এর সাথে নিন', guidanceNote: 'এটি এই গ্রুপের জন্য অতিরিক্ত নির্দেশনা, সাধারণ স্কোর বদলায় না।', suffix: 'উপযুক্ততা' },
     group: { kids: 'শিশু', jain: 'জৈন', adultMen: 'প্রাপ্তবয়স্ক পুরুষ', adultWomen: 'প্রাপ্তবয়স্ক নারী', elderly: 'বয়স্ক', 'bp-sodium': 'BP / সোডিয়াম', diabetes: 'ডায়াবেটিস সতর্কতা', 'weight-loss': 'ওজন কমানো' },
     sverdict: { Suitable: 'উপযুক্ত', 'Good choice': 'ভালো পছন্দ', Occasional: 'মাঝে মাঝে', Limit: 'সীমিত করুন', Avoid: 'এড়িয়ে চলুন', Depends: 'নির্ভর করে', Unknown: 'অজানা' },
@@ -1774,7 +1780,8 @@ const STRINGS = {
       LimitFrequentUseDesc: 'எப்போதாவது சரி, தினசரிக்கு ஏற்றதல்ல.',
       NotEnoughDesc: 'லேபிள் தரவு முழுமையற்றது — நேரடிப் பொதியைப் பாருங்கள்.',
     },
-    results: { containsYourAllergens: 'உங்கள் ஒவ்வாமைப் பொருட்கள் உள்ளன', whyThisScore: 'இந்த மதிப்பெண் ஏன்?', share: 'பகிர்', compare: 'ஒப்பிடு', scanAnother: 'மற்றொன்றை ஸ்கேன் செய்', dataFromOFF: 'தரவு Open Food Facts இலிருந்து — சரிபார்க்கப்பட்ட ஊட்டச்சத்து தரவுத்தளம்', containsAllergens: 'ஒவ்வாமைப் பொருட்கள் உள்ளன', mayContainTracesOf: 'இவற்றின் தடயங்கள் இருக்கலாம்' },
+    results: {
+      readout: "ZOCO ரீடவுட்", containsYourAllergens: 'உங்கள் ஒவ்வாமைப் பொருட்கள் உள்ளன', whyThisScore: 'இந்த மதிப்பெண் ஏன்?', share: 'பகிர்', compare: 'ஒப்பிடு', scanAnother: 'மற்றொன்றை ஸ்கேன் செய்', dataFromOFF: 'தரவு Open Food Facts இலிருந்து — சரிபார்க்கப்பட்ட ஊட்டச்சத்து தரவுத்தளம்', containsAllergens: 'ஒவ்வாமைப் பொருட்கள் உள்ளன', mayContainTracesOf: 'இவற்றின் தடயங்கள் இருக்கலாம்' },
     suitability: { title: 'இது யாருக்கானது?', subtitle: 'தீர்ப்பு, அளவு மற்றும் அடிக்கடி பார்க்க குழுவைத் தட்டவும்.', why: 'ஏன்', howMuch: 'எவ்வளவு சரி?', howOften: 'எத்தனை முறை?', pairWith: 'இதனுடன் எடு', guidanceNote: 'இது இந்தக் குழுவிற்கான கூடுதல் வழிகாட்டுதல், பொது மதிப்பெண்ணை மாற்றாது.', suffix: 'பொருத்தம்' },
     group: { kids: 'குழந்தைகள்', jain: 'ஜைன்', adultMen: 'வயது வந்த ஆண்', adultWomen: 'வயது வந்த பெண்', elderly: 'முதியோர்', 'bp-sodium': 'BP / சோடியம்', diabetes: 'நீரிழிவு எச்சரிக்கை', 'weight-loss': 'எடை குறைப்பு' },
     sverdict: { Suitable: 'பொருத்தம்', 'Good choice': 'நல்ல தேர்வு', Occasional: 'எப்போதாவது', Limit: 'கட்டுப்படுத்து', Avoid: 'தவிர்', Depends: 'சார்ந்தது', Unknown: 'தெரியாது' },
@@ -2009,7 +2016,8 @@ const STRINGS = {
       LimitFrequentUseDesc: 'అప్పుడప్పుడు సరే, రోజువారీకి తగినది కాదు.',
       NotEnoughDesc: 'లేబుల్ డేటా అసంపూర్ణం — అసలు ప్యాక్ చూడండి.',
     },
-    results: { containsYourAllergens: 'మీ అలర్జీ పదార్థాలు ఉన్నాయి', whyThisScore: 'ఈ స్కోర్ ఎందుకు?', share: 'షేర్', compare: 'పోల్చు', scanAnother: 'మరొకటి స్కాన్ చేయి', dataFromOFF: 'డేటా Open Food Facts నుండి — ధృవీకరించిన పోషకాహార డేటాబేస్', containsAllergens: 'అలర్జీ పదార్థాలు ఉన్నాయి', mayContainTracesOf: 'వీటి అంశాలు ఉండవచ్చు' },
+    results: {
+      readout: "ZOCO రీడౌట్", containsYourAllergens: 'మీ అలర్జీ పదార్థాలు ఉన్నాయి', whyThisScore: 'ఈ స్కోర్ ఎందుకు?', share: 'షేర్', compare: 'పోల్చు', scanAnother: 'మరొకటి స్కాన్ చేయి', dataFromOFF: 'డేటా Open Food Facts నుండి — ధృవీకరించిన పోషకాహార డేటాబేస్', containsAllergens: 'అలర్జీ పదార్థాలు ఉన్నాయి', mayContainTracesOf: 'వీటి అంశాలు ఉండవచ్చు' },
     suitability: { title: 'ఇది ఎవరి కోసం?', subtitle: 'తీర్పు, పరిమాణం మరియు తరచుదనం చూడటానికి గ్రూప్‌పై నొక్కండి.', why: 'ఎందుకు', howMuch: 'ఎంత సరైనది?', howOften: 'ఎన్నిసార్లు?', pairWith: 'దీనితో తీసుకో', guidanceNote: 'ఇది ఈ గ్రూప్ కోసం అదనపు మార్గదర్శకం, సాధారణ స్కోర్‌ను మార్చదు.', suffix: 'అనుకూలత' },
     group: { kids: 'పిల్లలు', jain: 'జైన్', adultMen: 'వయోజన పురుషుడు', adultWomen: 'వయోజన స్త్రీ', elderly: 'వృద్ధులు', 'bp-sodium': 'BP / సోడియం', diabetes: 'మధుమేహ జాగ్రత్త', 'weight-loss': 'బరువు తగ్గింపు' },
     sverdict: { Suitable: 'అనుకూలం', 'Good choice': 'మంచి ఎంపిక', Occasional: 'అప్పుడప్పుడు', Limit: 'పరిమితం చేయి', Avoid: 'తప్పించు', Depends: 'ఆధారపడి ఉంటుంది', Unknown: 'తెలియదు' },
@@ -2244,7 +2252,8 @@ const STRINGS = {
       LimitFrequentUseDesc: 'ಕೆಲವೊಮ್ಮೆ ಸರಿ, ದಿನನಿತ್ಯಕ್ಕೆ ಸೂಕ್ತವಲ್ಲ.',
       NotEnoughDesc: 'ಲೇಬಲ್ ಡೇಟಾ ಅಪೂರ್ಣ — ನಿಜವಾದ ಪ್ಯಾಕ್ ನೋಡಿ.',
     },
-    results: { containsYourAllergens: 'ನಿಮ್ಮ ಅಲರ್ಜಿ ಪದಾರ್ಥಗಳಿವೆ', whyThisScore: 'ಈ ಸ್ಕೋರ್ ಏಕೆ?', share: 'ಹಂಚಿಕೊಳ್ಳಿ', compare: 'ಹೋಲಿಸಿ', scanAnother: 'ಇನ್ನೊಂದು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ', dataFromOFF: 'ಡೇಟಾ Open Food Facts ನಿಂದ — ಪರಿಶೀಲಿಸಿದ ಪೋಷಣೆ ಡೇಟಾಬೇಸ್', containsAllergens: 'ಅಲರ್ಜಿ ಪದಾರ್ಥಗಳಿವೆ', mayContainTracesOf: 'ಇವುಗಳ ಅಂಶಗಳಿರಬಹುದು' },
+    results: {
+      readout: "ZOCO ರೀಡೌಟ್", containsYourAllergens: 'ನಿಮ್ಮ ಅಲರ್ಜಿ ಪದಾರ್ಥಗಳಿವೆ', whyThisScore: 'ಈ ಸ್ಕೋರ್ ಏಕೆ?', share: 'ಹಂಚಿಕೊಳ್ಳಿ', compare: 'ಹೋಲಿಸಿ', scanAnother: 'ಇನ್ನೊಂದು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ', dataFromOFF: 'ಡೇಟಾ Open Food Facts ನಿಂದ — ಪರಿಶೀಲಿಸಿದ ಪೋಷಣೆ ಡೇಟಾಬೇಸ್', containsAllergens: 'ಅಲರ್ಜಿ ಪದಾರ್ಥಗಳಿವೆ', mayContainTracesOf: 'ಇವುಗಳ ಅಂಶಗಳಿರಬಹುದು' },
     suitability: { title: 'ಇದು ಯಾರಿಗಾಗಿ?', subtitle: 'ತೀರ್ಪು, ಪ್ರಮಾಣ ಮತ್ತು ಆವರ್ತನ ನೋಡಲು ಗುಂಪಿನ ಮೇಲೆ ಟ್ಯಾಪ್ ಮಾಡಿ.', why: 'ಏಕೆ', howMuch: 'ಎಷ್ಟು ಸರಿ?', howOften: 'ಎಷ್ಟು ಬಾರಿ?', pairWith: 'ಇದರೊಂದಿಗೆ ತೆಗೆದುಕೊಳ್ಳಿ', guidanceNote: 'ಇದು ಈ ಗುಂಪಿಗೆ ಹೆಚ್ಚುವರಿ ಮಾರ್ಗದರ್ಶನ, ಸಾಮಾನ್ಯ ಸ್ಕೋರ್ ಬದಲಾಯಿಸುವುದಿಲ್ಲ.', suffix: 'ಸೂಕ್ತತೆ' },
     group: { kids: 'ಮಕ್ಕಳು', jain: 'ಜೈನ್', adultMen: 'ವಯಸ್ಕ ಪುರುಷ', adultWomen: 'ವಯಸ್ಕ ಮಹಿಳೆ', elderly: 'ಹಿರಿಯರು', 'bp-sodium': 'BP / ಸೋಡಿಯಂ', diabetes: 'ಮಧುಮೇಹ ಎಚ್ಚರಿಕೆ', 'weight-loss': 'ತೂಕ ಇಳಿಕೆ' },
     sverdict: { Suitable: 'ಸೂಕ್ತ', 'Good choice': 'ಒಳ್ಳೆಯ ಆಯ್ಕೆ', Occasional: 'ಕೆಲವೊಮ್ಮೆ', Limit: 'ಮಿತಿಗೊಳಿಸಿ', Avoid: 'ತಪ್ಪಿಸಿ', Depends: 'ಅವಲಂಬಿತ', Unknown: 'ಅಜ್ಞಾತ' },
