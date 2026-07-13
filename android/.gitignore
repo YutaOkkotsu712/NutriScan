@@ -61,8 +61,10 @@ captures/
 .externalNativeBuild
 .cxx/
 
-# Google Services (e.g. APIs or Firebase)
-# google-services.json
+# Google Services (e.g. APIs or Firebase) — keep out of this public repo.
+# Client config (not a hard secret), but restricted by SHA-1 + package name;
+# download it from the Firebase console onto each build machine.
+google-services.json
 
 # Freeline
 freeline.py

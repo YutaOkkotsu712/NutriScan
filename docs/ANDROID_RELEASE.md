@@ -21,9 +21,11 @@ be changed freely NOW, never after the first Play upload.
   Users subscribe on the website; the same account is then a member in the app.
   Do NOT add wording that tells users to go to the website to pay — that is a
   steering violation. Play Billing can be added later if conversion suffers.
-- **Google sign-in is hidden on native** (OAuth popups can't open in a
-  WebView); email/password works everywhere. Native Google sign-in via
-  `@capacitor-firebase/authentication` is a follow-up.
+- **Google sign-in works on native** via the native account picker
+  (`@capacitor-firebase/authentication`, `skipNativeAuth:true` → the plugin
+  returns a Google credential and we sign into the Firebase JS SDK with it, so
+  the whole app keeps using one session). Requires the Firebase Android setup
+  below; email/password works with or without it. See "Native Google sign-in".
 - **Account deletion (hard Play requirement for apps with sign-up):** in-app
   via Account → Delete account (`POST /api/me/delete` wipes the scan meter +
   subscription records and cancels active Razorpay billing, then the Firebase
@@ -70,11 +72,46 @@ cd android && ./gradlew assembleDebug
 ```
 
 Sideload on a real low-end phone and check: native scan on 5 real packets
-(low light too), email/password login (Google button is hidden on native by
-design), a metered scan (badge decrements), paywall at limit shows the
-"can't purchase in this app" line (NOT a subscribe button), account page
-shows Delete account, language switch, ingredient sheets. Subscribe on the
-website with the same account, reopen the app → badge shows "Member".
+(low light too), email/password login, a metered scan (badge decrements),
+paywall at limit shows the "can't purchase in this app" line (NOT a subscribe
+button), account page shows Delete account, language switch, ingredient sheets.
+Subscribe on the website with the same account, reopen the app → badge shows
+"Member".
+
+## Native Google sign-in (one-time Firebase setup)
+
+The code is already wired (`@capacitor-firebase/authentication`, the
+`FirebaseAuthentication` config in `capacitor.config.json`, and the bridge in
+`src/utils/useAuth.js`). It needs Firebase's Android config to actually work —
+until you do this, email/password still works and the Google button just errors
+if tapped:
+
+1. **Firebase console → Project settings → Your apps → Add app → Android.**
+   - Android package name: **`com.zoco.app`** (must match exactly).
+   - Register the app.
+2. **Add your signing SHA-1 fingerprints** (Project settings → your Android app
+   → "Add fingerprint"). You need the DEBUG one now and the RELEASE one at launch:
+   ```bash
+   # Debug key (auto-created by Android Studio):
+   keytool -list -v -alias androiddebugkey -keystore ~/.android/debug.keystore \
+     -storepass android -keypass android | grep SHA1
+   # Release key (your zoco-release.keystore):
+   keytool -list -v -alias zoco -keystore zoco-release.keystore | grep SHA1
+   ```
+   Paste each SHA1 value into Firebase. (Google sign-in silently fails if the
+   installed app's signing SHA-1 isn't registered.)
+3. **Download `google-services.json`** (button on that same page) and drop it in
+   **`android/app/google-services.json`**. The Gradle is already set to pick it
+   up automatically when present (and ignore it when absent). Do NOT commit it if
+   your repo is public — it's not a hard secret, but keep it out of public repos.
+4. **Firebase console → Authentication → Sign-in method → enable Google** (you
+   likely already did this for the web).
+5. Rebuild: `npx cap sync android` then run/build. Tap "Continue with Google"
+   in the app → native account picker → signed in as the same Firebase account
+   as on the web.
+
+Note: a user who signed up with Google now works on BOTH web and app. (Before
+this, a Google-only account couldn't sign in on the app since it has no password.)
 
 ## Release build for the Play Store
 

@@ -210,9 +210,9 @@
       // CSV download needs the Bearer token, so fetch as a blob rather than a link.
       b.disabled = true
       try {
-        var res = await fetch(REPORTS + '?format=csv', { headers: headers() })
-        if (!res.ok) throw new Error('Download failed (' + res.status + ')')
-        var blob = await res.blob()
+        var csvRes = await fetch(REPORTS + '?format=csv', { headers: headers() })
+        if (!csvRes.ok) throw new Error('Download failed (' + csvRes.status + ')')
+        var blob = await csvRes.blob()
         var url = URL.createObjectURL(blob)
         var a = document.createElement('a')
         a.href = url; a.download = 'zoco-report-' + new Date().toISOString().slice(0, 10) + '.csv'

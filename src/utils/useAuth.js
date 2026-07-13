@@ -8,12 +8,32 @@
 
 import { useSyncExternalStore } from 'react'
 import {
-  GoogleAuthProvider, signInWithPopup, signOut as fbSignOut,
+  GoogleAuthProvider, signInWithPopup, signInWithCredential, signOut as fbSignOut,
   signInWithEmailAndPassword, createUserWithEmailAndPassword,
   onAuthStateChanged, deleteUser,
 } from 'firebase/auth'
 import { auth, authEnabled } from '../firebase'
 import { apiUrl } from './apiBase.js'
+import { isNativeApp } from './platform.js'
+
+// Sign in with Google.
+//   Web:    the standard popup flow.
+//   Native: the popup is blocked inside a WebView, so we use the native Google
+//           account picker (@capacitor-firebase/authentication) and then hand
+//           the returned Google credential to the SAME Firebase JS SDK via
+//           signInWithCredential — so getIdToken()/API calls/sign-out all keep
+//           working through one JS session (skipNativeAuth is set in
+//           capacitor.config.json so the plugin only returns the credential).
+async function signInWithGoogle() {
+  if (!isNativeApp()) {
+    return signInWithPopup(auth, new GoogleAuthProvider())
+  }
+  const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication')
+  const result = await FirebaseAuthentication.signInWithGoogle()
+  const idToken = result?.credential?.idToken
+  if (!idToken) throw Object.assign(new Error('No Google credential'), { code: 'auth/no-credential' })
+  return signInWithCredential(auth, GoogleAuthProvider.credential(idToken))
+}
 
 // --- Singleton auth-state store (useSyncExternalStore) ---------------------
 let currentUser = null
@@ -49,11 +69,23 @@ export function useAuth() {
     ready: isReady,
     authEnabled,
     email: user?.email || null,
-    signInWithGoogle: () => signInWithPopup(auth, new GoogleAuthProvider()),
+    signInWithGoogle,
     signInWithEmail: (e, p) => signInWithEmailAndPassword(auth, e, p),
     signUpWithEmail: (e, p) => createUserWithEmailAndPassword(auth, e, p),
-    signOut: () => fbSignOut(auth),
+    signOut: doSignOut,
   }
+}
+
+// Sign out of the JS SDK, and on native also clear the plugin's Google client
+// so the account picker re-prompts on the next sign-in.
+async function doSignOut() {
+  if (isNativeApp()) {
+    try {
+      const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication')
+      await FirebaseAuthentication.signOut()
+    } catch { /* JS sign-out below is the one that matters */ }
+  }
+  return fbSignOut(auth)
 }
 
 // Fresh ID token for API calls, or null if signed out / auth disabled.
