@@ -1,5 +1,5 @@
 // Search — src/components/SearchScreen.jsx (full replacement)
-import { useState, useRef, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { useT } from '../i18n'
 import { track, trackAuthed } from '../utils/analytics'
 import { ImageStripe } from './ZocoBrand'
@@ -19,7 +19,6 @@ export default function SearchScreen({ onSelectProduct, onCancel }) {
   const [results, setResults] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
-  const debounceRef = useRef(null)
 
   const doSearch = useCallback(async (q) => {
     if (q.trim().length < 2) {
@@ -46,13 +45,13 @@ export default function SearchScreen({ onSelectProduct, onCancel }) {
 
   function handleInput(value) {
     setQuery(value)
-    clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => doSearch(value), 400)
+    if (!value.trim()) setResults(null) // clearing the field clears stale results
   }
 
+  // Search only on submit (Enter / the search button), NOT as-you-type: partial
+  // terms return irrelevant matches, and it hammers OFF's rate-limited search.
   function handleSubmit(e) {
     e.preventDefault()
-    clearTimeout(debounceRef.current)
     doSearch(query)
   }
 
@@ -75,11 +74,15 @@ export default function SearchScreen({ onSelectProduct, onCancel }) {
       {/* Search field */}
       <form onSubmit={handleSubmit}>
         <div className="flex items-center gap-2.5 bg-white border-[1.5px] border-brand rounded-2xl px-3.5 py-3 shadow-sm">
-          <svg className="w-[18px] h-[18px] text-brand shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+          <button type="submit" aria-label={t('search.title')} className="shrink-0">
+            <svg className="w-[18px] h-[18px] text-brand" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
           <input
-            type="text"
+            type="search"
+            inputMode="search"
+            enterKeyHint="search"
             value={query}
             onChange={(e) => handleInput(e.target.value)}
             placeholder={t('search.placeholder')}
