@@ -6,7 +6,8 @@ import { generateKeyPair, SignJWT, exportJWK } from 'jose'
 import handler from './search.js'
 
 const PROJECT = 'zoco-test'
-const OFF_SEARCH = 'https://world.openfoodfacts.org/api/v2/search'
+const OFF_CGI = 'https://world.openfoodfacts.org/cgi/search.pl'
+const OFF_V2 = 'https://world.openfoodfacts.org/api/v2/search'
 const JWKS_URL = 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com'
 
 const realFetch = globalThis.fetch
@@ -28,7 +29,7 @@ beforeEach(() => {
   globalThis.fetch = (url) => {
     const u = typeof url === 'string' ? url : url.url
     if (u === JWKS_URL) return Promise.resolve(new Response(JSON.stringify({ keys: [jwkPublic] }), { status: 200, headers: { 'content-type': 'application/json' } }))
-    if (u.startsWith(OFF_SEARCH)) {
+    if (u.startsWith(OFF_CGI) || u.startsWith(OFF_V2)) {
       lastUpstreamUrl = new URL(u)
       return Promise.resolve(new Response(JSON.stringify({ products: [{ code: '1' }], count: 1 }), { status: 200 }))
     }
@@ -105,25 +106,33 @@ describe('search proxy param hardening', () => {
     expect(lastUpstreamUrl.searchParams.get('search_terms').length).toBe(150)
   })
 
-  it('forwards a well-formed countries_tags market filter', async () => {
-    await req('search_terms=maggi&countries_tags=en:india', await token())
-    expect(lastUpstreamUrl.searchParams.get('countries_tags')).toBe('en:india')
+  it('routes free-text search to the CGI endpoint (which ranks by the term)', async () => {
+    await req('search_terms=maggi', await token())
+    expect(lastUpstreamUrl.pathname).toContain('/cgi/search.pl')
+    expect(lastUpstreamUrl.searchParams.get('search_terms')).toBe('maggi')
+    expect(lastUpstreamUrl.searchParams.get('action')).toBe('process')
+    expect(lastUpstreamUrl.searchParams.get('json')).toBe('1')
   })
 
-  it('drops a malformed countries_tags value', async () => {
-    await req('search_terms=maggi&countries_tags=en:<script>alert(1)</script>', await token())
+  it('does not forward arbitrary client params on a text search', async () => {
+    await req('search_terms=maggi&tagtype_0=states', await token())
+    expect(lastUpstreamUrl.searchParams.get('tagtype_0')).toBeNull()
+  })
+
+  it('text search does not send a country filter (India is re-ranked client-side)', async () => {
+    await req('search_terms=maggi&countries_tags=en:india', await token())
     expect(lastUpstreamUrl.searchParams.get('countries_tags')).toBeNull()
   })
 
-  it('combines countries_tags with a categories_tags query (alternatives path)', async () => {
+  it('routes a category filter to v2 and forwards a well-formed country filter', async () => {
     await req('categories_tags=en:snacks&countries_tags=en:india&sort_by=nutriscore_score', await token())
+    expect(lastUpstreamUrl.pathname).toContain('/api/v2/search')
     expect(lastUpstreamUrl.searchParams.get('categories_tags')).toBe('en:snacks')
     expect(lastUpstreamUrl.searchParams.get('countries_tags')).toBe('en:india')
   })
 
-  it('does not forward arbitrary params', async () => {
-    await req('search_terms=maggi&tagtype_0=states&json=1', await token())
-    expect(lastUpstreamUrl.searchParams.get('tagtype_0')).toBeNull()
-    expect(lastUpstreamUrl.searchParams.get('json')).toBeNull()
+  it('rejects a malformed country filter on the category path', async () => {
+    await req('categories_tags=en:snacks&countries_tags=en:<script>alert(1)</script>', await token())
+    expect(lastUpstreamUrl.searchParams.get('countries_tags')).toBeNull()
   })
 })

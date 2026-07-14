@@ -1,7 +1,8 @@
 // Vercel Edge Function — caching proxy for Open Food Facts search.
 //
-// Forwards a CLAMPED, server-controlled query to OFF's v2 search endpoint and
-// caches the result on the edge. Search results change more often than
+// Forwards a CLAMPED, server-controlled query to Open Food Facts (CGI search
+// for free text, v2 for tag filters) and caches the result on the edge. Search
+// results change more often than
 // individual products and the query space is larger, so we cache for a shorter
 // window (1 hour fresh, 1 day stale-while-revalidate).
 //
@@ -23,7 +24,14 @@ export const config = { runtime: 'edge' }
 
 const env = (typeof process !== 'undefined' && process.env) || {}
 
-const OFF_SEARCH = 'https://world.openfoodfacts.org/api/v2/search'
+// Two upstreams, picked by query type:
+//   - free-text search  → legacy CGI search.pl, which actually RANKS by the
+//     term. (The v2 /search endpoint ignores search_terms and returns ~the
+//     whole database by popularity, so "maggi" surfaced everything but Maggi.)
+//   - category/tag filter → v2 /search, whose tag filtering (and countries_tags
+//     India filter) works well and powers the "alternatives" feature.
+const OFF_CGI = 'https://world.openfoodfacts.org/cgi/search.pl'
+const OFF_V2 = 'https://world.openfoodfacts.org/api/v2/search'
 
 // The one set of fields the app needs (see src/utils/searchEngine.js). The
 // client's `fields` param is ignored — this constant is what OFF receives.
@@ -62,9 +70,29 @@ export default async function handler(request) {
   const params = new URLSearchParams()
   const searchTerms = (q.get('search_terms') || '').trim().slice(0, MAX_QUERY_LEN)
   const categoriesTags = (q.get('categories_tags') || '').trim().slice(0, MAX_QUERY_LEN)
-  if (searchTerms) params.set('search_terms', searchTerms)
-  else if (categoriesTags) params.set('categories_tags', categoriesTags)
-  else return json({ error: 'Missing search_terms or categories_tags' }, 400, 'no-store', cors)
+
+  let upstreamUrl
+  if (searchTerms) {
+    // Free-text search → CGI search.pl (ranks by the term). The extra params
+    // are fixed constants, not client-controlled.
+    upstreamUrl = OFF_CGI
+    params.set('search_terms', searchTerms)
+    params.set('search_simple', '1')
+    params.set('action', 'process')
+    params.set('json', '1')
+    // India-first is handled client-side (re-rank on countries_tags), so no
+    // country filter is sent here.
+  } else if (categoriesTags) {
+    // Category/tag filter → v2 search.
+    upstreamUrl = OFF_V2
+    params.set('categories_tags', categoriesTags)
+    // Optional market filter (e.g. en:india for on-shelf alternatives). Strict
+    // shape check — the only param where the client picks the value.
+    const countries = (q.get('countries_tags') || '').trim()
+    if (/^en:[a-z-]{2,40}$/.test(countries)) params.set('countries_tags', countries)
+  } else {
+    return json({ error: 'Missing search_terms or categories_tags' }, 400, 'no-store', cors)
+  }
 
   params.set('page', String(clampInt(q.get('page'), 1, MAX_PAGE, 1)))
   params.set('page_size', String(clampInt(q.get('page_size'), 1, MAX_PAGE_SIZE, 20)))
@@ -72,14 +100,8 @@ export default async function handler(request) {
   const sortBy = q.get('sort_by')
   if (ALLOWED_SORT.has(sortBy)) params.set('sort_by', sortBy)
 
-  // Optional market filter (e.g. en:india so suggested alternatives are
-  // actually on Indian shelves). Strict shape check — it's the only param
-  // where the client picks the value.
-  const countries = (q.get('countries_tags') || '').trim()
-  if (/^en:[a-z-]{2,40}$/.test(countries)) params.set('countries_tags', countries)
-
   try {
-    const upstream = await fetch(`${OFF_SEARCH}?${params}`, {
+    const upstream = await fetch(`${upstreamUrl}?${params}`, {
       headers: {
         'User-Agent': 'NutriScan/1.0 (https://nutriscan.app)',
         'Accept': 'application/json',
