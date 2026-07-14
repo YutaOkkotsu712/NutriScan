@@ -1,7 +1,4 @@
-// Barcode scanner — src/components/BarcodeScanner.jsx (full replacement)
-// Logic identical to the original (ML Kit native path + html5-qrcode web path);
-// only the shell is restyled: full-screen dark viewfinder with marigold
-// corner brackets and a sweeping beam.
+// Barcode scanner — native ML Kit on Android/iOS, html5-qrcode on web.
 import { useEffect, useRef, useState } from 'react'
 import { Capacitor } from '@capacitor/core'
 import { extractBarcode } from '../utils/barcodeExtract'
@@ -17,6 +14,7 @@ function Bracket({ className }) {
 
 export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
   const html5QrRef = useRef(null)
+  const stopNativeScannerRef = useRef(() => Promise.resolve())
   const { t } = useT()
   // Errors/hints are stored as i18n keys and translated at render, so a
   // language switch mid-scan re-translates them.
@@ -24,6 +22,7 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
   const [hint, setHint] = useState('')
   const [manualCode, setManualCode] = useState('')
   const [showManual, setShowManual] = useState(false)
+  const [nativeScannerActive, setNativeScannerActive] = useState(false)
   const hasScannedRef = useRef(false)
   const mountedRef = useRef(true)
   const isNative = Capacitor.isNativePlatform()
@@ -31,6 +30,40 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
   useEffect(() => {
     mountedRef.current = true
     let scanner = null
+    let nativePlugin = null
+    let nativeScannerStarted = false
+    let nativeListeners = []
+
+    const nativeFormats = (BarcodeFormat) => [
+      BarcodeFormat.Ean13, BarcodeFormat.Ean8,
+      BarcodeFormat.UpcA, BarcodeFormat.UpcE,
+      BarcodeFormat.Code128, BarcodeFormat.Code39,
+      BarcodeFormat.QrCode,
+    ].filter(Boolean)
+
+    function readBarcodeFromNativeEvent(event) {
+      const barcodes = event?.barcodes || (event?.barcode ? [event.barcode] : [])
+      for (const barcode of barcodes) {
+        const code = extractBarcode(barcode?.rawValue || barcode?.displayValue)
+        if (code) return code
+      }
+      return null
+    }
+
+    async function stopNativeScanner() {
+      document.documentElement.classList.remove('barcode-scanner-active')
+      document.body.classList.remove('barcode-scanner-active')
+      for (const listener of nativeListeners) {
+        await listener?.remove?.().catch(() => {})
+      }
+      nativeListeners = []
+      if (nativePlugin && nativeScannerStarted) {
+        await nativePlugin.stopScan().catch(() => {})
+      }
+      nativeScannerStarted = false
+      if (mountedRef.current) setNativeScannerActive(false)
+    }
+    stopNativeScannerRef.current = stopNativeScanner
 
     // Native app (Capacitor): use ML Kit's native scanner — dramatically better
     // than browser scanning in low light and on low-end phones. Same
@@ -38,39 +71,67 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
     // rejected. On any failure we fall back to manual entry, never a dead end.
     async function startNativeScan() {
       try {
-        const { BarcodeScanner: MLKit, BarcodeFormat } = await import('@capacitor-mlkit/barcode-scanning')
-        const perm = await MLKit.requestPermissions().catch(() => ({ camera: 'granted' }))
-        if (perm.camera === 'denied') {
+        const {
+          BarcodeScanner: MLKit,
+          BarcodeFormat,
+          LensFacing,
+          Resolution,
+        } = await import('@capacitor-mlkit/barcode-scanning')
+        nativePlugin = MLKit
+
+        const support = await MLKit.isSupported().catch(() => ({ supported: true }))
+        if (support.supported === false) {
+          setError('scan.noCamera')
+          setShowManual(true)
+          return
+        }
+
+        const perm = await MLKit.requestPermissions()
+        if (perm.camera !== 'granted') {
           setError('scan.permissionDenied')
           setShowManual(true)
           return
         }
-        const { barcodes } = await MLKit.scan({
-          formats: [
-            BarcodeFormat.Ean13, BarcodeFormat.Ean8,
-            BarcodeFormat.UpcA, BarcodeFormat.UpcE,
-            BarcodeFormat.Code128, BarcodeFormat.Code39,
-            BarcodeFormat.QrCode,
-          ],
-        })
-        if (!mountedRef.current) return
-        for (const b of barcodes || []) {
-          const code = extractBarcode(b.rawValue || b.displayValue)
-          if (code) {
-            hasScannedRef.current = true
-            if (navigator.vibrate) navigator.vibrate(100)
-            onScan(code)
+
+        const handleDetected = async (event) => {
+          if (hasScannedRef.current || !mountedRef.current) return
+          const code = readBarcodeFromNativeEvent(event)
+          if (!code) {
+            setHint('scan.qrHint')
             return
           }
+          hasScannedRef.current = true
+          if (navigator.vibrate) navigator.vibrate(100)
+          await stopNativeScanner()
+          onScan(code)
         }
-        // Scanned something that isn't a product barcode (promo QR) or nothing.
-        if (barcodes?.length) setHint('scan.qrHint')
-        setShowManual(true)
+
+        nativeListeners = await Promise.all([
+          MLKit.addListener('barcodeScanned', handleDetected),
+          MLKit.addListener('barcodesScanned', handleDetected),
+          MLKit.addListener('scanError', (event) => {
+            console.error('[NutriScan] Native camera error:', event?.message || event)
+          }),
+        ])
+
+        document.documentElement.classList.add('barcode-scanner-active')
+        document.body.classList.add('barcode-scanner-active')
+        setNativeScannerActive(true)
+        await MLKit.startScan({
+          formats: nativeFormats(BarcodeFormat),
+          lensFacing: LensFacing?.Back,
+          resolution: Resolution?.['1280x720'],
+        })
+        nativeScannerStarted = true
       } catch (err) {
         if (!mountedRef.current) return
-        // User closed the native scanner, or the ML Kit module is unavailable
-        // on this device — degrade to manual entry.
-        if (!/cancel/i.test(String(err?.message || err))) setError('scan.cameraFailed')
+        await stopNativeScanner()
+        console.error('[NutriScan] Native camera error:', err)
+        if (/denied|permission/i.test(String(err?.message || err))) {
+          setError('scan.permissionDenied')
+        } else {
+          setError('scan.cameraFailed')
+        }
         setShowManual(true)
       }
     }
@@ -153,6 +214,8 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
 
     return () => {
       mountedRef.current = false
+      stopNativeScanner()
+      stopNativeScannerRef.current = () => Promise.resolve()
       if (scanner) {
         try {
           const state = scanner.getState()
@@ -176,12 +239,44 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
     }
   }
 
+  function stopActiveScanner() {
+    stopNativeScannerRef.current()
+    const scanner = html5QrRef.current
+    if (!scanner) return
+    try {
+      const state = scanner.getState()
+      if (state === 2 || state === 3) scanner.stop().catch(() => {})
+    } catch {
+      scanner.stop().catch(() => {})
+    }
+  }
+
+  function handleShowManual() {
+    stopActiveScanner()
+    setShowManual(true)
+  }
+
+  function handleCancel() {
+    stopActiveScanner()
+    onCancel()
+  }
+
+  function handleSearchInstead() {
+    stopActiveScanner()
+    onManualEntry()
+  }
+
+  const shellClass = nativeScannerActive
+    ? 'fixed inset-0 z-[9999] bg-transparent flex flex-col barcode-scanner-modal'
+    : 'fixed inset-0 z-[9999] bg-night flex flex-col barcode-scanner-modal'
+  const viewportHidden = showManual || (!nativeScannerActive && isNative)
+
   return (
-    <div className="fixed inset-0 z-40 bg-night flex flex-col">
+    <div className={shellClass}>
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-[max(env(safe-area-inset-top),1rem)] pb-2">
         <button
-          onClick={onCancel}
+          onClick={handleCancel}
           className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 text-cornsilk"
           aria-label={t('common.back')}
         >
@@ -195,9 +290,9 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
 
       {/* Camera viewport — always render the div so html5-qrcode can find it */}
       <div className="flex-1 flex flex-col items-center justify-center px-8 min-h-0">
-        <div className={`relative w-full max-w-[320px] ${showManual || isNative ? 'hidden' : ''}`}>
-          <div className="relative rounded-2xl overflow-hidden bg-black">
-            <div id="barcode-reader" className="w-full" />
+        <div className={`relative w-full max-w-[320px] ${viewportHidden ? 'hidden' : ''}`}>
+          <div className={`relative aspect-[4/3] rounded-2xl overflow-hidden ${nativeScannerActive ? 'bg-transparent border border-white/30' : 'bg-black'}`}>
+            {!isNative && <div id="barcode-reader" className="w-full" />}
           </div>
           {/* Viewfinder chrome */}
           <div className="pointer-events-none absolute inset-0">
@@ -214,7 +309,7 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
           </div>
         </div>
 
-        {!showManual && !isNative && (
+        {!showManual && (
           <p className="text-sm text-cornsilk/85 text-center max-w-[240px] leading-relaxed mt-6">
             {t('scan.subtitle')}
           </p>
@@ -269,7 +364,7 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
       <div className="px-6 pb-[max(env(safe-area-inset-bottom),2.5rem)] flex flex-col items-center gap-3">
         {!showManual && (
           <button
-            onClick={() => setShowManual(true)}
+            onClick={handleShowManual}
             className="w-full flex items-center justify-center gap-2.5 bg-white/10 border border-white/20 rounded-2xl py-3.5 text-sm font-semibold text-cornsilk backdrop-blur-sm transition-all active:scale-[.98]"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -279,7 +374,7 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
           </button>
         )}
         <button
-          onClick={onManualEntry}
+          onClick={handleSearchInstead}
           className="text-[13px] font-semibold text-marigold py-1"
         >
           {t('scan.searchInstead')}
@@ -288,6 +383,22 @@ export default function BarcodeScanner({ onScan, onCancel, onManualEntry }) {
 
       {/* Styling for html5-qrcode */}
       <style>{`
+        html.barcode-scanner-active,
+        body.barcode-scanner-active,
+        body.barcode-scanner-active #root,
+        body.barcode-scanner-active #root > div {
+          background: transparent !important;
+        }
+        body.barcode-scanner-active {
+          visibility: hidden;
+        }
+        body.barcode-scanner-active .barcode-scanner-modal,
+        body.barcode-scanner-active .barcode-scanner-modal * {
+          visibility: visible !important;
+        }
+        body.barcode-scanner-active .barcode-scanner-modal {
+          background: transparent !important;
+        }
         #barcode-reader { border: none !important; }
         #barcode-reader video { border-radius: 16px !important; }
         #barcode-reader__scan_region { min-height: 300px; }
